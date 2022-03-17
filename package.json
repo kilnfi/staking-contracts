@@ -1,0 +1,15 @@
+{
+  "name": "staking-contracts",
+  "version": "1.0.0",
+  "dependencies": {
+    "prettier": "2.6.0",
+    "prettier-plugin-solidity": "1.0.0-beta.19",
+    "solhint": "3.3.7"
+  },
+  "scripts": {
+    "format": "prettier --write ./src",
+    "format:check": "prettier --check ./src",
+    "lint": "solhint 'src/**/*.sol'",
+    "test": "forge"
+  }
+}
