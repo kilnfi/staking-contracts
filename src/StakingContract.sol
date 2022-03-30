@@ -6,8 +6,10 @@ import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
 import "./interfaces/IDepositContract.sol";
-import "./test/console.sol";
 
+/// @title Ethereum Staking Contract
+/// @author SkillZ
+/// @notice You can use this contract to store validator keys and have users fund them and trigger deposits.
 contract StakingContract {
     using StateLib for bytes32;
 
@@ -57,6 +59,8 @@ contract StakingContract {
 
     event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
 
+    /// @notice Ensures an initialisation call has been called only once per _version value
+    /// @param _version The current initialisation value
     modifier init(uint256 _version) {
         if (_version != VERSION_SLOT.getUint256() + 1) {
             revert AlreadyInitialized();
@@ -67,6 +71,7 @@ contract StakingContract {
         _;
     }
 
+    /// @notice Ensures that the caller is the operator
     modifier onlyOperator() {
         if (msg.sender != OPERATOR_SLOT.getAddress()) {
             revert Unauthorized();
@@ -75,6 +80,7 @@ contract StakingContract {
         _;
     }
 
+    /// @notice Ensures that the caller is the admin
     modifier onlyAdmin() {
         if (msg.sender != ADMIN_SLOT.getAddress()) {
             revert Unauthorized();
@@ -83,6 +89,7 @@ contract StakingContract {
         _;
     }
 
+    /// @notice Ensures that the caller is the operator or the admin
     modifier onlyAdminOrOperator() {
         if (msg.sender != ADMIN_SLOT.getAddress() && msg.sender != OPERATOR_SLOT.getAddress()) {
             revert Unauthorized();
@@ -91,6 +98,11 @@ contract StakingContract {
         _;
     }
 
+    /// @notice Initializes version 1 of Staking Contract
+    /// @param _operator Address of the operator allowed to add/remove keys
+    /// @param _admin Address of the admin allowed to change the operator and admin
+    /// @param _depositContract Address of the Deposit Contract
+    /// @param _withdrawalCredentials Withdrawal Credentials to apply to all provided keys upon deposit
     function initialize_1(
         address _operator,
         address _admin,
@@ -103,30 +115,18 @@ contract StakingContract {
         ADMIN_SLOT.setAddress(_admin);
     }
 
-    function setAdmin(address _newAdmin) external onlyAdmin {
-        ADMIN_SLOT.setAddress(_newAdmin);
-    }
-
-    function setOperator(address _newOperator) external onlyAdminOrOperator {
-        OPERATOR_SLOT.setAddress(_newOperator);
-    }
-
+    /// @notice Retrieve the admin address
     function getAdmin() external view returns (address) {
         return ADMIN_SLOT.getAddress();
     }
 
+    /// @notice Retrieve the operator address
     function getOperator() external view returns (address) {
         return OPERATOR_SLOT.getAddress();
     }
 
-    function fundedValidatorsCount() external view returns (uint256) {
-        return VALIDATORS_COUNT_SLOT.getUint256();
-    }
-
-    function totalValidatorCount() external view returns (uint256) {
-        return PUBLIC_KEYS_SLOT.getStorageBytesArray().value.length;
-    }
-
+    /// @notice Retrieve the withdrawer for a specific public key
+    /// @param _publicKey Public Key to retrieve the withdrawer
     function getWithdrawer(bytes memory _publicKey) external view returns (address) {
         bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
         StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
@@ -134,23 +134,101 @@ contract StakingContract {
         return publicKeyOwnership.value[pubkeyRoot];
     }
 
+    /// @notice Retrieve the amount of funded validators
+    function fundedValidatorsCount() external view returns (uint256) {
+        return VALIDATORS_COUNT_SLOT.getUint256();
+    }
+
+    /// @notice Retrieve the amount of registered validators (funded + not yet funded)
+    function totalValidatorCount() external view returns (uint256) {
+        return PUBLIC_KEYS_SLOT.getStorageBytesArray().value.length;
+    }
+
+    /// @notice Retrieve the details of a validator
+    /// @param _idx Index of the validator
+    function getValidator(uint256 _idx)
+        external
+        view
+        returns (
+            bytes memory publicKey,
+            bytes memory signature,
+            address withdrawer,
+            bool funded
+        )
+    {
+        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StateLib.Bytes32ToAddressMappingSlot storage withdrawers = WITHDRAWERS_SLOT.getStorageBytes32ToAddressMapping();
+        uint256 validatorCount = VALIDATORS_COUNT_SLOT.getUint256();
+
+        publicKey = publicKeysStore.value[_idx];
+        signature = signaturesStore.value[_idx];
+        withdrawer = withdrawers.value[sha256(BytesLib.pad64(publicKey))];
+        funded = _idx < validatorCount;
+    }
+
+    /// @notice Change the admin address
+    /// @dev Only the admin is allowed to call this method
+    /// @param _newAdmin New Admin address
+    function setAdmin(address _newAdmin) external onlyAdmin {
+        ADMIN_SLOT.setAddress(_newAdmin);
+    }
+
+    /// @notice Change the operator address
+    /// @dev Only the admin or the operator are allowed to call this method
+    /// @param _newOperator New Operator address
+    function setOperator(address _newOperator) external onlyAdminOrOperator {
+        OPERATOR_SLOT.setAddress(_newOperator);
+    }
+
+    /// @notice Change the withdrawer for a specific public key
+    /// @dev Only the previous withdrawer of the public key can change the withdrawer
+    /// @param _publicKey The public key to change
+    /// @param _newWithdrawer The new withdrawer address
+    function setWithdrawer(bytes memory _publicKey, address _newWithdrawer) external {
+        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
+        StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
+            .getStorageBytes32ToAddressMapping();
+
+        if (msg.sender != publicKeyOwnership.value[pubkeyRoot]) {
+            revert Unauthorized();
+        }
+
+        publicKeyOwnership.value[pubkeyRoot] = _newWithdrawer;
+    }
+
+    /// @notice Explicit deposit method
+    /// @dev A multiple of 32 ETH should be sent
+    /// @param _withdrawer The withdrawer address
     function deposit(address _withdrawer) external payable {
         _deposit(_withdrawer);
     }
 
+    /// @notice Implicit deposit method
+    /// @dev A multiple of 32 ETH should be sent
+    /// @dev The withdrawer is set to the message sender address
     receive() external payable {
         _deposit(msg.sender);
     }
 
+    /// @notice Fallback detection
+    /// @dev Fails on any call that fallbacks
     fallback() external payable {
         revert InvalidCall();
     }
 
+    /// @notice Register new validators
+    /// @dev Only the operator or the admin are allowed to call this method
+    /// @dev publickKeys is the concatenation of keyCount public keys
+    /// @dev signatures is the concatenation of keyCount signatures
+    /// @param keyCount The expected number of keys from publicKeys and signatures
+    /// @param publicKeys Concatenated public keys
+    /// @param signatures Concatenated signatures
     function registerValidators(
         uint256 keyCount,
         bytes calldata publicKeys,
         bytes calldata signatures
-    ) external onlyOperator {
+    ) external onlyAdminOrOperator {
         if (keyCount == 0) {
             revert InvalidArgument();
         }
@@ -179,7 +257,12 @@ contract StakingContract {
         }
     }
 
-    function removeValidators(uint256[] calldata _indexes) external onlyOperator {
+    /// @notice Remove validators
+    /// @dev Only the operator or the admin are allowed to call this method
+    /// @dev The indexes to delete should all be greater than the amount of funded validators
+    /// @dev The indexes to delete should be sorted in descending order or the method will fail
+    /// @param _indexes The indexes to delete
+    function removeValidators(uint256[] calldata _indexes) external onlyAdminOrOperator {
         if (_indexes.length == 0) {
             revert InvalidArgument();
         }
@@ -213,39 +296,10 @@ contract StakingContract {
         }
     }
 
-    function getValidator(uint256 _idx)
-        external
-        view
-        returns (
-            bytes memory publicKey,
-            bytes memory signature,
-            address withdrawer,
-            bool funded
-        )
-    {
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
-        StateLib.Bytes32ToAddressMappingSlot storage withdrawers = WITHDRAWERS_SLOT.getStorageBytes32ToAddressMapping();
-        uint256 validatorCount = VALIDATORS_COUNT_SLOT.getUint256();
-
-        publicKey = publicKeysStore.value[_idx];
-        signature = signaturesStore.value[_idx];
-        withdrawer = withdrawers.value[sha256(BytesLib.pad64(publicKey))];
-        funded = _idx < validatorCount;
-    }
-
-    function setWithdrawer(bytes memory _publicKey, address _newWithdrawer) external {
-        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
-            .getStorageBytes32ToAddressMapping();
-
-        if (msg.sender != publicKeyOwnership.value[pubkeyRoot]) {
-            revert Unauthorized();
-        }
-
-        publicKeyOwnership.value[pubkeyRoot] = _newWithdrawer;
-    }
-
+    /// @notice Internal utility to deposit a public key, its signature and 32 ETH to the consensus layer
+    /// @param _publicKey The Public Key to deposit
+    /// @param _signature The Signature to deposit
+    /// @param _withdrawalCredentials The Withdrawal Credentials to deposit
     function _depositValidator(
         bytes memory _publicKey,
         bytes memory _signature,
@@ -283,6 +337,8 @@ contract StakingContract {
         }
     }
 
+    /// @notice Perform one or multiple deposits for the same withdrawer
+    /// @param _withdrawer Address allowed to withdraw the funds of the deposits
     function _deposit(address _withdrawer) internal {
         if (msg.value == 0 || msg.value % DEPOSIT_SIZE != 0) {
             revert InvalidMessageValue();
