@@ -11,6 +11,9 @@ import "./test/console.sol";
 contract StakingContract {
     using StateLib for bytes32;
 
+    bytes32 internal constant ADMIN_SLOT =
+        /* keccak256("StakingContract.admin") */
+        hex"fbeda9bc03875013b12a1ec161efb8e5bf7e58e3cec96a1ea9efd3e264d26e64";
     bytes32 internal constant VERSION_SLOT =
         /* keccak256("StakingContract.version") */
         hex"d5c553085b8382c47128ae7612257fd5dc3b4fc4d3a108925604d3c8700c025b";
@@ -72,14 +75,40 @@ contract StakingContract {
         _;
     }
 
+    modifier onlyAdmin() {
+        if (msg.sender != ADMIN_SLOT.getAddress()) {
+            revert Unauthorized();
+        }
+
+        _;
+    }
+
     function initialize_1(
         address _operator,
+        address _admin,
         address _depositContract,
         bytes32 _withdrawalCredentials
     ) external init(1) {
         OPERATOR_SLOT.setAddress(_operator);
         DEPOSIT_CONTRACT_SLOT.setAddress(_depositContract);
         WITHDRAWAL_CREDENTIALS_SLOT.setBytes32(_withdrawalCredentials);
+        ADMIN_SLOT.setAddress(_admin);
+    }
+
+    function setAdmin(address _newAdmin) external onlyAdmin {
+        ADMIN_SLOT.setAddress(_newAdmin);
+    }
+
+    function setOperator(address _newOperator) external onlyAdmin {
+        OPERATOR_SLOT.setAddress(_newOperator);
+    }
+
+    function getAdmin() external view returns (address) {
+        return ADMIN_SLOT.getAddress();
+    }
+
+    function getOperator() external view returns (address) {
+        return OPERATOR_SLOT.getAddress();
     }
 
     function fundedValidatorsCount() external view returns (uint256) {
