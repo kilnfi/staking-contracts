@@ -83,6 +83,14 @@ contract StakingContract {
         _;
     }
 
+    modifier onlyAdminOrOperator() {
+        if (msg.sender != ADMIN_SLOT.getAddress() && msg.sender != OPERATOR_SLOT.getAddress()) {
+            revert Unauthorized();
+        }
+
+        _;
+    }
+
     function initialize_1(
         address _operator,
         address _admin,
@@ -99,7 +107,7 @@ contract StakingContract {
         ADMIN_SLOT.setAddress(_newAdmin);
     }
 
-    function setOperator(address _newOperator) external onlyAdmin {
+    function setOperator(address _newOperator) external onlyAdminOrOperator {
         OPERATOR_SLOT.setAddress(_newOperator);
     }
 

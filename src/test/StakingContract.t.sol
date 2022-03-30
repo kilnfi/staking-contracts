@@ -80,9 +80,17 @@ contract StakingContractTest is DSTestPlus {
         assert(stakingContract.getOperator() == operator);
     }
 
-    function testSetOperator() public {
+    function testSetOperatorFromAdmin() public {
         assert(stakingContract.getOperator() == operator);
         vm.startPrank(admin);
+        stakingContract.setOperator(bob);
+        vm.stopPrank();
+        assert(stakingContract.getOperator() == bob);
+    }
+
+    function testSetOperatorFromOperator() public {
+        assert(stakingContract.getOperator() == operator);
+        vm.startPrank(operator);
         stakingContract.setOperator(bob);
         vm.stopPrank();
         assert(stakingContract.getOperator() == bob);
