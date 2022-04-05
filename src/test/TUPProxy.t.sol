@@ -4,7 +4,7 @@ pragma solidity >=0.8.10;
 import "solmate/test/utils/DSTestPlus.sol";
 import "forge-std/Vm.sol";
 
-import "../TUPProxy.sol";
+import "../contracts/TUPProxy.sol";
 
 contract DummyCounter {
     error BigError(uint256);

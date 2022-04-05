@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
+//SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
 import "solmate/test/utils/DSTestPlus.sol";
 import "forge-std/Vm.sol";
-import "../StakingContract.sol";
-import "../interfaces/IDepositContract.sol";
+import "../contracts/StakingContract.sol";
+import "../contracts/interfaces/IDepositContract.sol";
 
 contract DepositContractMock is IDepositContract {
     event DepositEvent(bytes pubkey, bytes withdrawal_credentials, bytes amount, bytes signature, bytes index);

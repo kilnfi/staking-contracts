@@ -4,7 +4,7 @@ pragma solidity >=0.8.10;
 import "solmate/test/utils/DSTestPlus.sol";
 import "forge-std/Vm.sol";
 
-import "../WithdrawContract.sol";
+import "../contracts/WithdrawContract.sol";
 
 contract WithdrawContractTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
