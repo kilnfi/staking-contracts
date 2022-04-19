@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "./libs/StateLib.sol";
+import "./libs/State.sol";
 import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
@@ -11,69 +11,113 @@ import "./interfaces/IDepositContract.sol";
 /// @author SkillZ
 /// @notice You can use this contract to store validator keys and have users fund them and trigger deposits.
 contract StakingContract {
-    using StateLib for bytes32;
-
-    bytes32 internal constant ADMIN_SLOT =
-        /* keccak256("StakingContract.admin") */
-        hex"fbeda9bc03875013b12a1ec161efb8e5bf7e58e3cec96a1ea9efd3e264d26e64";
-    bytes32 internal constant VERSION_SLOT =
-        /* keccak256("StakingContract.version") */
-        hex"d5c553085b8382c47128ae7612257fd5dc3b4fc4d3a108925604d3c8700c025b";
-    bytes32 internal constant OPERATOR_SLOT =
-        /* keccak256("StakingContract.operator") */
-        hex"dfe7334ae89a4aa54c085540947bfa7e13e6b6933be4c49f359d18e88c0dbde5";
-    bytes32 internal constant SIGNATURES_SLOT =
-        /* keccak256("StakingContract.signatures") */
-        hex"2805e4a7c8c139ac2ebe63141d90c488245fd479906b2c60bd42603b8a2ca08b";
-    bytes32 internal constant PUBLIC_KEYS_SLOT =
-        /* keccak256("StakingContract.publicKeys") */
-        hex"cc0b8384259c4a4e6418cdc72955757e9214822019f44d8b5283077c1b46d43c";
-    bytes32 internal constant WITHDRAWERS_SLOT =
-        /* keccak256("StakingContract.withdrawers") */
-        hex"86647fdbbdb534026d3e0f93a551cecf651c2b40fcdfef4b9fd9ed826133e265";
-    bytes32 internal constant VALIDATORS_COUNT_SLOT =
-        /* keccak256("StakingContract.validatorsCount") */
-        hex"e9622dd0bba60226e1dbc661ca8aae56cc90dc7e9b3f33ece002f6764b3801b8";
-    bytes32 internal constant DEPOSIT_CONTRACT_SLOT =
-        /* keccak256("StakingContract.depositContract") */
-        hex"bc8b9852d17d50256bb221fdf6ee12d78dd493d807e907f7d223c40d65abd6b9";
-    bytes32 internal constant WITHDRAWAL_CREDENTIALS_SLOT =
-        /* keccak256("StakingContract.withdrawalCredentials") */
-        hex"2783da738595cd6ebaec6fd0f06d62f2266a9e475e2d1feb1d26aa2d1e051255";
+    error AlreadyInitialized();
+    error Unauthorized();
+    error InvalidCall();
+    error InvalidArgument();
+    error UnsortedIndexes();
+    error InvalidPublicKeys();
+    error InvalidSignatures();
+    error InvalidMessageValue();
+    error FundedValidatorDeletionAttempt();
+    error DepositFailure();
+    error NoOperators();
+    error NotEnoughValidators();
 
     uint256 public constant SIGNATURE_LENGTH = 96;
     uint256 public constant PUBLIC_KEY_LENGTH = 48;
     uint256 public constant DEPOSIT_SIZE = 32 ether;
 
-    error InvalidCall();
-    error Unauthorized();
-    error NotEnoughKeys();
-    error DepositFailure();
-    error InvalidArgument();
-    error UnsortedIndexes();
-    error InvalidPublicKeys();
-    error InvalidSignatures();
-    error AlreadyInitialized();
-    error InvalidMessageValue();
-    error FundedValidatorDeletionAttempt();
-
     event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
+
+    function _primes() internal pure returns (uint8[54] memory primes) {
+        primes = [
+            2,
+            3,
+            5,
+            7,
+            11,
+            13,
+            17,
+            19,
+            23,
+            29,
+            31,
+            37,
+            41,
+            43,
+            47,
+            53,
+            59,
+            61,
+            67,
+            71,
+            73,
+            79,
+            83,
+            89,
+            97,
+            101,
+            103,
+            107,
+            109,
+            113,
+            127,
+            131,
+            137,
+            139,
+            149,
+            151,
+            157,
+            163,
+            167,
+            173,
+            179,
+            181,
+            191,
+            193,
+            197,
+            199,
+            211,
+            223,
+            227,
+            229,
+            233,
+            239,
+            241,
+            251
+        ];
+    }
+
+    error InvalidValidatorCount();
+
+    function _getClosestPrimeAbove(uint8 _count) internal pure returns (uint8) {
+        uint8[54] memory primes = _primes();
+        for (uint256 i; i < primes.length; ) {
+            if (primes[i] >= _count) {
+                return primes[i];
+            }
+            unchecked {
+                ++i;
+            }
+        }
+        revert InvalidValidatorCount();
+    }
 
     /// @notice Ensures an initialisation call has been called only once per _version value
     /// @param _version The current initialisation value
     modifier init(uint256 _version) {
-        if (_version != VERSION_SLOT.getUint256() + 1) {
+        if (_version != State.getVersion() + 1) {
             revert AlreadyInitialized();
         }
 
-        VERSION_SLOT.setUint256(_version);
-
+        State.setVersion(_version);
         _;
     }
 
-    /// @notice Ensures that the caller is the operator
-    modifier onlyOperator() {
-        if (msg.sender != OPERATOR_SLOT.getAddress()) {
+    /// @notice Ensures that the caller is the admin
+    modifier onlyAdmin() {
+        if (msg.sender != State.getAdmin()) {
             revert Unauthorized();
         }
 
@@ -81,17 +125,8 @@ contract StakingContract {
     }
 
     /// @notice Ensures that the caller is the admin
-    modifier onlyAdmin() {
-        if (msg.sender != ADMIN_SLOT.getAddress()) {
-            revert Unauthorized();
-        }
-
-        _;
-    }
-
-    /// @notice Ensures that the caller is the operator or the admin
-    modifier onlyAdminOrOperator() {
-        if (msg.sender != ADMIN_SLOT.getAddress() && msg.sender != OPERATOR_SLOT.getAddress()) {
+    modifier onlyOperator(uint256 _operatorIndex) {
+        if (msg.sender != State.getOperators().value[_operatorIndex].operator) {
             revert Unauthorized();
         }
 
@@ -99,207 +134,270 @@ contract StakingContract {
     }
 
     /// @notice Initializes version 1 of Staking Contract
-    /// @param _operator Address of the operator allowed to add/remove keys
     /// @param _admin Address of the admin allowed to change the operator and admin
     /// @param _depositContract Address of the Deposit Contract
     /// @param _withdrawalCredentials Withdrawal Credentials to apply to all provided keys upon deposit
     function initialize_1(
-        address _operator,
         address _admin,
         address _depositContract,
         bytes32 _withdrawalCredentials
     ) external init(1) {
-        OPERATOR_SLOT.setAddress(_operator);
-        DEPOSIT_CONTRACT_SLOT.setAddress(_depositContract);
-        WITHDRAWAL_CREDENTIALS_SLOT.setBytes32(_withdrawalCredentials);
-        ADMIN_SLOT.setAddress(_admin);
+        State.setWithdrawalCredentials(_withdrawalCredentials);
+        State.setDepositContract(_depositContract);
+        State.setAdmin(_admin);
     }
 
-    /// @notice Retrieve the admin address
     function getAdmin() external view returns (address) {
-        return ADMIN_SLOT.getAddress();
+        return State.getAdmin();
     }
 
-    /// @notice Retrieve the operator address
-    function getOperator() external view returns (address) {
-        return OPERATOR_SLOT.getAddress();
+    function setAdmin(address _newAdmin) external onlyAdmin {
+        State.setAdmin(_newAdmin);
     }
 
-    /// @notice Retrieve the withdrawer for a specific public key
-    /// @param _publicKey Public Key to retrieve the withdrawer
-    function getWithdrawer(bytes memory _publicKey) external view returns (address) {
-        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
-            .getStorageBytes32ToAddressMapping();
-        return publicKeyOwnership.value[pubkeyRoot];
+    function addOperator(address _operatorAddress) external onlyAdmin returns (uint256) {
+        State.OperatorsSlot storage operators = State.getOperators();
+        State.OperatorInfo memory newOperator;
+        newOperator.operator = _operatorAddress;
+        operators.value.push(newOperator);
+        return operators.value.length - 1;
     }
 
-    /// @notice Retrieve the amount of funded validators
-    function fundedValidatorsCount() external view returns (uint256) {
-        return VALIDATORS_COUNT_SLOT.getUint256();
+    function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external onlyAdmin {
+        State.OperatorsSlot storage operators = State.getOperators();
+        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorInfo(_operatorIndex);
+        uint256 oldAvailableCount = operatorInfo.availableKeys;
+        uint256 newAvailableCount = 0;
+        uint256 cap = _min(_limit, operators.value[_operatorIndex].publicKeys.length);
+
+        if (cap <= operatorInfo.funded) {
+            State.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
+            newAvailableCount = 0;
+        } else {
+            State.setOperatorInfo(_operatorIndex, uint32(cap - operatorInfo.funded), operatorInfo.funded);
+            newAvailableCount = uint32(cap - operatorInfo.funded);
+        }
+
+        if (oldAvailableCount != newAvailableCount) {
+            if (oldAvailableCount > newAvailableCount) {
+                State.setTotalAvailableValidators(
+                    State.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
+                );
+            } else {
+                State.setTotalAvailableValidators(
+                    State.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
+                );
+            }
+        }
+
+        operators.value[_operatorIndex].limit = _limit;
     }
 
-    /// @notice Retrieve the amount of registered validators (funded + not yet funded)
-    function totalValidatorCount() external view returns (uint256) {
-        return PUBLIC_KEYS_SLOT.getStorageBytesArray().value.length;
-    }
-
-    /// @notice Retrieve the details of a validator
-    /// @param _idx Index of the validator
-    function getValidator(uint256 _idx)
+    function getOperator(uint256 _operatorIndex)
         external
         view
         returns (
-            bytes memory publicKey,
-            bytes memory signature,
-            address withdrawer,
-            bool funded
+            address operatorAddress,
+            uint256 limit,
+            uint256 keys,
+            uint256 funded,
+            uint256 available
         )
     {
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
-        StateLib.Bytes32ToAddressMappingSlot storage withdrawers = WITHDRAWERS_SLOT.getStorageBytes32ToAddressMapping();
-        uint256 validatorCount = VALIDATORS_COUNT_SLOT.getUint256();
+        State.OperatorsSlot storage operators = State.getOperators();
+        if (_operatorIndex < operators.value.length) {
+            State.OperatorSelectionInfo memory operatorInfo = State.getOperatorInfo(_operatorIndex);
 
-        publicKey = publicKeysStore.value[_idx];
-        signature = signaturesStore.value[_idx];
-        withdrawer = withdrawers.value[sha256(BytesLib.pad64(publicKey))];
-        funded = _idx < validatorCount;
-    }
-
-    /// @notice Change the admin address
-    /// @dev Only the admin is allowed to call this method
-    /// @param _newAdmin New Admin address
-    function setAdmin(address _newAdmin) external onlyAdmin {
-        ADMIN_SLOT.setAddress(_newAdmin);
-    }
-
-    /// @notice Change the operator address
-    /// @dev Only the admin or the operator are allowed to call this method
-    /// @param _newOperator New Operator address
-    function setOperator(address _newOperator) external onlyAdminOrOperator {
-        OPERATOR_SLOT.setAddress(_newOperator);
-    }
-
-    /// @notice Change the withdrawer for a specific public key
-    /// @dev Only the previous withdrawer of the public key can change the withdrawer
-    /// @param _publicKey The public key to change
-    /// @param _newWithdrawer The new withdrawer address
-    function setWithdrawer(bytes memory _publicKey, address _newWithdrawer) external {
-        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
-            .getStorageBytes32ToAddressMapping();
-
-        if (msg.sender != publicKeyOwnership.value[pubkeyRoot]) {
-            revert Unauthorized();
+            (operatorAddress, limit, keys) = (
+                operators.value[_operatorIndex].operator,
+                operators.value[_operatorIndex].limit,
+                operators.value[_operatorIndex].publicKeys.length
+            );
+            (funded, available) = (operatorInfo.funded, operatorInfo.availableKeys);
         }
-
-        publicKeyOwnership.value[pubkeyRoot] = _newWithdrawer;
     }
 
-    /// @notice Explicit deposit method
-    /// @dev A multiple of 32 ETH should be sent
-    /// @param _withdrawer The withdrawer address
-    function deposit(address _withdrawer) external payable {
-        _deposit(_withdrawer);
+    function _min(uint256 _a, uint256 _b) internal pure returns (uint256) {
+        if (_a < _b) {
+            return _a;
+        }
+        return _b;
     }
 
-    /// @notice Implicit deposit method
-    /// @dev A multiple of 32 ETH should be sent
-    /// @dev The withdrawer is set to the message sender address
-    receive() external payable {
-        _deposit(msg.sender);
-    }
-
-    /// @notice Fallback detection
-    /// @dev Fails on any call that fallbacks
-    fallback() external payable {
-        revert InvalidCall();
-    }
-
-    /// @notice Register new validators
-    /// @dev Only the operator or the admin are allowed to call this method
-    /// @dev publickKeys is the concatenation of keyCount public keys
-    /// @dev signatures is the concatenation of keyCount signatures
-    /// @param keyCount The expected number of keys from publicKeys and signatures
-    /// @param publicKeys Concatenated public keys
-    /// @param signatures Concatenated signatures
-    function registerValidators(
-        uint256 keyCount,
-        bytes calldata publicKeys,
-        bytes calldata signatures
-    ) external onlyAdminOrOperator {
-        if (keyCount == 0) {
+    function addValidators(
+        uint256 _operatorIndex,
+        uint256 _keyCount,
+        bytes calldata _publicKeys,
+        bytes calldata _signatures
+    ) external onlyOperator(_operatorIndex) {
+        if (_keyCount == 0) {
             revert InvalidArgument();
         }
 
-        if (publicKeys.length % PUBLIC_KEY_LENGTH != 0 || publicKeys.length / PUBLIC_KEY_LENGTH != keyCount) {
+        if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0 || _publicKeys.length / PUBLIC_KEY_LENGTH != _keyCount) {
             revert InvalidPublicKeys();
         }
 
-        if (signatures.length % SIGNATURE_LENGTH != 0 || signatures.length / SIGNATURE_LENGTH != keyCount) {
+        if (_signatures.length % SIGNATURE_LENGTH != 0 || _signatures.length / SIGNATURE_LENGTH != _keyCount) {
             revert InvalidSignatures();
         }
 
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        State.OperatorsSlot storage operators = State.getOperators();
 
-        for (uint256 i; i < keyCount; ) {
-            bytes memory publicKey = BytesLib.slice(publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
-            bytes memory signature = BytesLib.slice(signatures, i * SIGNATURE_LENGTH, SIGNATURE_LENGTH);
+        for (uint256 i; i < _keyCount; ) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+            bytes memory signature = BytesLib.slice(_signatures, i * SIGNATURE_LENGTH, SIGNATURE_LENGTH);
 
-            publicKeysStore.value.push(publicKey);
-            signaturesStore.value.push(signature);
+            operators.value[_operatorIndex].publicKeys.push(publicKey);
+            operators.value[_operatorIndex].signatures.push(signature);
 
             unchecked {
                 ++i;
             }
         }
+
+        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorInfo(_operatorIndex);
+        uint256 oldAvailableCount = operatorInfo.availableKeys;
+        uint256 newAvailableCount = 0;
+        uint256 cap = _min(operators.value[_operatorIndex].limit, operators.value[_operatorIndex].publicKeys.length);
+
+        if (cap <= operatorInfo.funded) {
+            State.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
+            newAvailableCount = 0;
+        } else {
+            State.setOperatorInfo(_operatorIndex, uint32(cap - operatorInfo.funded), operatorInfo.funded);
+            newAvailableCount = uint32(cap - operatorInfo.funded);
+        }
+
+        if (oldAvailableCount != newAvailableCount) {
+            State.setTotalAvailableValidators(
+                State.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
+            );
+        }
     }
 
-    /// @notice Remove validators
-    /// @dev Only the operator or the admin are allowed to call this method
-    /// @dev The indexes to delete should all be greater than the amount of funded validators
-    /// @dev The indexes to delete should be sorted in descending order or the method will fail
-    /// @param _indexes The indexes to delete
-    function removeValidators(uint256[] calldata _indexes) external onlyAdminOrOperator {
+    function removeValidators(uint256 _operatorIndex, uint256[] calldata _indexes)
+        external
+        onlyOperator(_operatorIndex)
+    {
         if (_indexes.length == 0) {
             revert InvalidArgument();
         }
 
-        uint256 validatorsCount = VALIDATORS_COUNT_SLOT.getUint256();
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorInfo(_operatorIndex);
+        State.OperatorsSlot storage operators = State.getOperators();
 
         for (uint256 i; i < _indexes.length; ) {
             if (i > 0 && _indexes[i] >= _indexes[i - 1]) {
                 revert UnsortedIndexes();
             }
 
-            if (_indexes[i] < validatorsCount) {
+            if (_indexes[i] < operatorInfo.funded) {
                 revert FundedValidatorDeletionAttempt();
             }
 
-            if (_indexes[i] == publicKeysStore.value.length - 1) {
-                publicKeysStore.value.pop();
-                signaturesStore.value.pop();
+            if (_indexes[i] == operators.value[_operatorIndex].publicKeys.length - 1) {
+                operators.value[_operatorIndex].publicKeys.pop();
+                operators.value[_operatorIndex].signatures.pop();
             } else {
-                publicKeysStore.value[_indexes[i]] = publicKeysStore.value[publicKeysStore.value.length - 1];
-                publicKeysStore.value.pop();
-                signaturesStore.value[_indexes[i]] = signaturesStore.value[signaturesStore.value.length - 1];
-                signaturesStore.value.pop();
+                operators.value[_operatorIndex].publicKeys[_indexes[i]] = operators.value[_operatorIndex].publicKeys[
+                    operators.value[_operatorIndex].publicKeys.length - 1
+                ];
+                operators.value[_operatorIndex].publicKeys.pop();
+                operators.value[_operatorIndex].signatures[_indexes[i]] = operators.value[_operatorIndex].signatures[
+                    operators.value[_operatorIndex].signatures.length - 1
+                ];
+                operators.value[_operatorIndex].signatures.pop();
             }
 
             unchecked {
                 ++i;
             }
         }
+
+        uint256 oldAvailableCount = operatorInfo.availableKeys;
+        uint256 newAvailableCount = 0;
+        uint256 cap = _min(operators.value[_operatorIndex].limit, operators.value[_operatorIndex].publicKeys.length);
+
+        if (cap <= operatorInfo.funded) {
+            State.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
+            newAvailableCount = 0;
+        } else {
+            State.setOperatorInfo(_operatorIndex, uint32(cap - operatorInfo.funded), operatorInfo.funded);
+            newAvailableCount = uint32(cap - operatorInfo.funded);
+        }
+
+        if (oldAvailableCount != newAvailableCount) {
+            State.setTotalAvailableValidators(
+                State.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
+            );
+        }
     }
 
-    /// @notice Internal utility to deposit a public key, its signature and 32 ETH to the consensus layer
-    /// @param _publicKey The Public Key to deposit
-    /// @param _signature The Signature to deposit
-    /// @param _withdrawalCredentials The Withdrawal Credentials to deposit
+    struct ValidatorDetails {
+        uint8 used;
+        uint128 operatorIndex;
+        uint120 count;
+    }
+
+    function _useBest(
+        uint256 alphaIndex,
+        uint256 alphaTemporaryDeposits,
+        uint256 betaIndex,
+        uint256 betaTemporaryDeposits
+    ) internal view returns (int256 operatorIndex) {
+        State.OperatorSelectionInfo memory alphaOsi = State.getOperatorInfo(alphaIndex);
+        State.OperatorSelectionInfo memory betaOsi = State.getOperatorInfo(betaIndex);
+        if (alphaOsi.availableKeys == 0) {
+            if (betaOsi.availableKeys == 0) {
+                return -1;
+            } else {
+                return int256(betaIndex);
+            }
+        } else if (betaOsi.availableKeys == 0) {
+            if (alphaOsi.availableKeys == 0) {
+                return -1;
+            } else {
+                return int256(alphaIndex);
+            }
+        } else {
+            if ((alphaOsi.funded + alphaTemporaryDeposits) > (betaOsi.funded + betaTemporaryDeposits)) {
+                return int256(betaIndex);
+            } else {
+                return int256(alphaIndex);
+            }
+        }
+    }
+
+    function _depositValidatorsOfOperator(
+        uint256 _operatorIndex,
+        uint256 _validatorCount,
+        address _withdrawer
+    ) internal {
+        State.OperatorsSlot storage operators = State.getOperators();
+        State.OperatorInfo storage operator = operators.value[_operatorIndex];
+        State.OperatorSelectionInfo memory osi = State.getOperatorInfo(_operatorIndex);
+        bytes32 withdrawalCredentials = State.getWithdrawalCredentials();
+
+        for (uint256 i = osi.funded; i < osi.funded + _validatorCount; ) {
+            bytes memory publicKey = operator.publicKeys[i];
+            bytes memory signature = operator.signatures[i];
+            _depositValidator(publicKey, signature, withdrawalCredentials);
+            bytes32 pubkeyRoot = sha256(BytesLib.pad64(publicKey));
+            State.getWithdrawers().value[pubkeyRoot] = _withdrawer;
+            emit Deposit(msg.sender, _withdrawer, publicKey, pubkeyRoot);
+            unchecked {
+                ++i;
+            }
+        }
+
+        State.setOperatorInfo(
+            _operatorIndex,
+            uint32(osi.availableKeys - _validatorCount),
+            uint32(osi.funded + _validatorCount)
+        );
+    }
+
     function _depositValidator(
         bytes memory _publicKey,
         bytes memory _signature,
@@ -325,7 +423,7 @@ contract StakingContract {
 
         uint256 targetBalance = address(this).balance - DEPOSIT_SIZE;
 
-        IDepositContract(DEPOSIT_CONTRACT_SLOT.getAddress()).deposit{value: DEPOSIT_SIZE}(
+        IDepositContract(State.getDepositContract()).deposit{value: DEPOSIT_SIZE}(
             _publicKey,
             abi.encodePacked(_withdrawalCredentials),
             _signature,
@@ -337,37 +435,164 @@ contract StakingContract {
         }
     }
 
-    /// @notice Perform one or multiple deposits for the same withdrawer
-    /// @param _withdrawer Address allowed to withdraw the funds of the deposits
-    function _deposit(address _withdrawer) internal {
-        if (msg.value == 0 || msg.value % DEPOSIT_SIZE != 0) {
-            revert InvalidMessageValue();
-        }
-
-        uint256 depositCount = msg.value / DEPOSIT_SIZE;
-        uint256 validatorCount = VALIDATORS_COUNT_SLOT.getUint256();
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
-        bytes32 withdrawalCredentials = WITHDRAWAL_CREDENTIALS_SLOT.getBytes32();
-
-        if (validatorCount + depositCount > publicKeysStore.value.length) {
-            revert NotEnoughKeys();
-        }
-
-        StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
-            .getStorageBytes32ToAddressMapping();
-
-        for (uint256 i; i < depositCount; ) {
-            bytes memory publicKey = publicKeysStore.value[validatorCount + i];
-            bytes32 publicKeyRoot = sha256(BytesLib.pad64(publicKey));
-            _depositValidator(publicKey, signaturesStore.value[validatorCount + i], withdrawalCredentials);
-            publicKeyOwnership.value[publicKeyRoot] = _withdrawer;
-            emit Deposit(msg.sender, _withdrawer, publicKey, publicKeyRoot);
+    function _getTemporaryDeposits(uint256 _operatorIndex, ValidatorDetails[] memory _vd)
+        internal
+        pure
+        returns (uint256)
+    {
+        for (uint256 i; i < _vd.length; ) {
+            if (_vd[i].used == 1) {
+                if (_vd[i].operatorIndex == _operatorIndex) {
+                    return _vd[i].count;
+                }
+            } else {
+                return 0;
+            }
             unchecked {
                 ++i;
             }
         }
+        return 0;
+    }
 
-        VALIDATORS_COUNT_SLOT.setUint256(validatorCount + depositCount);
+    function _deposit(address _withdrawer) internal {
+        if (msg.value == 0 || msg.value % DEPOSIT_SIZE != 0) {
+            revert InvalidMessageValue();
+        }
+        uint256 totalAvailableValidators = State.getTotalAvailableValidators();
+        uint256 depositCount = msg.value / DEPOSIT_SIZE;
+        if (depositCount > totalAvailableValidators) {
+            revert NotEnoughValidators();
+        }
+        State.OperatorsSlot storage operators = State.getOperators();
+        if (operators.value.length == 0) {
+            revert NoOperators();
+        } else if (operators.value.length == 1) {
+            _depositValidatorsOfOperator(0, depositCount, _withdrawer);
+        } else if (operators.value.length == 2) {
+            State.OperatorSelectionInfo memory oneOsi = State.getOperatorInfo(0);
+            State.OperatorSelectionInfo memory twoOsi = State.getOperatorInfo(1);
+
+            uint256 oneDepositCount = depositCount / 2;
+            uint256 twoDepositCount = depositCount / 2;
+            if (oneDepositCount + twoDepositCount != depositCount) {
+                ++oneDepositCount;
+            }
+            if (oneDepositCount > oneOsi.availableKeys) {
+                twoDepositCount = depositCount - oneOsi.availableKeys;
+                oneDepositCount = oneOsi.availableKeys;
+            } else if (twoDepositCount > twoOsi.availableKeys) {
+                oneDepositCount = depositCount - twoOsi.availableKeys;
+                twoDepositCount = twoOsi.availableKeys;
+            }
+
+            if (oneDepositCount > 0) {
+                _depositValidatorsOfOperator(0, oneDepositCount, _withdrawer);
+            }
+            if (twoDepositCount > 0) {
+                _depositValidatorsOfOperator(1, twoDepositCount, _withdrawer);
+            }
+        } else {
+            uint256 operatorCount = operators.value.length;
+            uint8 optimusPrime = _getClosestPrimeAbove(uint8(operatorCount));
+
+            bytes32 blockHash = blockhash(block.number); // weak random number as it's not a security issue
+            uint256 alphaIndex = uint8(blockHash[0]) % operatorCount;
+            uint256 skip = uint8(blockHash[1]) % optimusPrime;
+            if (skip == 0) {
+                ++skip;
+            }
+            uint256 betaIndex = (alphaIndex + skip) % optimusPrime;
+
+            ValidatorDetails[] memory vd = new ValidatorDetails[](depositCount);
+
+            uint256 reservedValidators = 0;
+
+            while (depositCount > 0) {
+                if (alphaIndex == betaIndex) {
+                    betaIndex = (betaIndex + skip) % optimusPrime;
+                }
+
+                if (betaIndex < operatorCount) {
+                    uint256 alphaTmpd = _getTemporaryDeposits(alphaIndex, vd);
+                    uint256 betaTmpd = _getTemporaryDeposits(betaIndex, vd);
+                    int256 operatorIndex = _useBest(alphaIndex, alphaTmpd, betaIndex, betaTmpd);
+
+                    if (operatorIndex >= 0) {
+                        for (uint256 i; i < vd.length; ) {
+                            if (vd[i].used == 1) {
+                                if (uint256(vd[i].operatorIndex) == uint256(operatorIndex)) {
+                                    ++vd[i].count;
+                                    break;
+                                }
+                            } else {
+                                vd[i].used = 1;
+                                vd[i].operatorIndex = uint128(int128(operatorIndex));
+                                vd[i].count = 1;
+                                break;
+                            }
+                            unchecked {
+                                ++i;
+                            }
+                        }
+                        --depositCount;
+                        ++reservedValidators;
+                    }
+                }
+
+                betaIndex = (betaIndex + skip) % optimusPrime;
+            }
+
+            for (uint256 i; i < vd.length; ) {
+                if (vd[i].used == 1) {
+                    _depositValidatorsOfOperator(vd[i].operatorIndex, vd[i].count, _withdrawer);
+                } else {
+                    break;
+                }
+                unchecked {
+                    ++i;
+                }
+            }
+
+            State.setTotalAvailableValidators(totalAvailableValidators - reservedValidators);
+        }
+    }
+
+    /// @notice Explicit deposit method
+    /// @dev A multiple of 32 ETH should be sent
+    /// @param _withdrawer The withdrawer address
+    function deposit(address _withdrawer) external payable {
+        _deposit(_withdrawer);
+    }
+
+    /// @notice Implicit deposit method
+    /// @dev A multiple of 32 ETH should be sent
+    /// @dev The withdrawer is set to the message sender address
+    receive() external payable {
+        _deposit(msg.sender);
+    }
+
+    /// @notice Fallback detection
+    /// @dev Fails on any call that fallbacks
+    fallback() external payable {
+        revert InvalidCall();
+    }
+
+    function getWithdrawer(bytes calldata _publicKey) external view returns (address) {
+        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
+        State.WithdrawersSlot storage withdrawers = State.getWithdrawers();
+
+        return withdrawers.value[pubkeyRoot];
+    }
+
+    function setWithdrawer(bytes calldata _publicKey, address _newWithdrawer) external {
+        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
+        State.WithdrawersSlot storage withdrawers = State.getWithdrawers();
+
+        if (withdrawers.value[pubkeyRoot] != msg.sender) {
+            revert Unauthorized();
+        }
+
+        withdrawers.value[pubkeyRoot] = _newWithdrawer;
     }
 }

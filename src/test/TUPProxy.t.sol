@@ -16,7 +16,7 @@ contract DummyCounter {
         ++i;
     }
 
-    function fail() external {
+    function fail() external view {
         revert BigError(i);
     }
 
