@@ -4,3 +4,4 @@ node_modules
 .vscode
 artifacts
 forge-cache
+.DS_Store

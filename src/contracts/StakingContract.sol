@@ -5,6 +5,8 @@ import "./libs/State.sol";
 import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
+import "../test/console.sol";
+
 import "./interfaces/IDepositContract.sol";
 
 /// @title Ethereum Staking Contract
@@ -449,19 +451,35 @@ contract StakingContract {
         return 0;
     }
 
-    function _depositOnOneOperator(address _withdrawer, uint256 _depositCount) internal {
+    function _depositOnOneOperator(
+        address _withdrawer,
+        uint256 _depositCount,
+        uint256 _totalAvailableValidators
+    ) internal {
         _depositValidatorsOfOperator(0, _depositCount, _withdrawer);
+        State.setTotalAvailableValidators(_totalAvailableValidators - _depositCount);
     }
 
-    function _depositOnTwoOperators(address _withdrawer, uint256 _depositCount) internal {
+    function _depositOnTwoOperators(
+        address _withdrawer,
+        uint256 _depositCount,
+        uint256 _totalAvailableValidators
+    ) internal {
         State.OperatorSelectionInfo memory oneOsi = State.getOperatorInfo(0);
         State.OperatorSelectionInfo memory twoOsi = State.getOperatorInfo(1);
 
-        uint256 oneDepositCount = _depositCount / 2;
-        uint256 twoDepositCount = _depositCount / 2;
-        if (oneDepositCount + twoDepositCount != _depositCount) {
-            ++oneDepositCount;
+        uint256 oneDepositCount;
+        uint256 twoDepositCount;
+
+        // using this tactic to prevent deposits of 1 validator to always go to operator 2
+        if (block.number % 2 == 0) {
+            oneDepositCount = _depositCount / 2;
+            twoDepositCount = _depositCount - oneDepositCount;
+        } else {
+            twoDepositCount = _depositCount / 2;
+            oneDepositCount = _depositCount - twoDepositCount;
         }
+
         if (oneDepositCount > oneOsi.availableKeys) {
             twoDepositCount = _depositCount - oneOsi.availableKeys;
             oneDepositCount = oneOsi.availableKeys;
@@ -476,6 +494,7 @@ contract StakingContract {
         if (twoDepositCount > 0) {
             _depositValidatorsOfOperator(1, twoDepositCount, _withdrawer);
         }
+        State.setTotalAvailableValidators(_totalAvailableValidators - (oneDepositCount + twoDepositCount));
     }
 
     function _depositOnThreeOrMoreOperators(
@@ -561,9 +580,9 @@ contract StakingContract {
         if (operators.value.length == 0) {
             revert NoOperators();
         } else if (operators.value.length == 1) {
-            _depositOnOneOperator(_withdrawer, depositCount);
+            _depositOnOneOperator(_withdrawer, depositCount, totalAvailableValidators);
         } else if (operators.value.length == 2) {
-            _depositOnTwoOperators(_withdrawer, depositCount);
+            _depositOnTwoOperators(_withdrawer, depositCount, totalAvailableValidators);
         } else {
             _depositOnThreeOrMoreOperators(_withdrawer, depositCount, totalAvailableValidators, operators);
         }
