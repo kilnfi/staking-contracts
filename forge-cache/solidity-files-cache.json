@@ -19,6 +19,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -52,6 +55,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -87,6 +93,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -120,6 +129,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -162,6 +174,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -201,6 +216,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -235,6 +253,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -268,6 +289,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -311,6 +335,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -345,6 +372,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -378,6 +408,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -416,6 +449,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -440,8 +476,47 @@
         }
       }
     },
+    "/Users/mortimr/_/staking-contracts/src/contracts/FeeRecipientPool.sol": {
+      "lastModificationDate": 1652260888778,
+      "contentHash": "4dbd7516517c347d1217e4a79fa619ac",
+      "sourceName": "src/contracts/FeeRecipientPool.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "london"
+        }
+      },
+      "imports": [
+        "src/test/console.sol"
+      ],
+      "versionRequirement": ">=0.8.10",
+      "artifacts": {
+        "FeeRecipientPool": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "FeeRecipientPool.sol/FeeRecipientPool.json"
+        }
+      }
+    },
     "/Users/mortimr/_/staking-contracts/src/contracts/StakingContract.sol": {
-      "lastModificationDate": 1649165452077,
+      "lastModificationDate": 1651744043381,
       "contentHash": "e1c29312f79d4820a427f18e78cdc995",
       "sourceName": "src/contracts/StakingContract.sol",
       "solcConfig": {
@@ -449,6 +524,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -488,6 +566,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -532,6 +613,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -565,6 +649,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -600,6 +687,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -625,7 +715,7 @@
       }
     },
     "/Users/mortimr/_/staking-contracts/src/contracts/libs/StateLib.sol": {
-      "lastModificationDate": 1649165489008,
+      "lastModificationDate": 1651744043381,
       "contentHash": "1f680dd1a5346fd15c60aa288ae9eb2e",
       "sourceName": "src/contracts/libs/StateLib.sol",
       "solcConfig": {
@@ -633,6 +723,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -668,6 +761,9 @@
             "enabled": true,
             "runs": 200
           },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
           "outputSelection": {
             "*": {
               "": [
@@ -692,8 +788,54 @@
         }
       }
     },
+    "/Users/mortimr/_/staking-contracts/src/test/FeeRecipientPool.t.sol": {
+      "lastModificationDate": 1652261434661,
+      "contentHash": "9524c1692f708a3ff63c958cb0a98f1d",
+      "sourceName": "src/test/FeeRecipientPool.t.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "london"
+        }
+      },
+      "imports": [
+        "lib/ds-test/src/test.sol",
+        "lib/forge-std/src/Vm.sol",
+        "lib/solmate/src/test/utils/DSTestPlus.sol",
+        "lib/solmate/src/test/utils/Hevm.sol",
+        "src/contracts/FeeRecipientPool.sol",
+        "src/contracts/interfaces/IDepositContract.sol",
+        "src/test/User.sol",
+        "src/test/console.sol"
+      ],
+      "versionRequirement": ">=0.8.10",
+      "artifacts": {
+        "FeeRecipientPoolTest": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "FeeRecipientPool.t.sol/FeeRecipientPoolTest.json"
+        }
+      }
+    },
     "/Users/mortimr/_/staking-contracts/src/test/StakingContract.t.sol": {
-      "lastModificationDate": 1649165432678,
+      "lastModificationDate": 1651744043383,
       "contentHash": "315f20c4151d561388f79b555adb6c89",
       "sourceName": "src/test/StakingContract.t.sol",
       "solcConfig": {
@@ -701,6 +843,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -740,7 +885,7 @@
       }
     },
     "/Users/mortimr/_/staking-contracts/src/test/TUPProxy.t.sol": {
-      "lastModificationDate": 1649165342065,
+      "lastModificationDate": 1651744043385,
       "contentHash": "392d0b129de34cc1459c815a9aefafe6",
       "sourceName": "src/test/TUPProxy.t.sol",
       "solcConfig": {
@@ -748,6 +893,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -793,6 +941,46 @@
         }
       }
     },
+    "/Users/mortimr/_/staking-contracts/src/test/User.sol": {
+      "lastModificationDate": 1652259817110,
+      "contentHash": "ba7b3746d3e86b5e4d6191d86c583b55",
+      "sourceName": "src/test/User.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "london"
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.8.10",
+      "artifacts": {
+        "User": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "User.sol/User.json"
+        },
+        "UserFactory": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "User.sol/UserFactory.json"
+        }
+      }
+    },
     "/Users/mortimr/_/staking-contracts/src/test/WithdrawContract.t.sol": {
       "lastModificationDate": 1649165346662,
       "contentHash": "ce4608b183f529ef83135a9999aa322f",
@@ -802,6 +990,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
@@ -842,6 +1033,9 @@
           "optimizer": {
             "enabled": true,
             "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "none"
           },
           "outputSelection": {
             "*": {
