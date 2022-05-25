@@ -27,7 +27,7 @@ contract StakingContract {
     error InvalidValidatorCount();
     error FundedValidatorDeletionAttempt();
 
-    struct ValidatorDetails {
+    struct ValidatorAllocationCache {
         uint8 used;
         uint128 operatorIndex;
         uint120 count;
@@ -181,32 +181,8 @@ contract StakingContract {
     /// @param _limit New staking limit
     function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external onlyAdmin {
         State.OperatorsSlot storage operators = State.getOperators();
-        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorInfo(_operatorIndex);
-        uint256 oldAvailableCount = operatorInfo.availableKeys;
-        uint256 newAvailableCount = 0;
-        uint256 cap = _min(_limit, operators.value[_operatorIndex].publicKeys.length);
-
-        if (cap <= operatorInfo.funded) {
-            State.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
-            newAvailableCount = 0;
-        } else {
-            State.setOperatorInfo(_operatorIndex, uint32(cap - operatorInfo.funded), operatorInfo.funded);
-            newAvailableCount = uint32(cap - operatorInfo.funded);
-        }
-
-        if (oldAvailableCount != newAvailableCount) {
-            if (oldAvailableCount > newAvailableCount) {
-                State.setTotalAvailableValidators(
-                    State.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
-                );
-            } else {
-                State.setTotalAvailableValidators(
-                    State.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
-                );
-            }
-        }
-
         operators.value[_operatorIndex].limit = _limit;
+        _updateAvailableValidatorCount(_operatorIndex);
     }
 
     /// @notice Add new validator public keys and signatures
@@ -247,24 +223,7 @@ contract StakingContract {
             }
         }
 
-        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorInfo(_operatorIndex);
-        uint256 oldAvailableCount = operatorInfo.availableKeys;
-        uint256 newAvailableCount = 0;
-        uint256 cap = _min(operators.value[_operatorIndex].limit, operators.value[_operatorIndex].publicKeys.length);
-
-        if (cap <= operatorInfo.funded) {
-            State.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
-            newAvailableCount = 0;
-        } else {
-            State.setOperatorInfo(_operatorIndex, uint32(cap - operatorInfo.funded), operatorInfo.funded);
-            newAvailableCount = uint32(cap - operatorInfo.funded);
-        }
-
-        if (oldAvailableCount != newAvailableCount) {
-            State.setTotalAvailableValidators(
-                State.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
-            );
-        }
+        _updateAvailableValidatorCount(_operatorIndex);
     }
 
     /// @notice Remove unfunded validators
@@ -311,23 +270,7 @@ contract StakingContract {
             }
         }
 
-        uint256 oldAvailableCount = operatorInfo.availableKeys;
-        uint256 newAvailableCount = 0;
-        uint256 cap = _min(operators.value[_operatorIndex].limit, operators.value[_operatorIndex].publicKeys.length);
-
-        if (cap <= operatorInfo.funded) {
-            State.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
-            newAvailableCount = 0;
-        } else {
-            State.setOperatorInfo(_operatorIndex, uint32(cap - operatorInfo.funded), operatorInfo.funded);
-            newAvailableCount = uint32(cap - operatorInfo.funded);
-        }
-
-        if (oldAvailableCount != newAvailableCount) {
-            State.setTotalAvailableValidators(
-                State.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
-            );
-        }
+        _updateAvailableValidatorCount(_operatorIndex);
     }
 
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
@@ -335,6 +278,34 @@ contract StakingContract {
     /// ██ ██ ██  ██    ██    █████   ██████  ██ ██  ██ ███████ ██
     /// ██ ██  ██ ██    ██    ██      ██   ██ ██  ██ ██ ██   ██ ██
     /// ██ ██   ████    ██    ███████ ██   ██ ██   ████ ██   ██ ███████
+
+    function _updateAvailableValidatorCount(uint256 _operatorIndex) internal {
+        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorInfo(_operatorIndex);
+        State.OperatorsSlot storage operators = State.getOperators();
+
+        uint32 oldAvailableCount = operatorInfo.availableKeys;
+        uint32 newAvailableCount = 0;
+        uint256 cap = _min(operators.value[_operatorIndex].limit, operators.value[_operatorIndex].publicKeys.length);
+
+        if (cap <= operatorInfo.funded) {
+            State.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
+        } else {
+            newAvailableCount = uint32(cap - operatorInfo.funded);
+            State.setOperatorInfo(_operatorIndex, uint32(cap - operatorInfo.funded), operatorInfo.funded);
+        }
+
+        if (oldAvailableCount != newAvailableCount) {
+            if (oldAvailableCount > newAvailableCount) {
+                State.setTotalAvailableValidators(
+                    State.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
+                );
+            } else {
+                State.setTotalAvailableValidators(
+                    State.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
+                );
+            }
+        }
+    }
 
     function _useBest(
         uint256 alphaIndex,
@@ -344,24 +315,22 @@ contract StakingContract {
     ) internal view returns (int256 operatorIndex) {
         State.OperatorSelectionInfo memory alphaOsi = State.getOperatorInfo(alphaIndex);
         State.OperatorSelectionInfo memory betaOsi = State.getOperatorInfo(betaIndex);
-        if (alphaOsi.availableKeys == 0) {
-            if (betaOsi.availableKeys == 0) {
-                return -1;
-            } else {
-                return int256(betaIndex);
-            }
+
+        if (alphaOsi.availableKeys == 0 && betaOsi.availableKeys == 0) {
+            // No keys available for both operators => -1 is error case
+            return -1;
+        } else if (alphaOsi.availableKeys == 0) {
+            // No keys available for alpha operator => beta is selected
+            return int256(betaIndex);
         } else if (betaOsi.availableKeys == 0) {
-            if (alphaOsi.availableKeys == 0) {
-                return -1;
-            } else {
-                return int256(alphaIndex);
-            }
+            // No keys available for beta operator => alpha is selected
+            return int256(alphaIndex);
+        } else if ((alphaOsi.funded + alphaTemporaryDeposits) > (betaOsi.funded + betaTemporaryDeposits)) {
+            // Both operators have available keys but alpha has more funded keys => beta is selected
+            return int256(betaIndex);
         } else {
-            if ((alphaOsi.funded + alphaTemporaryDeposits) > (betaOsi.funded + betaTemporaryDeposits)) {
-                return int256(betaIndex);
-            } else {
-                return int256(alphaIndex);
-            }
+            // Both operators have available keys but beta has more funded keys => alpha is selected
+            return int256(alphaIndex);
         }
     }
 
@@ -431,7 +400,7 @@ contract StakingContract {
         }
     }
 
-    function _getTemporaryDeposits(uint256 _operatorIndex, ValidatorDetails[] memory _vd)
+    function _getTemporaryDeposits(uint256 _operatorIndex, ValidatorAllocationCache[] memory _vd)
         internal
         pure
         returns (uint256)
@@ -508,13 +477,10 @@ contract StakingContract {
 
         bytes32 blockHash = blockhash(block.number); // weak random number as it's not a security issue
         uint256 alphaIndex = uint8(blockHash[0]) % operatorCount;
-        uint256 skip = uint8(blockHash[1]) % optimusPrime;
-        if (skip == 0) {
-            ++skip;
-        }
+        uint256 skip = (uint8(blockHash[1]) % (optimusPrime - 1)) + 1;
         uint256 betaIndex = (alphaIndex + skip) % optimusPrime;
 
-        ValidatorDetails[] memory vd = new ValidatorDetails[](_depositCount);
+        ValidatorAllocationCache[] memory vd = new ValidatorAllocationCache[](operatorCount);
 
         uint256 reservedValidators = 0;
 
