@@ -1,17 +1,25 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "./libs/StateLib.sol";
+import "./libs/StakingContractStateLib.sol";
 import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
 import "./interfaces/IDepositContract.sol";
 
+import "@openzeppelin/contracts/proxy/Clones.sol";
+
+interface IELFeeRecipient {
+    function initELFR(address _stakingContract, bytes32 _publicKeyRoot) external;
+
+    function withdraw() external;
+}
+
 /// @title Ethereum Staking Contract
 /// @author SkillZ
 /// @notice You can use this contract to store validator keys and have users fund them and trigger deposits.
 contract StakingContract {
-    using StateLib for bytes32;
+    using StakingContractStateLib for bytes32;
 
     bytes32 internal constant ADMIN_SLOT =
         /* keccak256("StakingContract.admin") */
@@ -40,13 +48,19 @@ contract StakingContract {
     bytes32 internal constant WITHDRAWAL_CREDENTIALS_SLOT =
         /* keccak256("StakingContract.withdrawalCredentials") */
         hex"2783da738595cd6ebaec6fd0f06d62f2266a9e475e2d1feb1d26aa2d1e051255";
+    bytes32 internal constant EL_FEE_BPS_SLOT = keccak256("StakingContract.executionLayerFeeBps");
+    bytes32 internal constant EL_FEE_TREASURY_SLOT = keccak256("StakingContract.executionLayerTreasury");
+    bytes32 internal constant EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT =
+        keccak256("StakingContract.executionLayerFeeRecipientImplementation");
 
     uint256 public constant SIGNATURE_LENGTH = 96;
     uint256 public constant PUBLIC_KEY_LENGTH = 48;
     uint256 public constant DEPOSIT_SIZE = 32 ether;
+    uint256 internal constant BASIS_POINTS = 10_000;
 
     error InvalidCall();
     error Unauthorized();
+    error InvalidFeeBps();
     error NotEnoughKeys();
     error DepositFailure();
     error InvalidArgument();
@@ -107,12 +121,18 @@ contract StakingContract {
         address _operator,
         address _admin,
         address _depositContract,
-        bytes32 _withdrawalCredentials
+        address _elFeeRecipientImplementation,
+        address _elFeeTreasury,
+        bytes32 _withdrawalCredentials,
+        uint256 _elFeeBps
     ) external init(1) {
         OPERATOR_SLOT.setAddress(_operator);
         DEPOSIT_CONTRACT_SLOT.setAddress(_depositContract);
         WITHDRAWAL_CREDENTIALS_SLOT.setBytes32(_withdrawalCredentials);
         ADMIN_SLOT.setAddress(_admin);
+        EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.setAddress(_elFeeRecipientImplementation);
+        EL_FEE_TREASURY_SLOT.setAddress(_elFeeTreasury);
+        EL_FEE_BPS_SLOT.setUint256(_elFeeBps);
     }
 
     /// @notice Retrieve the admin address
@@ -125,13 +145,36 @@ contract StakingContract {
         return OPERATOR_SLOT.getAddress();
     }
 
+    function setELFeeBps(uint256 _feeBps) external onlyAdmin {
+        if (_feeBps > BASIS_POINTS) {
+            revert InvalidFeeBps();
+        }
+        EL_FEE_BPS_SLOT.setUint256(_feeBps);
+    }
+
+    function getELFeeBps() external view returns (uint256) {
+        return EL_FEE_BPS_SLOT.getUint256();
+    }
+
+    function setELFeeTreasury(address _elFeeTreasury) external onlyAdmin {
+        EL_FEE_BPS_SLOT.setAddress(_elFeeTreasury);
+    }
+
+    function getELFeeTreasury() external view returns (address) {
+        return address(this);
+    }
+
     /// @notice Retrieve the withdrawer for a specific public key
     /// @param _publicKey Public Key to retrieve the withdrawer
     function getWithdrawer(bytes memory _publicKey) external view returns (address) {
         bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
-            .getStorageBytes32ToAddressMapping();
-        return publicKeyOwnership.value[pubkeyRoot];
+        return WITHDRAWERS_SLOT.getStorageBytes32ToAddressMapping().value[pubkeyRoot];
+    }
+
+    /// @notice Retrieve the withdrawer for a specific public key
+    /// @param _publicKeyRoot Public Key to retrieve the withdrawer
+    function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address) {
+        return WITHDRAWERS_SLOT.getStorageBytes32ToAddressMapping().value[_publicKeyRoot];
     }
 
     /// @notice Retrieve the amount of funded validators
@@ -156,9 +199,10 @@ contract StakingContract {
             bool funded
         )
     {
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
-        StateLib.Bytes32ToAddressMappingSlot storage withdrawers = WITHDRAWERS_SLOT.getStorageBytes32ToAddressMapping();
+        StakingContractStateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StakingContractStateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StakingContractStateLib.Bytes32ToAddressMappingSlot storage withdrawers = WITHDRAWERS_SLOT
+            .getStorageBytes32ToAddressMapping();
         uint256 validatorCount = VALIDATORS_COUNT_SLOT.getUint256();
 
         publicKey = publicKeysStore.value[_idx];
@@ -185,9 +229,9 @@ contract StakingContract {
     /// @dev Only the previous withdrawer of the public key can change the withdrawer
     /// @param _publicKey The public key to change
     /// @param _newWithdrawer The new withdrawer address
-    function setWithdrawer(bytes memory _publicKey, address _newWithdrawer) external {
+    function setWithdrawer(bytes calldata _publicKey, address _newWithdrawer) external {
         bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
+        StakingContractStateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
             .getStorageBytes32ToAddressMapping();
 
         if (msg.sender != publicKeyOwnership.value[pubkeyRoot]) {
@@ -241,8 +285,8 @@ contract StakingContract {
             revert InvalidSignatures();
         }
 
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StakingContractStateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StakingContractStateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
 
         for (uint256 i; i < keyCount; ) {
             bytes memory publicKey = BytesLib.slice(publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
@@ -268,8 +312,8 @@ contract StakingContract {
         }
 
         uint256 validatorsCount = VALIDATORS_COUNT_SLOT.getUint256();
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StakingContractStateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StakingContractStateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
 
         for (uint256 i; i < _indexes.length; ) {
             if (i > 0 && _indexes[i] >= _indexes[i - 1]) {
@@ -346,15 +390,15 @@ contract StakingContract {
 
         uint256 depositCount = msg.value / DEPOSIT_SIZE;
         uint256 validatorCount = VALIDATORS_COUNT_SLOT.getUint256();
-        StateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StakingContractStateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StakingContractStateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
         bytes32 withdrawalCredentials = WITHDRAWAL_CREDENTIALS_SLOT.getBytes32();
 
         if (validatorCount + depositCount > publicKeysStore.value.length) {
             revert NotEnoughKeys();
         }
 
-        StateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
+        StakingContractStateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
             .getStorageBytes32ToAddressMapping();
 
         for (uint256 i; i < depositCount; ) {
@@ -369,5 +413,32 @@ contract StakingContract {
         }
 
         VALIDATORS_COUNT_SLOT.setUint256(validatorCount + depositCount);
+    }
+
+    function _getDeterministicELFeeRecipientAddress(bytes calldata _publicKey) internal view returns (address) {
+        bytes32 publicKeyRoot = sha256(BytesLib.pad64(_publicKey));
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(uint256(0), publicKeyRoot));
+        address implementation = EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.getAddress();
+        return Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+    }
+
+    function _deployAndWithdrawELFee(bytes calldata _publicKey) internal {
+        bytes32 publicKeyRoot = sha256(BytesLib.pad64(_publicKey));
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(uint256(0), publicKeyRoot));
+        address implementation = EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.getAddress();
+        address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+        if (feeRecipientAddress.code.length == 0) {
+            Clones.cloneDeterministic(implementation, feeRecipientSalt);
+            IELFeeRecipient(feeRecipientAddress).initELFR(address(this), publicKeyRoot);
+        }
+        IELFeeRecipient(feeRecipientAddress).withdraw();
+    }
+
+    function withdrawELFee(bytes calldata _publicKey) external {
+        _deployAndWithdrawELFee(_publicKey);
+    }
+
+    function getELFeeRecipient(bytes calldata _publicKey) external view returns (address) {
+        return _getDeterministicELFeeRecipientAddress(_publicKey);
     }
 }

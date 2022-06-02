@@ -3,3 +3,6 @@ out/
 node_modules
 .vscode
 artifacts
+artifacts
+.vscode
+forge-cache

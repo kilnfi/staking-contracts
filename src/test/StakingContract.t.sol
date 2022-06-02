@@ -58,7 +58,15 @@ contract StakingContractTest is DSTestPlus {
     function setUp() public {
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(operator, admin, address(depositContract), withdrawalCredentials);
+        stakingContract.initialize_1(
+            operator,
+            admin,
+            address(depositContract),
+            address(0),
+            address(0),
+            withdrawalCredentials,
+            500
+        );
 
         bytes
             memory publicKeys = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759b0ce3fa164aae897adca509ed44429e7b1f91b7c46ddbe199cee848e09b1ccbb9736b78b68aacff1011b7266fe11e06014451b3fb9288549aff6dea9843b43e0c47a3b856f307732175230e254c0004e48b02414987088ac7003e148930017b49a1a8d4600f33d463c4afc07bbfc82703c9fcf81a5891f90a71c86a02faff443c6c3b2592bd44d5d3d7a93cb4aaaa105612496d61e68140a5418b468f872bf2f3e79f9cb0d9c3e889663fca02939b31e8ee3092203ee1417128e965c6406a07f68abf2ebe2689cf6c853ef126ffa8574c2a7d913e28de9147fa6b96706ea5bf9eacd1aba06edeaee155009fb912c00070774cc64136fcffde12ed731260bc5529df64da298f493561198e9d6acf42cf21e853ae7b2df85f27d2183149969d623b9237254c2cfe1d0082742eb042ac096d686dbe03c79ee31cbd03bb4682f8797043eed9f6e622814831ac5dfe1176552fb7f9b6ff38a149ae1d8414097a32fd96da6453c52fda13e3402a09e2fa6886daa4300f09c73e4bc2901b99c44744c5cfdca2994adc49ddccb195bda2510e50a4ae10de26cf96dee5e577689f51650a610a33da0a826ae47247d8d1189cb3386";
@@ -73,7 +81,15 @@ contract StakingContractTest is DSTestPlus {
 
     function testReinitialization() public {
         vm.expectRevert(abi.encodeWithSignature("AlreadyInitialized()"));
-        stakingContract.initialize_1(operator, admin, address(depositContract), withdrawalCredentials);
+        stakingContract.initialize_1(
+            operator,
+            admin,
+            address(depositContract),
+            address(0),
+            address(0),
+            withdrawalCredentials,
+            500
+        );
     }
 
     function testRetrieveOperator() public view {
