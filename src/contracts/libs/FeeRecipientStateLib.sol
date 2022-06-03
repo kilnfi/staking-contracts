@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.10;
 
-library ELFRStateLib {
+library FeeRecipientStateLib {
     function getUint256(bytes32 position) internal view returns (uint256 data) {
         assembly {
             data := sload(position)
