@@ -109,7 +109,7 @@ library State {
         mapping(uint256 => uint256) value;
     }
 
-    function getOperatorInfo(uint256 _index) internal view returns (OperatorSelectionInfo memory osi) {
+    function getOperatorSelectionInfo(uint256 _index) internal view returns (OperatorSelectionInfo memory osi) {
         UintToUintMappingSlot storage p;
         bytes32 slot = OPERATOR_SELECTION_INFO_SLOT;
 
