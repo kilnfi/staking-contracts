@@ -1017,20 +1017,30 @@ contract StakingContractTest is DSTestPlus {
         vm.stopPrank();
     }
 
-    function testEditELFeeBps() public {
-        assert(stakingContract.getELFeeBps() == 500);
+    function testEditELFee() public {
+        assert(stakingContract.getELFee() == 500);
         vm.startPrank(admin);
-        stakingContract.setELFeeBps(1000);
+        stakingContract.setELFee(1000);
         vm.stopPrank();
-        assert(stakingContract.getELFeeBps() == 1000);
+        assert(stakingContract.getELFee() == 1000);
     }
 
-    function testEditCLFeeBps() public {
-        assert(stakingContract.getCLFeeBps() == 500);
+    function testEditCLFee() public {
+        assert(stakingContract.getCLFee() == 500);
         vm.startPrank(admin);
-        stakingContract.setCLFeeBps(1000);
+        stakingContract.setCLFee(1000);
         vm.stopPrank();
-        assert(stakingContract.getCLFeeBps() == 1000);
+        assert(stakingContract.getCLFee() == 1000);
+    }
+
+    function testFeeRecipients() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        address _elfr = stakingContract.getELFeeRecipient(publicKey);
+        address _clfr = stakingContract.getCLFeeRecipient(publicKey);
+        assert(_elfr != _clfr);
     }
 
     function testWithdrawELFees() public {
@@ -1054,7 +1064,7 @@ contract StakingContractTest is DSTestPlus {
 
     function testWithdrawELFeesEditedFeeBps() public {
         vm.startPrank(admin);
-        stakingContract.setELFeeBps(1000);
+        stakingContract.setELFee(1000);
         vm.stopPrank();
         bytes
             memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
@@ -1106,7 +1116,7 @@ contract StakingContractTest is DSTestPlus {
         assert(stakingContract.getWithdrawer(publicKey) == bob);
         vm.stopPrank();
         address elfrBob = stakingContract.getELFeeRecipient(publicKey);
-        vm.expectRevert(abi.encodeWithSignature("EmptyWithdrawal()"));
+        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawELFee(publicKey);
     }
 
@@ -1131,7 +1141,7 @@ contract StakingContractTest is DSTestPlus {
 
     function testWithdrawCLFeesEditedFeeBps() public {
         vm.startPrank(admin);
-        stakingContract.setCLFeeBps(1000);
+        stakingContract.setCLFee(1000);
         vm.stopPrank();
         bytes
             memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
@@ -1220,7 +1230,7 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.deposit{value: 32 ether}(bob);
         assert(stakingContract.getWithdrawer(publicKey) == bob);
         vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSignature("EmptyWithdrawal()"));
+        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawCLFee(publicKey);
     }
 

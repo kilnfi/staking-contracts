@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "./libs/StakingContractStateLib.sol";
+import "./libs/StakingContractStorageLib.sol";
 import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 /// @author Kiln
 /// @notice You can use this contract to store validator keys and have users fund them and trigger deposits.
 contract StakingContract {
-    using StakingContractStateLib for bytes32;
+    using StakingContractStorageLib for bytes32;
 
     bytes32 internal constant ADMIN_SLOT =
         /* keccak256("StakingContract.admin") */
@@ -43,15 +43,15 @@ contract StakingContract {
     bytes32 internal constant WITHDRAWAL_CREDENTIALS_SLOT =
         /* keccak256("StakingContract.withdrawalCredentials") */
         hex"2783da738595cd6ebaec6fd0f06d62f2266a9e475e2d1feb1d26aa2d1e051255";
-    bytes32 internal constant EL_FEE_BPS_SLOT = keccak256("StakingContract.executionLayerFeeBps");
+    bytes32 internal constant EL_FEE_SLOT = keccak256("StakingContract.executionLayerFee");
     bytes32 internal constant EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT =
         keccak256("StakingContract.executionLayerFeeRecipientImplementation");
-    bytes32 internal constant CL_FEE_BPS_SLOT = keccak256("StakingContract.consensusLayerFeeBps");
+    bytes32 internal constant CL_FEE_SLOT = keccak256("StakingContract.consensusLayerFee");
     bytes32 internal constant CL_FEE_RECIPIENT_IMPLEMENTATION_SLOT =
         keccak256("StakingContract.consensusLayerFeeRecipientImplementation");
 
     uint256 internal constant EXECUTION_LAYER_CODE = 0;
-    uint256 internal constant CONSENSUS_LAYER_CODE = 0;
+    uint256 internal constant CONSENSUS_LAYER_CODE = 1;
     uint256 public constant SIGNATURE_LENGTH = 96;
     uint256 public constant PUBLIC_KEY_LENGTH = 48;
     uint256 public constant DEPOSIT_SIZE = 32 ether;
@@ -59,10 +59,9 @@ contract StakingContract {
 
     error InvalidCall();
     error Unauthorized();
-    error InvalidFeeBps();
+    error InvalidFee();
     error NotEnoughKeys();
     error DepositFailure();
-    error EmptyWithdrawal();
     error InvalidArgument();
     error UnsortedIndexes();
     error InvalidPublicKeys();
@@ -124,8 +123,8 @@ contract StakingContract {
         address _elFeeRecipientImplementation,
         address _clFeeRecipientImplementation,
         bytes32 _withdrawalCredentials,
-        uint256 _elFeeBps,
-        uint256 _clFeeBps
+        uint256 _elFee,
+        uint256 _clFee
     ) external init(1) {
         OPERATOR_SLOT.setAddress(_operator);
         DEPOSIT_CONTRACT_SLOT.setAddress(_depositContract);
@@ -133,10 +132,10 @@ contract StakingContract {
         ADMIN_SLOT.setAddress(_admin);
 
         EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.setAddress(_elFeeRecipientImplementation);
-        EL_FEE_BPS_SLOT.setUint256(_elFeeBps);
+        EL_FEE_SLOT.setUint256(_elFee);
 
         CL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.setAddress(_clFeeRecipientImplementation);
-        CL_FEE_BPS_SLOT.setUint256(_clFeeBps);
+        CL_FEE_SLOT.setUint256(_clFee);
     }
 
     /// @notice Retrieve the admin address
@@ -150,40 +149,35 @@ contract StakingContract {
     }
 
     /// @notice Change the Execution Layer Fee taken by the node operator
-    /// @param _feeBps Fee in Basis Point
-    function setELFeeBps(uint256 _feeBps) external onlyAdmin {
-        if (_feeBps > BASIS_POINTS) {
-            revert InvalidFeeBps();
+    /// @param _fee Fee in Basis Point
+    function setELFee(uint256 _fee) external onlyAdmin {
+        if (_fee > BASIS_POINTS) {
+            revert InvalidFee();
         }
-        EL_FEE_BPS_SLOT.setUint256(_feeBps);
+        EL_FEE_SLOT.setUint256(_fee);
     }
 
     /// @notice Change the Consensus Layer Fee taken by the node operator
-    /// @param _feeBps Fee in Basis Point
-    function setCLFeeBps(uint256 _feeBps) external onlyAdmin {
-        if (_feeBps > BASIS_POINTS) {
-            revert InvalidFeeBps();
+    /// @param _fee Fee in Basis Point
+    function setCLFee(uint256 _fee) external onlyAdmin {
+        if (_fee > BASIS_POINTS) {
+            revert InvalidFee();
         }
-        CL_FEE_BPS_SLOT.setUint256(_feeBps);
+        CL_FEE_SLOT.setUint256(_fee);
     }
 
     /// @notice Retrieve the Execution Layer Fee taken by the node operator
-    function getELFeeBps() external view returns (uint256) {
-        return EL_FEE_BPS_SLOT.getUint256();
+    function getELFee() external view returns (uint256) {
+        return EL_FEE_SLOT.getUint256();
     }
 
     /// @notice Retrieve the Consensus Layer Fee taken by the node operator
-    function getCLFeeBps() external view returns (uint256) {
-        return CL_FEE_BPS_SLOT.getUint256();
+    function getCLFee() external view returns (uint256) {
+        return CL_FEE_SLOT.getUint256();
     }
 
-    /// @notice Retrieve the Execution Layer Fee operator recipient for a given public key
-    function getELFeeTreasury(bytes32) external view returns (address) {
-        return OPERATOR_SLOT.getAddress();
-    }
-
-    /// @notice Retrieve the Consensus Layer Fee operator recipient for a given public key
-    function getCLFeeTreasury(bytes32) external view returns (address) {
+    /// @notice Retrieve the Execution & Consensus Layer Fee operator recipient for a given public key
+    function getFeeTreasury(bytes32) external view returns (address) {
         return OPERATOR_SLOT.getAddress();
     }
 
@@ -222,9 +216,9 @@ contract StakingContract {
             bool funded
         )
     {
-        StakingContractStateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StakingContractStateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
-        StakingContractStateLib.Bytes32ToAddressMappingSlot storage withdrawers = WITHDRAWERS_SLOT
+        StakingContractStorageLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StakingContractStorageLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StakingContractStorageLib.Bytes32ToAddressMappingSlot storage withdrawers = WITHDRAWERS_SLOT
             .getStorageBytes32ToAddressMapping();
         uint256 validatorCount = VALIDATORS_COUNT_SLOT.getUint256();
 
@@ -254,7 +248,7 @@ contract StakingContract {
     /// @param _newWithdrawer The new withdrawer address
     function setWithdrawer(bytes calldata _publicKey, address _newWithdrawer) external {
         bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        StakingContractStateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
+        StakingContractStorageLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
             .getStorageBytes32ToAddressMapping();
 
         if (msg.sender != publicKeyOwnership.value[pubkeyRoot]) {
@@ -308,8 +302,8 @@ contract StakingContract {
             revert InvalidSignatures();
         }
 
-        StakingContractStateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StakingContractStateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StakingContractStorageLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StakingContractStorageLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
 
         for (uint256 i; i < keyCount; ) {
             bytes memory publicKey = BytesLib.slice(publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
@@ -335,8 +329,8 @@ contract StakingContract {
         }
 
         uint256 validatorsCount = VALIDATORS_COUNT_SLOT.getUint256();
-        StakingContractStateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StakingContractStateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StakingContractStorageLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StakingContractStorageLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
 
         for (uint256 i; i < _indexes.length; ) {
             if (i > 0 && _indexes[i] >= _indexes[i - 1]) {
@@ -449,15 +443,15 @@ contract StakingContract {
 
         uint256 depositCount = msg.value / DEPOSIT_SIZE;
         uint256 validatorCount = VALIDATORS_COUNT_SLOT.getUint256();
-        StakingContractStateLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
-        StakingContractStateLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
+        StakingContractStorageLib.BytesArraySlot storage publicKeysStore = PUBLIC_KEYS_SLOT.getStorageBytesArray();
+        StakingContractStorageLib.BytesArraySlot storage signaturesStore = SIGNATURES_SLOT.getStorageBytesArray();
         bytes32 withdrawalCredentials = WITHDRAWAL_CREDENTIALS_SLOT.getBytes32();
 
         if (validatorCount + depositCount > publicKeysStore.value.length) {
             revert NotEnoughKeys();
         }
 
-        StakingContractStateLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
+        StakingContractStorageLib.Bytes32ToAddressMappingSlot storage publicKeyOwnership = WITHDRAWERS_SLOT
             .getStorageBytes32ToAddressMapping();
 
         for (uint256 i; i < depositCount; ) {
@@ -504,9 +498,6 @@ contract StakingContract {
             Clones.cloneDeterministic(implementation, feeRecipientSalt);
             IELFeeRecipient(feeRecipientAddress).initELFR(address(this), publicKeyRoot);
         }
-        if (feeRecipientAddress.balance == 0) {
-            revert EmptyWithdrawal();
-        }
         IELFeeRecipient(feeRecipientAddress).withdraw();
     }
 
@@ -521,9 +512,6 @@ contract StakingContract {
         if (feeRecipientAddress.code.length == 0) {
             Clones.cloneDeterministic(implementation, feeRecipientSalt);
             ICLFeeRecipient(feeRecipientAddress).initCLFR(address(this), publicKeyRoot);
-        }
-        if (feeRecipientAddress.balance == 0) {
-            revert EmptyWithdrawal();
         }
         ICLFeeRecipient(feeRecipientAddress).withdraw();
     }

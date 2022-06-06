@@ -14,24 +14,22 @@ contract StakingContractMock {
         return bob;
     }
 
-    function getELFeeBps() external pure returns (uint256) {
+    function getELFee() external pure returns (uint256) {
         return 500;
     }
 
-    function getCLFeeBps() external pure returns (uint256) {
+    function getCLFee() external pure returns (uint256) {
         return 500;
     }
 
-    function getELFeeTreasury(bytes32) external pure returns (address) {
-        return operator;
-    }
-
-    function getCLFeeTreasury(bytes32) external pure returns (address) {
+    function getFeeTreasury(bytes32) external pure returns (address) {
         return operator;
     }
 }
 
 contract ConsensusLayerFeeRecipientTest is DSTestPlus {
+    event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee);
+
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
     IStakingContractFeeDetails internal stakingContract;
     ConsensusLayerFeeRecipient internal clfr;
@@ -52,10 +50,55 @@ contract ConsensusLayerFeeRecipientTest is DSTestPlus {
         clfr.initCLFR(address(stakingContract), pubkeyRoot);
     }
 
+    function testGetStakingContract() external view {
+        assert(clfr.getStakingContract() == address(stakingContract));
+    }
+
+    function testGetWithdrawer() external view {
+        assert(clfr.getWithdrawer() == bob);
+    }
+
+    function testGetPubKeyRoot() external view {
+        assert(clfr.getPublicKeyRoot() == sha256(BytesLib.pad64(publicKey)));
+    }
+
+    function testTransferFunds() external {
+        vm.deal(bob, 1 ether);
+        vm.startPrank(bob);
+        payable(address(clfr)).transfer(1 ether);
+        vm.stopPrank();
+    }
+
+    function testSendFunds() external {
+        vm.deal(bob, 1 ether);
+        vm.startPrank(bob);
+        bool status = payable(address(clfr)).send(1 ether);
+        require(status == true);
+        vm.stopPrank();
+    }
+
+    function testSendFundsWithCall() external {
+        vm.deal(bob, 1 ether);
+        vm.startPrank(bob);
+        (bool status, ) = address(clfr).call{value: 1 ether}("");
+        require(status == true);
+        vm.stopPrank();
+    }
+
+    function testFallbackError() external {
+        vm.deal(bob, 1 ether);
+        vm.startPrank(bob);
+        (bool status, ) = address(clfr).call{value: 1 ether}(abi.encodeWithSignature("thisMethodIsNotAvailable()"));
+        require(status == false);
+        vm.stopPrank();
+    }
+
     function testWithdrawCLFeesExitedValidator() external {
         vm.deal(address(clfr), 33 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);
+        vm.expectEmit(true, true, true, true);
+        emit Withdrawal(bob, operator, 32.95 ether, 0.05 ether);
         clfr.withdraw();
         assert(bob.balance == 32.95 ether);
         assert(operator.balance == 0.05 ether);
@@ -65,6 +108,8 @@ contract ConsensusLayerFeeRecipientTest is DSTestPlus {
         vm.deal(address(clfr), 1 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);
+        vm.expectEmit(true, true, true, true);
+        emit Withdrawal(bob, operator, 0.95 ether, 0.05 ether);
         clfr.withdraw();
         assert(bob.balance == 0.95 ether);
         assert(operator.balance == 0.05 ether);
@@ -74,6 +119,8 @@ contract ConsensusLayerFeeRecipientTest is DSTestPlus {
         vm.deal(address(clfr), 31.95 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);
+        vm.expectEmit(true, true, true, true);
+        emit Withdrawal(bob, operator, 31.95 ether, 0 ether);
         clfr.withdraw();
         assert(bob.balance == 31.95 ether);
         assert(operator.balance == 0 ether);
@@ -83,10 +130,14 @@ contract ConsensusLayerFeeRecipientTest is DSTestPlus {
         vm.deal(address(clfr), 1 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);
+        vm.expectEmit(true, true, true, true);
+        emit Withdrawal(bob, operator, 0.95 ether, 0.05 ether);
         clfr.withdraw();
         assert(bob.balance == 0.95 ether);
         assert(operator.balance == 0.05 ether);
         vm.deal(address(clfr), 1 ether);
+        vm.expectEmit(true, true, true, true);
+        emit Withdrawal(bob, operator, 0.95 ether, 0.05 ether);
         clfr.withdraw();
         assert(bob.balance == 1.9 ether);
         assert(operator.balance == 0.1 ether);
