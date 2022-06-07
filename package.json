@@ -4,6 +4,7 @@
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@openzeppelin/contracts": "4.5.0",
+    "@primitivefi/hardhat-dodoc": "^0.2.3",
     "ethers": "^5.6.2",
     "hardhat": "^2.9.2",
     "hardhat-deploy": "^0.11.4",
@@ -19,6 +20,6 @@
     "format:check": "prettier --check ./src",
     "lint": "solhint 'src/**/*.sol'",
     "test": "forge",
-    "docs": "sol2uml ./src/contracts -o ./docs/components.svg"
+    "docs": "hardhat compile && sol2uml ./src/contracts -o ./docs/components.svg"
   }
 }

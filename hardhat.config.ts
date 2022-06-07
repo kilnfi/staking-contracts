@@ -1,6 +1,7 @@
 import { HardhatUserConfig } from "hardhat/types";
 import '@nomiclabs/hardhat-ethers';
 import "hardhat-deploy";
+import '@primitivefi/hardhat-dodoc';
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -17,6 +18,13 @@ const hhuc: HardhatUserConfig = {
         mnemonic: process.env.MNEMONIC || "",
       },
     },
+  },
+  dodoc: {
+    include: [
+      "StakingContract",
+      "WithdrawContract"
+    ],
+    outputDir: 'natspec'
   },
   namedAccounts: {
     deployer: {
