@@ -14,4 +14,4 @@ jobs:
         uses: ./actions/mythril
         id: staking-contract
         with:
-          contract: './contracts/src/StakingContract.sol'
+          contract: './src/contracts/StakingContract.sol'
