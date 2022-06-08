@@ -20,6 +20,7 @@
     "format:check": "prettier --check ./src",
     "lint": "solhint 'src/**/*.sol'",
     "test": "forge",
-    "docs": "hardhat compile && sol2uml ./src/contracts -o ./docs/components.svg"
+    "docs": "hardhat compile && sol2uml ./src/contracts -o ./docs/components.svg",
+    "hh": "hardhat"
   }
 }
