@@ -686,19 +686,80 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
 
     event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
 
+    function testValidatorInfoRetrieval(uint256 _userSalt, uint256 _withdrawerSalt) public {
+        address user = uf._new(_userSalt);
+        address withdrawer = uf._new(_withdrawerSalt);
+        vm.deal(user, 32 ether);
+
+        bytes32 blockHash = blockhash(block.number); // weak random number as it's not a security issue
+        uint256 optimusPrime = 3;
+        uint256 alphaIndex = uint8(blockHash[0]) % optimusPrime;
+
+        {
+            (bytes memory publicKey, bytes memory signature, address _withdrawer, bool _funded) = stakingContract
+                .getValidator(alphaIndex, 0);
+            assert(
+                keccak256(publicKey) ==
+                    keccak256(
+                        hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759"
+                    )
+            );
+            assert(
+                keccak256(signature) ==
+                    keccak256(
+                        hex"ccb81f4485957f440bc17dbe760f374cbb112c6f12fa10e8709fac4522b30440d918c7bb867fa04f6b3cfbd977455f8f2fde586fdf3d7baa429e98e497ff871f3b8db1528b2b964fa24d26e377c74746496cc719c50dbf391fb3f74f5ca4b93a"
+                    )
+            );
+            assert(_withdrawer == address(0));
+            assert(_funded == false);
+        }
+
+        vm.startPrank(user);
+        stakingContract.deposit{value: 32 ether}(withdrawer);
+        vm.stopPrank();
+
+        {
+            (bytes memory publicKey, bytes memory signature, address _withdrawer, bool _funded) = stakingContract
+                .getValidator(alphaIndex, 0);
+            assert(
+                keccak256(publicKey) ==
+                    keccak256(
+                        hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759"
+                    )
+            );
+            assert(
+                keccak256(signature) ==
+                    keccak256(
+                        hex"ccb81f4485957f440bc17dbe760f374cbb112c6f12fa10e8709fac4522b30440d918c7bb867fa04f6b3cfbd977455f8f2fde586fdf3d7baa429e98e497ff871f3b8db1528b2b964fa24d26e377c74746496cc719c50dbf391fb3f74f5ca4b93a"
+                    )
+            );
+            assert(_withdrawer == withdrawer);
+            assert(_funded == true);
+        }
+
+        assertEq(user.balance, 0);
+
+        (, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(alphaIndex);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 1);
+        assertEq(available, 9);
+    }
+
     function testExplicitDepositOneValidator(uint256 _userSalt, uint256 _withdrawerSalt) public {
         address user = uf._new(_userSalt);
         address withdrawer = uf._new(_withdrawerSalt);
         vm.deal(user, 32 ether);
+
+        bytes32 blockHash = blockhash(block.number); // weak random number as it's not a security issue
+        uint256 optimusPrime = 3;
+        uint256 alphaIndex = uint8(blockHash[0]) % optimusPrime;
 
         vm.startPrank(user);
         stakingContract.deposit{value: 32 ether}(withdrawer);
         vm.stopPrank();
 
         assertEq(user.balance, 0);
-        bytes32 blockHash = blockhash(block.number); // weak random number as it's not a security issue
-        uint256 optimusPrime = 3;
-        uint256 alphaIndex = uint8(blockHash[0]) % optimusPrime;
 
         (, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(alphaIndex);
         assertEq(limit, 10);

@@ -28,9 +28,11 @@ contract StakingContract {
     error FundedValidatorDeletionAttempt();
 
     struct ValidatorAllocationCache {
-        uint8 used;
-        uint128 operatorIndex;
-        uint120 count;
+        bool used;
+        uint8 operatorIndex;
+        uint32 funded;
+        uint32 toDeposit;
+        uint32 available;
     }
 
     uint256 public constant SIGNATURE_LENGTH = 96;
@@ -136,10 +138,7 @@ contract StakingContract {
     /// @notice Retrieve withdrawer of public key
     /// @param _publicKey Public Key to check
     function getWithdrawer(bytes calldata _publicKey) external view returns (address) {
-        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        State.WithdrawersSlot storage withdrawers = State.getWithdrawers();
-
-        return withdrawers.value[pubkeyRoot];
+        return _getWithdrawer(_publicKey);
     }
 
     /// @notice Set new admin
@@ -273,11 +272,35 @@ contract StakingContract {
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
+    function getValidator(uint256 _operatorIndex, uint256 _validatorIndex)
+        external
+        view
+        returns (
+            bytes memory publicKey,
+            bytes memory signature,
+            address withdrawer,
+            bool funded
+        )
+    {
+        State.OperatorsSlot storage operators = State.getOperators();
+        publicKey = operators.value[_operatorIndex].publicKeys[_validatorIndex];
+        signature = operators.value[_operatorIndex].signatures[_validatorIndex];
+        withdrawer = _getWithdrawer(publicKey);
+        funded = _validatorIndex < State.getOperatorSelectionInfo(_operatorIndex).funded;
+    }
+
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
     /// ██ ████   ██    ██    ██      ██   ██ ████   ██ ██   ██ ██
     /// ██ ██ ██  ██    ██    █████   ██████  ██ ██  ██ ███████ ██
     /// ██ ██  ██ ██    ██    ██      ██   ██ ██  ██ ██ ██   ██ ██
     /// ██ ██   ████    ██    ███████ ██   ██ ██   ████ ██   ██ ███████
+
+    function _getWithdrawer(bytes memory _publicKey) internal view returns (address) {
+        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
+        State.WithdrawersSlot storage withdrawers = State.getWithdrawers();
+
+        return withdrawers.value[pubkeyRoot];
+    }
 
     function _updateAvailableValidatorCount(uint256 _operatorIndex) internal {
         State.OperatorSelectionInfo memory operatorInfo = State.getOperatorSelectionInfo(_operatorIndex);
@@ -304,33 +327,6 @@ contract StakingContract {
                     State.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
                 );
             }
-        }
-    }
-
-    function _useBest(
-        uint256 alphaIndex,
-        uint256 alphaTemporaryDeposits,
-        uint256 betaIndex,
-        uint256 betaTemporaryDeposits
-    ) internal view returns (int256 operatorIndex) {
-        State.OperatorSelectionInfo memory alphaOsi = State.getOperatorSelectionInfo(alphaIndex);
-        State.OperatorSelectionInfo memory betaOsi = State.getOperatorSelectionInfo(betaIndex);
-
-        if (alphaOsi.availableKeys == 0 && betaOsi.availableKeys == 0) {
-            // No keys available for both operators => -1 is error case
-            return -1;
-        } else if (alphaOsi.availableKeys == 0) {
-            // No keys available for alpha operator => beta is selected
-            return int256(betaIndex);
-        } else if (betaOsi.availableKeys == 0) {
-            // No keys available for beta operator => alpha is selected
-            return int256(alphaIndex);
-        } else if ((alphaOsi.funded + alphaTemporaryDeposits) > (betaOsi.funded + betaTemporaryDeposits)) {
-            // Both operators have available keys but alpha has more funded keys => beta is selected
-            return int256(betaIndex);
-        } else {
-            // Both operators have available keys but beta has more funded keys => alpha is selected
-            return int256(alphaIndex);
         }
     }
 
@@ -400,26 +396,6 @@ contract StakingContract {
         }
     }
 
-    function _getTemporaryDeposits(uint256 _operatorIndex, ValidatorAllocationCache[] memory _vd)
-        internal
-        pure
-        returns (uint256)
-    {
-        for (uint256 i; i < _vd.length; ) {
-            if (_vd[i].used == 1) {
-                if (_vd[i].operatorIndex == _operatorIndex) {
-                    return _vd[i].count;
-                }
-            } else {
-                return 0;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-        return 0;
-    }
-
     function _depositOnOneOperator(
         address _withdrawer,
         uint256 _depositCount,
@@ -466,6 +442,103 @@ contract StakingContract {
         State.setTotalAvailableValidators(_totalAvailableValidators - (oneDepositCount + twoDepositCount));
     }
 
+    function _getStartingIndexes(
+        bytes32 blockHash,
+        uint256 index,
+        uint8 prime
+    )
+        internal
+        pure
+        returns (
+            uint8 alphaIndex,
+            uint8 betaIndex,
+            uint8 skip
+        )
+    {
+        alphaIndex = uint8(blockHash[(index * 3) % 32]) % prime;
+        betaIndex = uint8(blockHash[((index * 3) + 1) % 32]) % prime;
+        skip = uint8(blockHash[((index * 3) + 2) % 32]) % prime;
+    }
+
+    function _getOperatorFundedCount(uint8 operatorIndex, ValidatorAllocationCache[] memory vd)
+        internal
+        view
+        returns (uint32)
+    {
+        if (operatorIndex >= vd.length) {
+            return 0;
+        }
+        if (vd[operatorIndex].used == false) {
+            State.OperatorSelectionInfo memory osi = State.getOperatorSelectionInfo(operatorIndex);
+            vd[operatorIndex].used = true;
+            vd[operatorIndex].funded = osi.funded;
+            vd[operatorIndex].available = osi.availableKeys;
+        }
+        return vd[operatorIndex].funded + vd[operatorIndex].toDeposit;
+    }
+
+    function _getOperatorAvailableCount(uint8 operatorIndex, ValidatorAllocationCache[] memory vd)
+        internal
+        view
+        returns (uint32)
+    {
+        if (operatorIndex >= vd.length) {
+            return 0;
+        }
+        if (vd[operatorIndex].used == false) {
+            State.OperatorSelectionInfo memory osi = State.getOperatorSelectionInfo(operatorIndex);
+            vd[operatorIndex].used = true;
+            vd[operatorIndex].funded = osi.funded;
+            vd[operatorIndex].available = osi.availableKeys;
+        }
+        return vd[operatorIndex].available - vd[operatorIndex].toDeposit;
+    }
+
+    function _getFirstElligibleOperator(
+        uint8 startIndex,
+        uint8 skip,
+        uint8 prime,
+        ValidatorAllocationCache[] memory vd
+    ) internal view returns (uint8 elligibleIndex) {
+        uint8 index = startIndex + skip;
+        if (_getOperatorAvailableCount(index, vd) > 0) {
+            return index;
+        }
+        index = (index + skip) % prime;
+        while (index != startIndex) {
+            if (_getOperatorAvailableCount(index, vd) > 0) {
+                return index;
+            }
+            index = (index + skip) % prime;
+        }
+    }
+
+    function _assignTemporaryDeposit(uint8 operatorIndex, ValidatorAllocationCache[] memory vd) internal pure {
+        vd[operatorIndex].toDeposit += 1;
+    }
+
+    function _getBestOperator(
+        uint8 alphaIndex,
+        uint8 betaIndex,
+        bytes32 blockHash,
+        ValidatorAllocationCache[] memory vd
+    ) internal view returns (uint8) {
+        uint256 alphaFundedCount = _getOperatorFundedCount(alphaIndex, vd);
+        uint256 betaFundedCount = _getOperatorFundedCount(betaIndex, vd);
+        if (alphaFundedCount < betaFundedCount) {
+            return alphaIndex;
+        } else if (alphaFundedCount > betaFundedCount) {
+            return betaIndex;
+        } else {
+            bool coinToss = (uint8(blockHash[(alphaIndex + betaIndex) % 32]) % 2) == 1;
+            if (coinToss == false) {
+                return betaIndex;
+            } else {
+                return alphaIndex;
+            }
+        }
+    }
+
     function _depositOnThreeOrMoreOperators(
         address _withdrawer,
         uint256 _depositCount,
@@ -474,63 +547,39 @@ contract StakingContract {
     ) internal {
         uint256 operatorCount = _operators.value.length;
         uint8 optimusPrime = _getClosestPrimeAbove(uint8(operatorCount));
-
         bytes32 blockHash = blockhash(block.number); // weak random number as it's not a security issue
-        uint256 alphaIndex = uint8(blockHash[0]) % operatorCount;
-        uint256 skip = (uint8(blockHash[1]) % (optimusPrime - 1)) + 1;
-        uint256 betaIndex = (alphaIndex + skip) % optimusPrime;
 
         ValidatorAllocationCache[] memory vd = new ValidatorAllocationCache[](operatorCount);
 
-        uint256 reservedValidators = 0;
+        for (uint256 index; index < _depositCount; ) {
+            (uint8 alphaIndex, uint8 betaIndex, uint8 skip) = _getStartingIndexes(blockHash, index, optimusPrime);
 
-        while (_depositCount > 0) {
+            alphaIndex = _getFirstElligibleOperator(alphaIndex, skip, optimusPrime, vd);
+            betaIndex = _getFirstElligibleOperator(betaIndex, skip, optimusPrime, vd);
+
             if (alphaIndex == betaIndex) {
-                betaIndex = (betaIndex + skip) % optimusPrime;
+                _assignTemporaryDeposit(alphaIndex, vd);
+            } else {
+                _assignTemporaryDeposit(_getBestOperator(alphaIndex, betaIndex, blockHash, vd), vd);
             }
 
-            if (betaIndex < operatorCount) {
-                uint256 alphaTmpd = _getTemporaryDeposits(alphaIndex, vd);
-                uint256 betaTmpd = _getTemporaryDeposits(betaIndex, vd);
-                int256 operatorIndex = _useBest(alphaIndex, alphaTmpd, betaIndex, betaTmpd);
-
-                if (operatorIndex >= 0) {
-                    for (uint256 i; i < vd.length; ) {
-                        if (vd[i].used == 1) {
-                            if (uint256(vd[i].operatorIndex) == uint256(operatorIndex)) {
-                                ++vd[i].count;
-                                break;
-                            }
-                        } else {
-                            vd[i].used = 1;
-                            vd[i].operatorIndex = uint128(int128(operatorIndex));
-                            vd[i].count = 1;
-                            break;
-                        }
-                        unchecked {
-                            ++i;
-                        }
-                    }
-                    --_depositCount;
-                    ++reservedValidators;
-                }
+            unchecked {
+                ++index;
             }
-
-            betaIndex = (betaIndex + skip) % optimusPrime;
         }
 
-        for (uint256 i; i < vd.length; ) {
-            if (vd[i].used == 1) {
-                _depositValidatorsOfOperator(vd[i].operatorIndex, vd[i].count, _withdrawer);
+        for (uint256 index; index < vd.length; ) {
+            if (vd[index].toDeposit > 0) {
+                _depositValidatorsOfOperator(index, vd[index].toDeposit, _withdrawer);
             } else {
                 break;
             }
             unchecked {
-                ++i;
+                ++index;
             }
         }
 
-        State.setTotalAvailableValidators(_totalAvailableValidators - reservedValidators);
+        State.setTotalAvailableValidators(_totalAvailableValidators - _depositCount);
     }
 
     function _deposit(address _withdrawer) internal {
