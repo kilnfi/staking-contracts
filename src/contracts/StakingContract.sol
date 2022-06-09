@@ -50,8 +50,8 @@ contract StakingContract {
     bytes32 internal constant CL_FEE_RECIPIENT_IMPLEMENTATION_SLOT =
         keccak256("StakingContract.consensusLayerFeeRecipientImplementation");
 
-    uint256 internal constant EXECUTION_LAYER_CODE = 0;
-    uint256 internal constant CONSENSUS_LAYER_CODE = 1;
+    uint256 internal constant EXECUTION_LAYER_SALT_PREFIX = 0;
+    uint256 internal constant CONSENSUS_LAYER_SALT_PREFIX = 1;
     uint256 public constant SIGNATURE_LENGTH = 96;
     uint256 public constant PUBLIC_KEY_LENGTH = 48;
     uint256 public constant DEPOSIT_SIZE = 32 ether;
@@ -472,7 +472,7 @@ contract StakingContract {
     /// @param _publicKey The public key linked to the recipient
     function _getDeterministicELFeeRecipientAddress(bytes calldata _publicKey) internal view returns (address) {
         bytes32 publicKeyRoot = sha256(BytesLib.pad64(_publicKey));
-        bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_CODE, publicKeyRoot));
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_SALT_PREFIX, publicKeyRoot));
         address implementation = EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.getAddress();
         return Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
     }
@@ -481,7 +481,7 @@ contract StakingContract {
     /// @param _publicKey The public key linked to the recipient
     function _getDeterministicCLFeeRecipientAddress(bytes calldata _publicKey) internal view returns (address) {
         bytes32 publicKeyRoot = sha256(BytesLib.pad64(_publicKey));
-        bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_CODE, publicKeyRoot));
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_SALT_PREFIX, publicKeyRoot));
         address implementation = CL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.getAddress();
         return Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
     }
@@ -491,7 +491,7 @@ contract StakingContract {
     /// @param _publicKey The public key linked to the recipient
     function _deployAndWithdrawELFee(bytes calldata _publicKey) internal {
         bytes32 publicKeyRoot = sha256(BytesLib.pad64(_publicKey));
-        bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_CODE, publicKeyRoot));
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_SALT_PREFIX, publicKeyRoot));
         address implementation = EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.getAddress();
         address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
         if (feeRecipientAddress.code.length == 0) {
@@ -506,7 +506,7 @@ contract StakingContract {
     /// @param _publicKey The public key linked to the recipient
     function _deployAndWithdrawCLFee(bytes calldata _publicKey) internal {
         bytes32 publicKeyRoot = sha256(BytesLib.pad64(_publicKey));
-        bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_CODE, publicKeyRoot));
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_SALT_PREFIX, publicKeyRoot));
         address implementation = CL_FEE_RECIPIENT_IMPLEMENTATION_SLOT.getAddress();
         address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
         if (feeRecipientAddress.code.length == 0) {
