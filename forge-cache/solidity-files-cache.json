@@ -489,8 +489,8 @@
       }
     },
     "src/contracts/StakingContract.sol": {
-      "lastModificationDate": 1654788609363,
-      "contentHash": "5ab4f8c1ae1ee443824bfea724cc2eaa",
+      "lastModificationDate": 1654789016600,
+      "contentHash": "574a5b2d8ac9f4f46d2c8540a026aad6",
       "sourceName": "src/contracts/StakingContract.sol",
       "solcConfig": {
         "settings": {
@@ -694,8 +694,8 @@
       }
     },
     "src/contracts/libs/State.sol": {
-      "lastModificationDate": 1654783135572,
-      "contentHash": "25a1552ab43070476a2edb21f76fc958",
+      "lastModificationDate": 1654788932250,
+      "contentHash": "2ed8bf0a602b6f59f290f2261feb8c0a",
       "sourceName": "src/contracts/libs/State.sol",
       "solcConfig": {
         "settings": {

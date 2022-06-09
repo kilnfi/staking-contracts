@@ -124,7 +124,7 @@ contract StakingContract {
     {
         State.OperatorsSlot storage operators = State.getOperators();
         if (_operatorIndex < operators.value.length) {
-            State.OperatorSelectionInfo memory operatorInfo = State.getOperatorSelectionInfo(_operatorIndex);
+            State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
 
             (operatorAddress, limit, keys) = (
                 operators.value[_operatorIndex].operator,
@@ -238,7 +238,7 @@ contract StakingContract {
             revert InvalidArgument();
         }
 
-        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorSelectionInfo(_operatorIndex);
+        State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
         State.OperatorsSlot storage operators = State.getOperators();
 
         for (uint256 i; i < _indexes.length; ) {
@@ -286,7 +286,7 @@ contract StakingContract {
         publicKey = operators.value[_operatorIndex].publicKeys[_validatorIndex];
         signature = operators.value[_operatorIndex].signatures[_validatorIndex];
         withdrawer = _getWithdrawer(publicKey);
-        funded = _validatorIndex < State.getOperatorSelectionInfo(_operatorIndex).funded;
+        funded = _validatorIndex < State.getValidatorsFundingInfo(_operatorIndex).funded;
     }
 
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
@@ -303,7 +303,7 @@ contract StakingContract {
     }
 
     function _updateAvailableValidatorCount(uint256 _operatorIndex) internal {
-        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorSelectionInfo(_operatorIndex);
+        State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
         State.OperatorsSlot storage operators = State.getOperators();
 
         uint32 oldAvailableCount = operatorInfo.availableKeys;
@@ -337,7 +337,7 @@ contract StakingContract {
     ) internal {
         State.OperatorsSlot storage operators = State.getOperators();
         State.OperatorInfo storage operator = operators.value[_operatorIndex];
-        State.OperatorSelectionInfo memory osi = State.getOperatorSelectionInfo(_operatorIndex);
+        State.ValidatorsFundingInfo memory osi = State.getValidatorsFundingInfo(_operatorIndex);
         bytes32 withdrawalCredentials = State.getWithdrawalCredentials();
 
         for (uint256 i = osi.funded; i < osi.funded + _validatorCount; ) {
@@ -410,8 +410,8 @@ contract StakingContract {
         uint256 _depositCount,
         uint256 _totalAvailableValidators
     ) internal {
-        State.OperatorSelectionInfo memory oneOsi = State.getOperatorSelectionInfo(0);
-        State.OperatorSelectionInfo memory twoOsi = State.getOperatorSelectionInfo(1);
+        State.ValidatorsFundingInfo memory oneOsi = State.getValidatorsFundingInfo(0);
+        State.ValidatorsFundingInfo memory twoOsi = State.getValidatorsFundingInfo(1);
 
         uint256 oneDepositCount;
         uint256 twoDepositCount;
@@ -469,7 +469,7 @@ contract StakingContract {
             return 0;
         }
         if (vd[operatorIndex].used == false) {
-            State.OperatorSelectionInfo memory osi = State.getOperatorSelectionInfo(operatorIndex);
+            State.ValidatorsFundingInfo memory osi = State.getValidatorsFundingInfo(operatorIndex);
             vd[operatorIndex].used = true;
             vd[operatorIndex].funded = osi.funded;
             vd[operatorIndex].available = osi.availableKeys;
@@ -486,7 +486,7 @@ contract StakingContract {
             return 0;
         }
         if (vd[operatorIndex].used == false) {
-            State.OperatorSelectionInfo memory osi = State.getOperatorSelectionInfo(operatorIndex);
+            State.ValidatorsFundingInfo memory osi = State.getValidatorsFundingInfo(operatorIndex);
             vd[operatorIndex].used = true;
             vd[operatorIndex].funded = osi.funded;
             vd[operatorIndex].available = osi.availableKeys;
