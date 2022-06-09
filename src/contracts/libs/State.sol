@@ -98,9 +98,9 @@ library State {
         }
     }
 
-    bytes32 internal constant OPERATOR_SELECTION_INFO_SLOT = keccak256("State.operatorSelectionInfo");
+    bytes32 internal constant VALIDATORS_FUNDING_INFO_SLOT = keccak256("State.validatorsFundingInfo");
 
-    struct OperatorSelectionInfo {
+    struct ValidatorsFundingInfo {
         uint32 availableKeys;
         uint32 funded;
     }
@@ -109,9 +109,9 @@ library State {
         mapping(uint256 => uint256) value;
     }
 
-    function getOperatorSelectionInfo(uint256 _index) internal view returns (OperatorSelectionInfo memory osi) {
+    function getValidatorsFundingInfo(uint256 _index) internal view returns (ValidatorsFundingInfo memory vfi) {
         UintToUintMappingSlot storage p;
-        bytes32 slot = OPERATOR_SELECTION_INFO_SLOT;
+        bytes32 slot = VALIDATORS_FUNDING_INFO_SLOT;
 
         assembly {
             p.slot := slot
@@ -122,8 +122,8 @@ library State {
 
         uint256 slotValue = p.value[slotIndex];
 
-        osi.availableKeys = uint32(slotValue >> ((innerIndex * 8) * 8));
-        osi.funded = uint32(slotValue >> (((innerIndex * 8) + 4) * 8));
+        vfi.availableKeys = uint32(slotValue >> ((innerIndex * 8) * 8));
+        vfi.funded = uint32(slotValue >> (((innerIndex * 8) + 4) * 8));
     }
 
     function setOperatorInfo(
@@ -132,7 +132,7 @@ library State {
         uint32 _funded
     ) internal {
         UintToUintMappingSlot storage p;
-        bytes32 slot = OPERATOR_SELECTION_INFO_SLOT;
+        bytes32 slot = VALIDATORS_FUNDING_INFO_SLOT;
 
         assembly {
             p.slot := slot

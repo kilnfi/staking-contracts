@@ -122,7 +122,7 @@ contract StakingContract {
     {
         State.OperatorsSlot storage operators = State.getOperators();
         if (_operatorIndex < operators.value.length) {
-            State.OperatorSelectionInfo memory operatorInfo = State.getOperatorSelectionInfo(_operatorIndex);
+            State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
 
             (operatorAddress, limit, keys) = (
                 operators.value[_operatorIndex].operator,
@@ -239,7 +239,7 @@ contract StakingContract {
             revert InvalidArgument();
         }
 
-        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorSelectionInfo(_operatorIndex);
+        State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
         State.OperatorsSlot storage operators = State.getOperators();
 
         for (uint256 i; i < _indexes.length; ) {
@@ -280,7 +280,7 @@ contract StakingContract {
     /// ██ ██   ████    ██    ███████ ██   ██ ██   ████ ██   ██ ███████
 
     function _updateAvailableValidatorCount(uint256 _operatorIndex) internal {
-        State.OperatorSelectionInfo memory operatorInfo = State.getOperatorSelectionInfo(_operatorIndex);
+        State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
         State.OperatorsSlot storage operators = State.getOperators();
 
         uint32 oldAvailableCount = operatorInfo.availableKeys;
@@ -313,8 +313,8 @@ contract StakingContract {
         uint256 betaIndex,
         uint256 betaTemporaryDeposits
     ) internal view returns (int256 operatorIndex) {
-        State.OperatorSelectionInfo memory alphaOsi = State.getOperatorSelectionInfo(alphaIndex);
-        State.OperatorSelectionInfo memory betaOsi = State.getOperatorSelectionInfo(betaIndex);
+        State.ValidatorsFundingInfo memory alphaOsi = State.getValidatorsFundingInfo(alphaIndex);
+        State.ValidatorsFundingInfo memory betaOsi = State.getValidatorsFundingInfo(betaIndex);
 
         if (alphaOsi.availableKeys == 0 && betaOsi.availableKeys == 0) {
             // No keys available for both operators => -1 is error case
@@ -341,7 +341,7 @@ contract StakingContract {
     ) internal {
         State.OperatorsSlot storage operators = State.getOperators();
         State.OperatorInfo storage operator = operators.value[_operatorIndex];
-        State.OperatorSelectionInfo memory osi = State.getOperatorSelectionInfo(_operatorIndex);
+        State.ValidatorsFundingInfo memory osi = State.getValidatorsFundingInfo(_operatorIndex);
         bytes32 withdrawalCredentials = State.getWithdrawalCredentials();
 
         for (uint256 i = osi.funded; i < osi.funded + _validatorCount; ) {
@@ -434,8 +434,8 @@ contract StakingContract {
         uint256 _depositCount,
         uint256 _totalAvailableValidators
     ) internal {
-        State.OperatorSelectionInfo memory oneOsi = State.getOperatorSelectionInfo(0);
-        State.OperatorSelectionInfo memory twoOsi = State.getOperatorSelectionInfo(1);
+        State.ValidatorsFundingInfo memory oneOsi = State.getValidatorsFundingInfo(0);
+        State.ValidatorsFundingInfo memory twoOsi = State.getValidatorsFundingInfo(1);
 
         uint256 oneDepositCount;
         uint256 twoDepositCount;
