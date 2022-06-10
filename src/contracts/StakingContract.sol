@@ -5,8 +5,6 @@ import "./libs/State.sol";
 import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
-import "../test/console.sol";
-
 import "./interfaces/IDepositContract.sol";
 
 /// @title Ethereum Staking Contract
@@ -442,22 +440,13 @@ contract StakingContract {
         State.setTotalAvailableValidators(_totalAvailableValidators - (oneDepositCount + twoDepositCount));
     }
 
-    function _getStartingIndexes(
+    function _getBaseSkip(
         bytes32 blockHash,
         uint256 index,
         uint8 prime
-    )
-        internal
-        pure
-        returns (
-            uint8 alphaIndex,
-            uint8 betaIndex,
-            uint8 skip
-        )
-    {
-        alphaIndex = uint8(blockHash[(index * 3) % 32]) % prime;
-        betaIndex = uint8(blockHash[((index * 3) + 1) % 32]) % prime;
-        skip = uint8(blockHash[((index * 3) + 2) % 32]) % prime;
+    ) internal pure returns (uint8 base, uint8 skip) {
+        base = uint8(blockHash[(index * 2) % 32]) % prime;
+        skip = (uint8(blockHash[((index * 2) + 1) % 32]) % (prime - 1)) + 1;
     }
 
     function _getOperatorFundedCount(uint8 operatorIndex, ValidatorAllocationCache[] memory vd)
@@ -494,25 +483,6 @@ contract StakingContract {
         return vd[operatorIndex].available - vd[operatorIndex].toDeposit;
     }
 
-    function _getFirstElligibleOperator(
-        uint8 startIndex,
-        uint8 skip,
-        uint8 prime,
-        ValidatorAllocationCache[] memory vd
-    ) internal view returns (uint8 elligibleIndex) {
-        uint8 index = startIndex + skip;
-        if (_getOperatorAvailableCount(index, vd) > 0) {
-            return index;
-        }
-        index = (index + skip) % prime;
-        while (index != startIndex) {
-            if (_getOperatorAvailableCount(index, vd) > 0) {
-                return index;
-            }
-            index = (index + skip) % prime;
-        }
-    }
-
     function _assignTemporaryDeposit(uint8 operatorIndex, ValidatorAllocationCache[] memory vd) internal pure {
         vd[operatorIndex].toDeposit += 1;
     }
@@ -539,6 +509,39 @@ contract StakingContract {
         }
     }
 
+    function _getNextStep(
+        uint8 index,
+        uint8 skip,
+        uint8 prime
+    ) internal pure returns (uint8) {
+        return (index + skip) % prime;
+    }
+
+    function _getElligibleOperators(
+        uint8 base,
+        uint8 skip,
+        uint8 prime,
+        ValidatorAllocationCache[] memory vd
+    ) internal view returns (uint8, uint8) {
+        int16 alphaIndex = -1;
+        int16 betaIndex = -1;
+        uint8 index = base;
+        while (alphaIndex == -1 || betaIndex == -1) {
+            if (alphaIndex == -1 && _getOperatorAvailableCount(index, vd) > 0) {
+                alphaIndex = int8(index);
+            }
+            uint8 nextStep = _getNextStep(index, skip, prime);
+            if (betaIndex == -1 && _getOperatorAvailableCount(nextStep, vd) > 0) {
+                betaIndex = int8(nextStep);
+            }
+            index = nextStep;
+            if (_getNextStep(index, skip, prime) == base) {
+                betaIndex = alphaIndex;
+            }
+        }
+        return (uint8(int8(alphaIndex)), uint8(int8(betaIndex)));
+    }
+
     function _depositOnThreeOrMoreOperators(
         address _withdrawer,
         uint256 _depositCount,
@@ -552,14 +555,18 @@ contract StakingContract {
         ValidatorAllocationCache[] memory vd = new ValidatorAllocationCache[](operatorCount);
 
         for (uint256 index; index < _depositCount; ) {
-            (uint8 alphaIndex, uint8 betaIndex, uint8 skip) = _getStartingIndexes(blockHash, index, optimusPrime);
-
-            alphaIndex = _getFirstElligibleOperator(alphaIndex, skip, optimusPrime, vd);
-            betaIndex = _getFirstElligibleOperator(betaIndex, skip, optimusPrime, vd);
+            // Retrieve base index and skip value based on block hash and current loop index
+            (uint8 base, uint8 skip) = _getBaseSkip(blockHash, index, optimusPrime);
+            // Retrieve two operator indexes pointing to two (or the same) operator(s) that have at least one available
+            // validator key to be used for a deposit. This method takes into account possible pending deposits from
+            // previous loop rounds.
+            (uint8 alphaIndex, uint8 betaIndex) = _getElligibleOperators(base, skip, optimusPrime, vd);
 
             if (alphaIndex == betaIndex) {
+                // Assign the deposit to the only operator having available keys
                 _assignTemporaryDeposit(alphaIndex, vd);
             } else {
+                // Assign the deposit to the operator having the lowest amount of funded keys
                 _assignTemporaryDeposit(_getBestOperator(alphaIndex, betaIndex, blockHash, vd), vd);
             }
 
@@ -568,11 +575,10 @@ contract StakingContract {
             }
         }
 
+        // Loop through the cached operator values and deposit any pending deposits
         for (uint256 index; index < vd.length; ) {
             if (vd[index].toDeposit > 0) {
                 _depositValidatorsOfOperator(index, vd[index].toDeposit, _withdrawer);
-            } else {
-                break;
             }
             unchecked {
                 ++index;
