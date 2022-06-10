@@ -12,8 +12,8 @@ contract ExecutionLayerFeeRecipient {
 
     event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee);
 
-    error FeeRecipientTransferError(bytes errorData);
-    error WithdrawerTransferError(bytes errorData);
+    error FeeRecipientReceiveError(bytes errorData);
+    error WithdrawerReceiveError(bytes errorData);
     error ZeroBalanceWithdrawal();
     error AlreadyInitialized();
     error InvalidCall();
@@ -65,12 +65,12 @@ contract ExecutionLayerFeeRecipient {
         uint256 fee = (balance * feeBps) / BASIS_POINTS;
         (bool status, bytes memory data) = withdrawer.call{value: balance - fee}("");
         if (status == false) {
-            revert WithdrawerTransferError(data);
+            revert WithdrawerReceiveError(data);
         }
         if (fee > 0) {
             (status, data) = feeRecipient.call{value: fee}("");
             if (status == false) {
-                revert FeeRecipientTransferError(data);
+                revert FeeRecipientReceiveError(data);
             }
         }
         emit Withdrawal(withdrawer, feeRecipient, balance - fee, fee);
