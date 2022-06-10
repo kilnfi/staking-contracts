@@ -752,13 +752,6 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         vm.deal(user, 32 * 3 ether);
 
         vm.startPrank(user);
-        vm.expectEmit(true, true, true, true);
-        emit Deposit(
-            user,
-            withdrawer,
-            hex"9513f9219894d2daca9cfee1179107fee1ba7bd3ecba34bf0307d206797d2289e93494c41c083fb0dcf755981957dbf4",
-            bytes32(0xb3ac34ab58ceae38a284d7fea9731c64345bb2df75742e8f11f8a848c8133519)
-        );
         stakingContract.deposit{value: 32 * 3 ether}(withdrawer);
         vm.stopPrank();
 
@@ -883,13 +876,6 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         vm.deal(user, 32 * 3 ether);
 
         vm.startPrank(user);
-        vm.expectEmit(true, true, true, true);
-        emit Deposit(
-            user,
-            user,
-            hex"9513f9219894d2daca9cfee1179107fee1ba7bd3ecba34bf0307d206797d2289e93494c41c083fb0dcf755981957dbf4",
-            bytes32(0xb3ac34ab58ceae38a284d7fea9731c64345bb2df75742e8f11f8a848c8133519)
-        );
         (bool _success, ) = address(stakingContract).call{value: 32 * 3 ether}("");
         assert(_success == true);
         vm.stopPrank();
