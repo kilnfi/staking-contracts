@@ -539,6 +539,7 @@ contract StakingContractTest is DSTestPlus {
     function testRemoveFundedValidator(uint256 _userSalt) public {
         address user = uf._new(_userSalt);
         vm.deal(user, 32 * 3 ether);
+        vm.roll(99999);
 
         vm.startPrank(user);
         (bool _success, ) = address(stakingContract).call{value: 32 * 3 ether}("");
@@ -569,6 +570,7 @@ contract StakingContractTest is DSTestPlus {
         address user = uf._new(_userSalt);
         address anotherUser = uf._new(_anotherUserSalt);
         vm.deal(user, 32 * 3 ether);
+        vm.roll(99999);
 
         vm.startPrank(user);
         (bool _success, ) = address(stakingContract).call{value: 32 * 3 ether}("");
@@ -593,6 +595,7 @@ contract StakingContractTest is DSTestPlus {
         address user = uf._new(_userSalt);
         address anotherUser = uf._new(_anotherUserSalt);
         vm.deal(user, 32 * 3 ether);
+        vm.roll(99999);
 
         vm.startPrank(user);
         (bool _success, ) = address(stakingContract).call{value: 32 * 3 ether}("");
@@ -767,6 +770,7 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
     function testExplicitDepositThreeValidators(uint256 _userSalt, uint256 _withdrawerSalt) public {
         address user = uf._new(_userSalt);
         address withdrawer = uf._new(_withdrawerSalt);
+        vm.roll(99999);
         vm.deal(user, 32 * 3 ether);
 
         vm.startPrank(user);

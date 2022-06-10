@@ -489,8 +489,8 @@
       }
     },
     "src/contracts/StakingContract.sol": {
-      "lastModificationDate": 1654864075205,
-      "contentHash": "2e0a927345175834eab457af0b4f23af",
+      "lastModificationDate": 1654864245770,
+      "contentHash": "7281e903646d12144223d4b3c7784c48",
       "sourceName": "src/contracts/StakingContract.sol",
       "solcConfig": {
         "settings": {
@@ -693,7 +693,7 @@
       }
     },
     "src/contracts/libs/State.sol": {
-      "lastModificationDate": 1654788932250,
+      "lastModificationDate": 1654856158556,
       "contentHash": "2ed8bf0a602b6f59f290f2261feb8c0a",
       "sourceName": "src/contracts/libs/State.sol",
       "solcConfig": {
@@ -769,8 +769,8 @@
       }
     },
     "src/test/StakingContract.t.sol": {
-      "lastModificationDate": 1654864045255,
-      "contentHash": "7df2b24df19143dd674736585ba06527",
+      "lastModificationDate": 1654864668050,
+      "contentHash": "985db6f2c6d384a64b7afcfbf7fcc321",
       "sourceName": "src/test/StakingContract.t.sol",
       "solcConfig": {
         "settings": {
@@ -830,7 +830,7 @@
       }
     },
     "src/test/TUPProxy.t.sol": {
-      "lastModificationDate": 1654783135572,
+      "lastModificationDate": 1654856158557,
       "contentHash": "7a4ff31c84dca880bb52fa5a0e4b6388",
       "sourceName": "src/test/TUPProxy.t.sol",
       "solcConfig": {
@@ -888,7 +888,7 @@
       }
     },
     "src/test/UserFactory.sol": {
-      "lastModificationDate": 1654783135573,
+      "lastModificationDate": 1654856158558,
       "contentHash": "2ae72c16c27bd734f38640c8b6400e51",
       "sourceName": "src/test/UserFactory.sol",
       "solcConfig": {
