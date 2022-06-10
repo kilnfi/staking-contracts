@@ -287,6 +287,10 @@ contract StakingContract {
         funded = _validatorIndex < State.getValidatorsFundingInfo(_operatorIndex).funded;
     }
 
+    function getAvailableValidatorCount() external view returns (uint256) {
+        return State.getTotalAvailableValidators();
+    }
+
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
     /// ██ ████   ██    ██    ██      ██   ██ ████   ██ ██   ██ ██
     /// ██ ██ ██  ██    ██    █████   ██████  ██ ██  ██ ███████ ██
@@ -527,15 +531,15 @@ contract StakingContract {
         int16 betaIndex = -1;
         uint8 index = base;
         while (alphaIndex == -1 || betaIndex == -1) {
-            if (alphaIndex == -1 && _getOperatorAvailableCount(index, vd) > 0) {
-                alphaIndex = int8(index);
+            if (_getOperatorAvailableCount(index, vd) > 0) {
+                if (alphaIndex == -1) {
+                    alphaIndex = int8(index);
+                } else {
+                    betaIndex = int8(index);
+                }
             }
-            uint8 nextStep = _getNextStep(index, skip, prime);
-            if (betaIndex == -1 && _getOperatorAvailableCount(nextStep, vd) > 0) {
-                betaIndex = int8(nextStep);
-            }
-            index = nextStep;
-            if (_getNextStep(index, skip, prime) == base) {
+            index = _getNextStep(index, skip, prime);
+            if (index == base) {
                 betaIndex = alphaIndex;
             }
         }

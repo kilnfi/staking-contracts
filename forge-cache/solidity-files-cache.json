@@ -489,8 +489,8 @@
       }
     },
     "src/contracts/StakingContract.sol": {
-      "lastModificationDate": 1654864245770,
-      "contentHash": "7281e903646d12144223d4b3c7784c48",
+      "lastModificationDate": 1654870813280,
+      "contentHash": "2622fd40abc41216a85005228836f3cb",
       "sourceName": "src/contracts/StakingContract.sol",
       "solcConfig": {
         "settings": {
@@ -769,8 +769,8 @@
       }
     },
     "src/test/StakingContract.t.sol": {
-      "lastModificationDate": 1654864668050,
-      "contentHash": "985db6f2c6d384a64b7afcfbf7fcc321",
+      "lastModificationDate": 1654872041478,
+      "contentHash": "4cbe93142c08ab3167aecafcedc5b439",
       "sourceName": "src/test/StakingContract.t.sol",
       "solcConfig": {
         "settings": {
@@ -814,6 +814,9 @@
       "artifacts": {
         "DepositContractMock": {
           "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/DepositContractMock.json"
+        },
+        "StakingContractDistributionTest": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/StakingContractDistributionTest.json"
         },
         "StakingContractOneValidatorTest": {
           "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/StakingContractOneValidatorTest.json"

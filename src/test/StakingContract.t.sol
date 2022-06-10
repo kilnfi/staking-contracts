@@ -6,6 +6,7 @@ import "forge-std/Vm.sol";
 import "../contracts/StakingContract.sol";
 import "../contracts/interfaces/IDepositContract.sol";
 import "./UserFactory.sol";
+import "../contracts/libs/BytesLib.sol";
 
 contract DepositContractMock is IDepositContract {
     event DepositEvent(bytes pubkey, bytes withdrawal_credentials, bytes amount, bytes signature, bytes index);
@@ -55,7 +56,6 @@ contract StakingContractTest is DSTestPlus {
     address internal alice = address(3);
     address internal operatorOne = address(4);
     address internal operatorTwo = address(5);
-    address internal operatorThree = address(5);
 
     bytes32 internal withdrawalCredentials = bytes32(uint256(4));
 
@@ -68,7 +68,6 @@ contract StakingContractTest is DSTestPlus {
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
         stakingContract.addOperator(operatorTwo);
-        stakingContract.addOperator(operatorThree);
         vm.stopPrank();
 
         {
@@ -95,21 +94,9 @@ contract StakingContractTest is DSTestPlus {
         }
 
         {
-            bytes
-                memory publicKeys = hex"9513f9219894d2daca9cfee1179107fee1ba7bd3ecba34bf0307d206797d2289e93494c41c083fb0dcf755981957dbf4eef0d296ace474a8855e6a7868c804350c8f4513ce184bdcb91098af5cce79c3af6700fdc4fb5d12c7f118615372f35b01e9c5cf390e68d2830258b008fbe6a0d9c3f6873d15d08699702246428d9c6c0a39af18f14b0264a7619d902b8e515d49b2266f5eb393853bd1d44b2cde121ef385c60112803cc6642f5728f27e6ab46f74837ed5007ff43225217c3addb664012c02d12be4431885fb93a49d416d8a6ee912c01991ea90176f65a9d1f29d163c8b73b6a576f6b88f7c5172800d7fe45f425cf7f9a45dc575015d613b91816203ccd534e877ba65b3734ef5abe02e11e75fc3c7513f233997370317fbe2eb27e0cba3ffbd488f9da412b12926e20ded36d79ae5eeed81279e89dae9003d64e2f70b169fafd291674e6a0b4ff3c092a4bc06b05a6a6aac393a1f27390bc8cc3cd5dcd489706aa0fb2d0f432d5eac172ea97887d94ff90d011cf091f07888726e0de8d1295b3a1fafa25cd4b45a644c1b55043dd3cfefb79502642e7c3d57998416829729bc3dc00d8f8b45a0f0a2e2a91c388030557eaaf95ced94fe4a416295a7d15b1917c1b152d5dcbe92f50ff06c2973c3bc1245f2b6eb4e1506d4b428a3";
-            bytes
-                memory signatures = hex"26a2d42cda4543a2b3f070966ccc51efe5427bc633150ea6ae2d87724d7a60c18d3a10d4291aa29a338b51ee4f29bbfd9905aaaad3325a24b36a7c18fc9923ec877879c18d4f96300aa47cb81a009218b1e4c6851581a0d7ed01490b94522563726b0e7ab6261e077468ff8faec162c13836a0f94ddf2659be04688fa085b70a9d2667b80d25fd11b0eb3b67e56a300a6a01578457d55d2e6f4f1fc82bee3c9168d488cfcb437453f55e9481ce5920bed8ad176f466f95ceb3c8779d3240889266ac73078992260ee340ac971c8c57dcdda6a944103beae2d499119b9d78d8c5e679ad67669d8cba29396ae18d7162715c79d8514db18e97860017553c7205fcfc70ab165f3c956dc9c8f20b5975db4f6d4b615776fbaf64367e1dd68a29a6d09123a07becfbead75d132250d4c396b34212ad9eebce7e7bc02b63cb4deaed700cad0a0b521db258e019db921c1f81b619f4848fb9ab9f87e4029f673d21cf9fad9c3ea548763552880b962c7767af192ff7aaada11b76bc2e1b1dd1c9d849884c616037ec265e5aee843e8cc718ceb60f7f1d92829db0fd9ac0bee42025bd5fe1f3f7584e6f1b27fe837bc2559a61b2dbae6188c903d4a4435c1d8562d79da202b3ff9e625112442ae86dc709a3a9662ac3e53f8e001f62133bbb42091f0649af49ad28999990707178e87a6dde37d2a577a3c8db46866dd3c4977e290f367454effa0f10dd609ea929738eaf7a9068fd802378230f844358432dcd6995f0857c12ccb076b40d64f7edfbf5b5805878a13445b8cf99d4a66ced66d0029fde05507c75d14d54be0ef3f710b2fbaceca5d55898319a20bd806d689c0bce461a42c5200d214202c588a7bb4a04493207210f0af210c1abc58e6fda929080541762e6657a411291d16403768c3c492a47707676a15e34e12caab1e607acdf7bb857f04bb5130a88d2e01138f196c2ab6de7da0e47bde1b05c2e1e5e6e7f23cf9196b4271179456e4e6427110e9edd2531b5ea3570b51f9c67f2563591f2eb3eef79d15656c7232a10a4d9ea47878007af6687932878b26bd2430384f5b02cf4b4be55dfa54a3f73d024f6984c39c341b22cf10783326a8421f904ae373a187c2fcd0c49d7c5b5931d5db84fca2006cce5a5eda906dd4945b55375eb65735a43455b44646256b87899a6e725a5f36a3d4d922ca44db1c883dc3cfe36a42c7b0d4b284af0cfa49e8bec7b43b4e8a01afc53af8b2059ab5f47daede24c9720e33a243d2b57707f8c7ec33fdec66f1f7fca5d82f75c6bd4d633ef877c3e271b534b7424a61d47d0c041e400c96b0e3dde1dd8e050146d2af665ff505fdcf37ad07c7130";
-
-            vm.startPrank(operatorThree);
-            stakingContract.addValidators(2, 10, publicKeys, signatures);
-            vm.stopPrank();
-        }
-
-        {
             vm.startPrank(admin);
             stakingContract.setOperatorLimit(0, 10);
             stakingContract.setOperatorLimit(1, 10);
-            stakingContract.setOperatorLimit(2, 10);
             vm.stopPrank();
         }
     }
@@ -144,13 +131,6 @@ contract StakingContractTest is DSTestPlus {
 
         (operatorAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
         assertEq(operatorAddress, operatorTwo);
-        assertEq(limit, 10);
-        assertEq(keys, 10);
-        assertEq(funded, 0);
-        assertEq(available, 10);
-
-        (operatorAddress, limit, keys, funded, available) = stakingContract.getOperator(2);
-        assertEq(operatorAddress, operatorThree);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 0);
@@ -296,14 +276,14 @@ contract StakingContractTest is DSTestPlus {
         assertEq(available, 20);
     }
 
-    function testAddValidatorsHundredValidators() public {
+    function testAddValidatorsHundredOperators() public {
         bytes
             memory publicKeys = hex"0c74b6d3d877bbb2083f1bcc83b302f3ed533eaf3cd39cff97daf2c7b9b776168481aa7b51778df673a37049886f25b07f03dbc79d85fa9d41f9eefa8e598353b652aadf497673744527c73127f872b91cf31ec8041dae1b3a4238683cf442ea23a95fe68b400ab42b14e8c99280a057d1d840e80723c3622b38e6acd1f471bf247cf62312c9b863a75ac0d270cefa4f84fd8586dbda15c67c1a46e85cf56c60550f54cb082770baf3d2bbf4c33f5254bd0b93e017f3ed036b13baec41bb69085f9eff48651be38c8f9e1f67b643f84ec356864aaa057f0042b121b9d040ed9be3f5cc9cc659d8f8fc02575ed3c25708adac2c8d0c50ab7e4599ce9edf300d98e1cfcfc8e0022a24c712f0769de99a3389bac1cdca92ae20fba323142fe2e8d09ef2cb59c3f822779b3fe6410cddce7255d35db01093cc435c0a35bbb4cd8d4eb3bd2cc597c49a7a909c16f67fe8b6702d5d0c22ad189b1c45325190015b0017606f768c7aa2006cc19dfeb5f367eae9dd17a5c307705db1f5cec552fc038e5fa3a76352d9621a4d74b1fd7e1707c7bfb5e912e2b5a33a2f34a419055d0c4065aa787f743aff953d73441e96ffc9b0f5a3248c23398518a758aec8451b626bff7eed063a3b11bf661d10ad6dac5ee62f47be125e3c668e14b3c704d736b4fb1e";
         bytes
             memory signatures = hex"fe41ffbe702fb08d01063c9cd99fac11a16e921c784e681e365db00c4bd6760df67cfc0d0555a8ee8bf534a2c0987b7949b18dba726ced579240fa063274bc7ab25e44b758c452c433debfebbc075cbe105f07502402a9591dc891640a9f2b34fe0863bf987ff4b5a601b0ffcecc185f04847e0b97d3fb9457c32efb9c3ce35520308cfcc8ca78d5d4da164f6d1575d32fe466b8076bc4056ad97fa3e3607a60e5e420bdec413e5ffcc3119b1b89a957b14a437e009a858c4c40c0f1fc7f3d1ad83bc96ada6c2c772260637774e5fbdc60791db6de3a31e136c28106b35c21932a8ed610306f0723675730e31d3deceff4f912e6070c9efcd6e3f0c9ad4a0e203f437f21679b87d46351714b5a1b6226f8ffadd19e18f85c918461ab67291e1c8cdfdc05280adf2b923f1269cf7de8bd351a7ede13524e836cbfc7ba22db91aaa5c9a0729a469985f5bd844347ba9a9b4019f4ad42c2025457cf48557494ac3ce6e311a1ded3e903cd3009d18133015d445d02a3ce3858781b582d28701a311ddb271f8a0c91c65b32cc13c512c35e5be9bb9dc556dfd3249a3733f58426718974820f17b3242a089e29b129fcea37c8b84996e2c725b59efccee24068625584e583700346f823ce92e11ac9db5964ca6300905c5e9f294330037ec1cb7d9b8fc28829b98fcc0fc405afcd54f43cb4a14e8cab3f5aa979fe2c3492fe295e1a50170e8857bd94e5b009bcec9626e6eb137b272882037202da7329dadcb5b99bbd7835b8875d696dab41774dcb559bfb4c79a5337efc5f1606bc7c2752389a49b6a578f0c7c58e2bf9efc55eef19beaf3de94da90c712ca3891ac71a6ff6d778a1c0c31f77fdde2c4b7f29adf8ccf000050e9e4829d2de36fda8d6b26020e6f0ece339e9ad96c01b166301238e1aaa30ddfb978968361a5f9d3fcaa381973c967c0dd88c6d54d00fa375ab4df3be57c4360b69d7634e95e4d4201da8f2348d0ce53be690146f0049d5d173a635d21406b10ed23ec9996bd0a43b812df363986fb8dedf5be1cdb3f85a5090460511af617507d24657e3733310b42e1406070a0316620037da35c5227bb85d3aacf3aebf750265838994e03a8770cdc1c31723ca1037232c32d21f31eee561575b18b1b4c0f027f270898aed60ab4bfe41160cd989cd5bdfeb795097ff01cd0ff41fea96311e92798c0a619aa957772cfd408747fc30dcb39210839a4c70b87d3ad881207fa5eee926bc2c6936ce10b382c7a37606d40bb1cf2637768255aae4a4cd18ed7004e3046520bea92c66a7074e4b46d3d566703e44d0c3f9ef49a2ff30632fe3f6a409178db66423809514cd7473f83d0c";
 
         for (uint256 i; i < 100; ) {
-            uint256 operatorIndex = 3 + i;
+            uint256 operatorIndex = 2 + i;
             address newOperatorAddress = uf._new(operatorIndex);
             vm.startPrank(admin);
             stakingContract.addOperator(newOperatorAddress);
@@ -353,7 +333,7 @@ contract StakingContractTest is DSTestPlus {
             memory signatures = hex"fe41ffbe702fb08d01063c9cd99fac11a16e921c784e681e365db00c4bd6760df67cfc0d0555a8ee8bf534a2c0987b7949b18dba726ced579240fa063274bc7ab25e44b758c452c433debfebbc075cbe105f07502402a9591dc891640a9f2b34fe0863bf987ff4b5a601b0ffcecc185f04847e0b97d3fb9457c32efb9c3ce35520308cfcc8ca78d5d4da164f6d1575d32fe466b8076bc4056ad97fa3e3607a60e5e420bdec413e5ffcc3119b1b89a957b14a437e009a858c4c40c0f1fc7f3d1ad83bc96ada6c2c772260637774e5fbdc60791db6de3a31e136c28106b35c21932a8ed610306f0723675730e31d3deceff4f912e6070c9efcd6e3f0c9ad4a0e203f437f21679b87d46351714b5a1b6226f8ffadd19e18f85c918461ab67291e1c8cdfdc05280adf2b923f1269cf7de8bd351a7ede13524e836cbfc7ba22db91aaa5c9a0729a469985f5bd844347ba9a9b4019f4ad42c2025457cf48557494ac3ce6e311a1ded3e903cd3009d18133015d445d02a3ce3858781b582d28701a311ddb271f8a0c91c65b32cc13c512c35e5be9bb9dc556dfd3249a3733f58426718974820f17b3242a089e29b129fcea37c8b84996e2c725b59efccee24068625584e583700346f823ce92e11ac9db5964ca6300905c5e9f294330037ec1cb7d9b8fc28829b98fcc0fc405afcd54f43cb4a14e8cab3f5aa979fe2c3492fe295e1a50170e8857bd94e5b009bcec9626e6eb137b272882037202da7329dadcb5b99bbd7835b8875d696dab41774dcb559bfb4c79a5337efc5f1606bc7c2752389a49b6a578f0c7c58e2bf9efc55eef19beaf3de94da90c712ca3891ac71a6ff6d778a1c0c31f77fdde2c4b7f29adf8ccf000050e9e4829d2de36fda8d6b26020e6f0ece339e9ad96c01b166301238e1aaa30ddfb978968361a5f9d3fcaa381973c967c0dd88c6d54d00fa375ab4df3be57c4360b69d7634e95e4d4201da8f2348d0ce53be690146f0049d5d173a635d21406b10ed23ec9996bd0a43b812df363986fb8dedf5be1cdb3f85a5090460511af617507d24657e3733310b42e1406070a0316620037da35c5227bb85d3aacf3aebf750265838994e03a8770cdc1c31723ca1037232c32d21f31eee561575b18b1b4c0f027f270898aed60ab4bfe41160cd989cd5bdfeb795097ff01cd0ff41fea96311e92798c0a619aa957772cfd408747fc30dcb39210839a4c70b87d3ad881207fa5eee926bc2c6936ce10b382c7a37606d40bb1cf2637768255aae4a4cd18ed7004e3046520bea92c66a7074e4b46d3d566703e44d0c3f9ef49a2ff30632fe3f6a409178db66423809514cd7473f83d0c";
 
         for (uint256 i; i < 100; ) {
-            uint256 operatorIndex = 3 + i;
+            uint256 operatorIndex = 2 + i;
             address newOperatorAddress = uf._new(operatorIndex);
             vm.startPrank(admin);
             stakingContract.addOperator(newOperatorAddress);
@@ -523,13 +503,13 @@ contract StakingContractTest is DSTestPlus {
         indexes[7] = 2;
         indexes[8] = 1;
 
-        vm.startPrank(operatorOne);
-        stakingContract.removeValidators(0, indexes);
+        vm.startPrank(operatorTwo);
+        stakingContract.removeValidators(1, indexes);
         vm.stopPrank();
 
         (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract
-            .getOperator(0);
-        assertEq(operatorAddress, operatorOne);
+            .getOperator(1);
+        assertEq(operatorAddress, operatorTwo);
         assertEq(limit, 10);
         assertEq(keys, 1);
         assertEq(funded, 1);
@@ -570,7 +550,6 @@ contract StakingContractTest is DSTestPlus {
         address user = uf._new(_userSalt);
         address anotherUser = uf._new(_anotherUserSalt);
         vm.deal(user, 32 * 3 ether);
-        vm.roll(99999);
 
         vm.startPrank(user);
         (bool _success, ) = address(stakingContract).call{value: 32 * 3 ether}("");
@@ -580,7 +559,7 @@ contract StakingContractTest is DSTestPlus {
         assertEq(user.balance, 0);
 
         bytes
-            memory pk = hex"9513f9219894d2daca9cfee1179107fee1ba7bd3ecba34bf0307d206797d2289e93494c41c083fb0dcf755981957dbf4";
+            memory pk = hex"24046f7be8644e2b872363d5a4d58836deeb2deab6996a7e57f8c7583872786d1b81e378c4188ec3094236a31e31bd83";
 
         assertEq(stakingContract.getWithdrawer(pk), user);
 
@@ -595,7 +574,6 @@ contract StakingContractTest is DSTestPlus {
         address user = uf._new(_userSalt);
         address anotherUser = uf._new(_anotherUserSalt);
         vm.deal(user, 32 * 3 ether);
-        vm.roll(99999);
 
         vm.startPrank(user);
         (bool _success, ) = address(stakingContract).call{value: 32 * 3 ether}("");
@@ -605,7 +583,7 @@ contract StakingContractTest is DSTestPlus {
         assertEq(user.balance, 0);
 
         bytes
-            memory pk = hex"9513f9219894d2daca9cfee1179107fee1ba7bd3ecba34bf0307d206797d2289e93494c41c083fb0dcf755981957dbf4";
+            memory pk = hex"24046f7be8644e2b872363d5a4d58836deeb2deab6996a7e57f8c7583872786d1b81e378c4188ec3094236a31e31bd83";
 
         assertEq(stakingContract.getWithdrawer(pk), user);
 
@@ -786,27 +764,28 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
+        uint256 sum;
+
         (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract
             .getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(limit, 10);
         assertEq(keys, 10);
-        assertEq(funded, 1);
-        assertEq(available, 9);
+        sum += funded;
 
         (operatorAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
-        assertEq(funded, 1);
-        assertEq(available, 9);
+        sum += funded;
 
         (operatorAddress, limit, keys, funded, available) = stakingContract.getOperator(2);
         assertEq(operatorAddress, operatorThree);
         assertEq(limit, 10);
         assertEq(keys, 10);
-        assertEq(funded, 1);
-        assertEq(available, 9);
+        sum += funded;
+
+        assert(sum == 3);
     }
 
     function testExplicitDepositAllValidators(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -916,28 +895,28 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         vm.stopPrank();
 
         assertEq(user.balance, 0);
+        uint256 sum;
 
         (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract
             .getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(limit, 10);
         assertEq(keys, 10);
-        assertEq(funded, 1);
-        assertEq(available, 9);
+        sum += funded;
 
         (operatorAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
-        assertEq(funded, 1);
-        assertEq(available, 9);
+        sum += funded;
 
         (operatorAddress, limit, keys, funded, available) = stakingContract.getOperator(2);
         assertEq(operatorAddress, operatorThree);
         assertEq(limit, 10);
         assertEq(keys, 10);
-        assertEq(funded, 1);
-        assertEq(available, 9);
+        sum += funded;
+
+        assert(sum == 3);
     }
 
     function testImplicitDepositAllValidators(uint256 _userSalt) public {
@@ -1009,6 +988,100 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         (bool _success, ) = address(stakingContract).call{value: 31.9 ether}("");
         assert(_success == true);
         vm.stopPrank();
+    }
+}
+
+contract StakingContractDistributionTest is DSTestPlus {
+    Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+
+    StakingContract internal stakingContract;
+    DepositContractMock internal depositContract;
+    UserFactory internal uf;
+
+    address internal admin = address(1);
+    address internal bob = address(2);
+    address internal alice = address(3);
+    address[] internal operators;
+    bytes32 salt = bytes32(0);
+
+    bytes32 internal withdrawalCredentials = bytes32(uint256(4));
+
+    function setUp() public {
+        uf = new UserFactory();
+        stakingContract = new StakingContract();
+        depositContract = new DepositContractMock();
+        stakingContract.initialize_1(admin, address(depositContract), withdrawalCredentials);
+    }
+
+    function genBytes(uint256 len) internal returns (bytes memory) {
+        bytes memory res = "";
+        while (res.length < len) {
+            salt = keccak256(abi.encodePacked(salt));
+            if (len - res.length >= 32) {
+                res = BytesLib.concat(res, abi.encode(salt));
+            } else {
+                res = BytesLib.concat(res, BytesLib.slice(abi.encode(salt), 0, len - res.length));
+            }
+        }
+        return res;
+    }
+
+    function testDistribution(uint8 newOps, uint8 keyPerOperator) public {
+        newOps = newOps % 50;
+        keyPerOperator = keyPerOperator % 50;
+
+        if (newOps < 3) {
+            newOps = 3;
+        }
+
+        if (keyPerOperator == 0) {
+            keyPerOperator = 3;
+        }
+
+        uint256 depositCount = (uint256(newOps) * uint256(keyPerOperator)) / 2;
+
+        for (uint256 i; i < newOps; ++i) {
+            vm.startPrank(admin);
+            address newOperator = uf._new(uint256(keccak256(abi.encodePacked(i))));
+            stakingContract.addOperator(newOperator);
+            stakingContract.setOperatorLimit(i, keyPerOperator);
+            operators.push(newOperator);
+            vm.stopPrank();
+            vm.startPrank(newOperator);
+            bytes memory publicKeys = genBytes(uint256(keyPerOperator) * 48);
+            bytes memory signatures = genBytes(uint256(keyPerOperator) * 96);
+            stakingContract.addValidators(i, keyPerOperator, publicKeys, signatures);
+            vm.stopPrank();
+        }
+
+        for (uint256 i; i < depositCount; ) {
+            vm.roll(i);
+            uint256 availableKeys = stakingContract.getAvailableValidatorCount();
+            salt = keccak256(abi.encode(salt));
+            uint256 newDeposits = (uint8(salt[0]) % 31) + 1;
+            if (i + newDeposits > depositCount) {
+                newDeposits = (depositCount - i);
+            }
+            vm.deal(bob, newDeposits * 32 ether);
+            vm.startPrank(bob);
+            stakingContract.deposit{value: newDeposits * 32 ether}(bob);
+            vm.stopPrank();
+            i += newDeposits;
+            assert(stakingContract.getAvailableValidatorCount() == availableKeys - newDeposits);
+        }
+
+        uint256 sum;
+        uint256 availableSum;
+
+        for (uint256 i; i < newOps; ++i) {
+            (, , , uint256 funded, uint256 available) = stakingContract.getOperator(i);
+            sum += funded;
+            availableSum += available;
+        }
+
+        assert(depositCount == sum);
+        assert(availableSum == stakingContract.getAvailableValidatorCount());
+        assert(address(depositContract).balance == depositCount * 32 ether);
     }
 }
 
