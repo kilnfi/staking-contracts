@@ -1,6 +1,6 @@
 # StakingContract
 
-*SkillZ*
+*Kiln*
 
 > Ethereum Staking Contract
 
@@ -61,6 +61,47 @@ function SIGNATURE_LENGTH() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### addOperator
+
+```solidity
+function addOperator(address _operatorAddress) external nonpayable returns (uint256)
+```
+
+Add new operator
+
+*Only callable by admin*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorAddress | address | Operator address allowed to add / remove validators |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### addValidators
+
+```solidity
+function addValidators(uint256 _operatorIndex, uint256 _keyCount, bytes _publicKeys, bytes _signatures) external nonpayable
+```
+
+Add new validator public keys and signatures
+
+*Only callable by operator*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex | uint256 | Operator Index |
+| _keyCount | uint256 | Number of keys added |
+| _publicKeys | bytes | Concatenated _keyCount public keys |
+| _signatures | bytes | Concatenated _keyCount signatures |
+
 ### deposit
 
 ```solidity
@@ -77,13 +118,30 @@ Explicit deposit method
 |---|---|---|
 | _withdrawer | address | The withdrawer address |
 
-### fundedValidatorsCount
+### getAdmin
 
 ```solidity
-function fundedValidatorsCount() external view returns (uint256)
+function getAdmin() external view returns (address)
 ```
 
-Retrieve the amount of funded validators
+Retrieve system admin
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### getAvailableValidatorCount
+
+```solidity
+function getAvailableValidatorCount() external view returns (uint256)
+```
+
+Get the total available keys that are redy to be used for deposits
 
 
 
@@ -94,16 +152,99 @@ Retrieve the amount of funded validators
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### getAdmin
+### getCLFee
 
 ```solidity
-function getAdmin() external view returns (address)
+function getCLFee() external view returns (uint256)
 ```
 
-Retrieve the admin address
+Retrieve the Consensus Layer Fee taken by the node operator
 
 
 
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### getCLFeeRecipient
+
+```solidity
+function getCLFeeRecipient(bytes _publicKey) external view returns (address)
+```
+
+Compute the Consensus Layer Fee recipient address for a given validator public key
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKey | bytes | Validator to get the recipient |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### getELFee
+
+```solidity
+function getELFee() external view returns (uint256)
+```
+
+Retrieve the Execution Layer Fee taken by the node operator
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+### getELFeeRecipient
+
+```solidity
+function getELFeeRecipient(bytes _publicKey) external view returns (address)
+```
+
+Compute the Execution Layer Fee recipient address for a given validator public key
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKey | bytes | Validator to get the recipient |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### getFeeTreasury
+
+```solidity
+function getFeeTreasury(bytes32 pubKeyRoot) external view returns (address)
+```
+
+Retrieve the Execution &amp; Consensus Layer Fee operator recipient for a given public key
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| pubKeyRoot | bytes32 | undefined |
 
 #### Returns
 
@@ -114,27 +255,10 @@ Retrieve the admin address
 ### getOperator
 
 ```solidity
-function getOperator() external view returns (address)
+function getOperator(uint256 _operatorIndex) external view returns (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available)
 ```
 
-Retrieve the operator address
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
-### getValidator
-
-```solidity
-function getValidator(uint256 _idx) external view returns (bytes publicKey, bytes signature, address withdrawer, bool funded)
-```
-
-Retrieve the details of a validator
+Retrieve operator details
 
 
 
@@ -142,7 +266,34 @@ Retrieve the details of a validator
 
 | Name | Type | Description |
 |---|---|---|
-| _idx | uint256 | Index of the validator |
+| _operatorIndex | uint256 | Operator index |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| operatorAddress | address | undefined |
+| limit | uint256 | undefined |
+| keys | uint256 | undefined |
+| funded | uint256 | undefined |
+| available | uint256 | undefined |
+
+### getValidator
+
+```solidity
+function getValidator(uint256 _operatorIndex, uint256 _validatorIndex) external view returns (bytes publicKey, bytes signature, address withdrawer, bool funded)
+```
+
+Get details about a validator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex | uint256 | Index of the operator running the validator |
+| _validatorIndex | uint256 | Index of the validator |
 
 #### Returns
 
@@ -159,7 +310,7 @@ Retrieve the details of a validator
 function getWithdrawer(bytes _publicKey) external view returns (address)
 ```
 
-Retrieve the withdrawer for a specific public key
+Retrieve withdrawer of public key
 
 
 
@@ -167,7 +318,29 @@ Retrieve the withdrawer for a specific public key
 
 | Name | Type | Description |
 |---|---|---|
-| _publicKey | bytes | Public Key to retrieve the withdrawer |
+| _publicKey | bytes | Public Key to check |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### getWithdrawerFromPublicKeyRoot
+
+```solidity
+function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address)
+```
+
+Retrieve withdrawer of public key root
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeyRoot | bytes32 | Hash of the public key |
 
 #### Returns
 
@@ -178,7 +351,7 @@ Retrieve the withdrawer for a specific public key
 ### initialize_1
 
 ```solidity
-function initialize_1(address _operator, address _admin, address _depositContract, bytes32 _withdrawalCredentials) external nonpayable
+function initialize_1(address _admin, address _depositContract, address _elFeeRecipientImplementation, address _clFeeRecipientImplementation, bytes32 _withdrawalCredentials, uint256 _elFee, uint256 _clFee) external nonpayable
 ```
 
 Initializes version 1 of Staking Contract
@@ -189,44 +362,30 @@ Initializes version 1 of Staking Contract
 
 | Name | Type | Description |
 |---|---|---|
-| _operator | address | Address of the operator allowed to add/remove keys |
 | _admin | address | Address of the admin allowed to change the operator and admin |
 | _depositContract | address | Address of the Deposit Contract |
+| _elFeeRecipientImplementation | address | undefined |
+| _clFeeRecipientImplementation | address | undefined |
 | _withdrawalCredentials | bytes32 | Withdrawal Credentials to apply to all provided keys upon deposit |
-
-### registerValidators
-
-```solidity
-function registerValidators(uint256 keyCount, bytes publicKeys, bytes signatures) external nonpayable
-```
-
-Register new validators
-
-*Only the operator or the admin are allowed to call this methodpublickKeys is the concatenation of keyCount public keyssignatures is the concatenation of keyCount signatures*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| keyCount | uint256 | The expected number of keys from publicKeys and signatures |
-| publicKeys | bytes | Concatenated public keys |
-| signatures | bytes | Concatenated signatures |
+| _elFee | uint256 | undefined |
+| _clFee | uint256 | undefined |
 
 ### removeValidators
 
 ```solidity
-function removeValidators(uint256[] _indexes) external nonpayable
+function removeValidators(uint256 _operatorIndex, uint256[] _indexes) external nonpayable
 ```
 
-Remove validators
+Remove unfunded validators
 
-*Only the operator or the admin are allowed to call this methodThe indexes to delete should all be greater than the amount of funded validatorsThe indexes to delete should be sorted in descending order or the method will fail*
+*Only callable by operatorIndexes should be provided in decreasing order*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _indexes | uint256[] | The indexes to delete |
+| _operatorIndex | uint256 | Operator Index |
+| _indexes | uint256[] | List of indexes to delete, in decreasing order |
 
 ### setAdmin
 
@@ -234,31 +393,64 @@ Remove validators
 function setAdmin(address _newAdmin) external nonpayable
 ```
 
-Change the admin address
+Set new admin
 
-*Only the admin is allowed to call this method*
+*Only callable by admin*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _newAdmin | address | New Admin address |
+| _newAdmin | address | New Administrator address |
 
-### setOperator
+### setCLFee
 
 ```solidity
-function setOperator(address _newOperator) external nonpayable
+function setCLFee(uint256 _fee) external nonpayable
 ```
 
-Change the operator address
+Change the Consensus Layer Fee taken by the node operator
 
-*Only the admin or the operator are allowed to call this method*
+
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _newOperator | address | New Operator address |
+| _fee | uint256 | Fee in Basis Point |
+
+### setELFee
+
+```solidity
+function setELFee(uint256 _fee) external nonpayable
+```
+
+Change the Execution Layer Fee taken by the node operator
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _fee | uint256 | Fee in Basis Point |
+
+### setOperatorLimit
+
+```solidity
+function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external nonpayable
+```
+
+Set operator staking limits
+
+*Only callable by admin*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex | uint256 | Operator Index |
+| _limit | uint256 | New staking limit |
 
 ### setWithdrawer
 
@@ -266,33 +458,64 @@ Change the operator address
 function setWithdrawer(bytes _publicKey, address _newWithdrawer) external nonpayable
 ```
 
-Change the withdrawer for a specific public key
+Set withdrawer for public key
 
-*Only the previous withdrawer of the public key can change the withdrawer*
+*Only callable by current public key withdrawer*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _publicKey | bytes | The public key to change |
-| _newWithdrawer | address | The new withdrawer address |
+| _publicKey | bytes | Public key to change withdrawer |
+| _newWithdrawer | address | New withdrawer address |
 
-### totalValidatorCount
+### withdraw
 
 ```solidity
-function totalValidatorCount() external view returns (uint256)
+function withdraw(bytes _publicKey) external nonpayable
 ```
 
-Retrieve the amount of registered validators (funded + not yet funded)
+Withdraw both Consensus and Execution Layer Fee for a given validator public key
 
+*Reverts if any is null*
 
-
-
-#### Returns
+#### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _publicKey | bytes | Validator to withdraw Execution and Consensus Layer Fees from |
+
+### withdrawCLFee
+
+```solidity
+function withdrawCLFee(bytes _publicKey) external nonpayable
+```
+
+Withdraw the Consensus Layer Fee for a given validator public key
+
+*Funds are sent to the withdrawer accountThis method is public on purpose*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKey | bytes | Validator to withdraw Consensus Layer Fees from |
+
+### withdrawELFee
+
+```solidity
+function withdrawELFee(bytes _publicKey) external nonpayable
+```
+
+Withdraw the Execution Layer Fee for a given validator public key
+
+*Funds are sent to the withdrawer accountThis method is public on purpose*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKey | bytes | Validator to withdraw Execution Layer Fees from |
 
 
 
@@ -376,6 +599,17 @@ error InvalidCall()
 
 
 
+### InvalidFee
+
+```solidity
+error InvalidFee()
+```
+
+
+
+
+
+
 ### InvalidMessageValue
 
 ```solidity
@@ -409,10 +643,43 @@ error InvalidSignatures()
 
 
 
+### InvalidValidatorCount
+
+```solidity
+error InvalidValidatorCount()
+```
+
+
+
+
+
+
+### NoOperators
+
+```solidity
+error NoOperators()
+```
+
+
+
+
+
+
 ### NotEnoughKeys
 
 ```solidity
 error NotEnoughKeys()
+```
+
+
+
+
+
+
+### NotEnoughValidators
+
+```solidity
+error NotEnoughValidators()
 ```
 
 

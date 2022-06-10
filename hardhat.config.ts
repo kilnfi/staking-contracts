@@ -22,7 +22,8 @@ const hhuc: HardhatUserConfig = {
   dodoc: {
     include: [
       "StakingContract",
-      "WithdrawContract"
+      "ExecutionLayerFeeRecipient",
+      "ConsensusLayerFeeRecipient"
     ],
     outputDir: 'natspec'
   },

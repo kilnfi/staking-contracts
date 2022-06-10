@@ -4,5 +4,6 @@ out = 'out'
 libs = ['lib']
 cache_path = 'forge-cache'
 solc = '0.8.13'
+gas_limit = 9223372036854775807
 
 # See more config options https://github.com/gakonst/foundry/tree/master/config
