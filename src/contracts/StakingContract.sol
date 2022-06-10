@@ -513,14 +513,6 @@ contract StakingContract {
         }
     }
 
-    function _getNextStep(
-        uint8 index,
-        uint8 skip,
-        uint8 prime
-    ) internal pure returns (uint8) {
-        return (index + skip) % prime;
-    }
-
     function _getElligibleOperators(
         uint8 base,
         uint8 skip,
@@ -538,7 +530,7 @@ contract StakingContract {
                     betaIndex = int8(index);
                 }
             }
-            index = _getNextStep(index, skip, prime);
+            index = (index + skip) % prime;
             if (index == base) {
                 betaIndex = alphaIndex;
             }

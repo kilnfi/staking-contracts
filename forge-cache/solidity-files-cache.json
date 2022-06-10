@@ -489,8 +489,8 @@
       }
     },
     "src/contracts/StakingContract.sol": {
-      "lastModificationDate": 1654870813280,
-      "contentHash": "2622fd40abc41216a85005228836f3cb",
+      "lastModificationDate": 1654876788026,
+      "contentHash": "fc9d70e69527496725715a65f56d851e",
       "sourceName": "src/contracts/StakingContract.sol",
       "solcConfig": {
         "settings": {
