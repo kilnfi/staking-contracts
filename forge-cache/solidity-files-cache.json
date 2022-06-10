@@ -489,8 +489,8 @@
       }
     },
     "src/contracts/StakingContract.sol": {
-      "lastModificationDate": 1654590578511,
-      "contentHash": "e1c29312f79d4820a427f18e78cdc995",
+      "lastModificationDate": 1654876788026,
+      "contentHash": "fc9d70e69527496725715a65f56d851e",
       "sourceName": "src/contracts/StakingContract.sol",
       "solcConfig": {
         "settings": {
@@ -521,7 +521,7 @@
       "imports": [
         "src/contracts/interfaces/IDepositContract.sol",
         "src/contracts/libs/BytesLib.sol",
-        "src/contracts/libs/StateLib.sol",
+        "src/contracts/libs/State.sol",
         "src/contracts/libs/UintLib.sol"
       ],
       "versionRequirement": ">=0.8.10",
@@ -692,10 +692,10 @@
         }
       }
     },
-    "src/contracts/libs/StateLib.sol": {
-      "lastModificationDate": 1654590578511,
-      "contentHash": "1f680dd1a5346fd15c60aa288ae9eb2e",
-      "sourceName": "src/contracts/libs/StateLib.sol",
+    "src/contracts/libs/State.sol": {
+      "lastModificationDate": 1654856158556,
+      "contentHash": "2ed8bf0a602b6f59f290f2261feb8c0a",
+      "sourceName": "src/contracts/libs/State.sol",
       "solcConfig": {
         "settings": {
           "optimizer": {
@@ -725,8 +725,8 @@
       "imports": [],
       "versionRequirement": ">=0.8.10",
       "artifacts": {
-        "StateLib": {
-          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StateLib.sol/StateLib.json"
+        "State": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "State.sol/State.json"
         }
       }
     },
@@ -769,8 +769,8 @@
       }
     },
     "src/test/StakingContract.t.sol": {
-      "lastModificationDate": 1654590578512,
-      "contentHash": "315f20c4151d561388f79b555adb6c89",
+      "lastModificationDate": 1654872269244,
+      "contentHash": "d090b77840c386ec6d53ece1331b8d8b",
       "sourceName": "src/test/StakingContract.t.sol",
       "solcConfig": {
         "settings": {
@@ -806,22 +806,35 @@
         "src/contracts/StakingContract.sol",
         "src/contracts/interfaces/IDepositContract.sol",
         "src/contracts/libs/BytesLib.sol",
-        "src/contracts/libs/StateLib.sol",
-        "src/contracts/libs/UintLib.sol"
+        "src/contracts/libs/State.sol",
+        "src/contracts/libs/UintLib.sol",
+        "src/test/UserFactory.sol"
       ],
       "versionRequirement": ">=0.8.10",
       "artifacts": {
         "DepositContractMock": {
           "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/DepositContractMock.json"
         },
+        "StakingContractDistributionTest": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/StakingContractDistributionTest.json"
+        },
+        "StakingContractOneValidatorTest": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/StakingContractOneValidatorTest.json"
+        },
         "StakingContractTest": {
           "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/StakingContractTest.json"
+        },
+        "StakingContractThreeValidatorsTest": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/StakingContractThreeValidatorsTest.json"
+        },
+        "StakingContractTwoValidatorsTest": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "StakingContract.t.sol/StakingContractTwoValidatorsTest.json"
         }
       }
     },
     "src/test/TUPProxy.t.sol": {
-      "lastModificationDate": 1654264342635,
-      "contentHash": "392d0b129de34cc1459c815a9aefafe6",
+      "lastModificationDate": 1654856158557,
+      "contentHash": "7a4ff31c84dca880bb52fa5a0e4b6388",
       "sourceName": "src/test/TUPProxy.t.sol",
       "solcConfig": {
         "settings": {
@@ -874,6 +887,47 @@
         },
         "TUPProxyTest": {
           "0.8.13+commit.abaa5c0e.Darwin.appleclang": "TUPProxy.t.sol/TUPProxyTest.json"
+        }
+      }
+    },
+    "src/test/UserFactory.sol": {
+      "lastModificationDate": 1654856158558,
+      "contentHash": "2ae72c16c27bd734f38640c8b6400e51",
+      "sourceName": "src/test/UserFactory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs"
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.8.10",
+      "artifacts": {
+        "User": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "UserFactory.sol/User.json"
+        },
+        "UserFactory": {
+          "0.8.13+commit.abaa5c0e.Darwin.appleclang": "UserFactory.sol/UserFactory.json"
         }
       }
     },
