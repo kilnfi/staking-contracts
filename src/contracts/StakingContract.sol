@@ -658,7 +658,7 @@ contract StakingContract {
                 }
             }
             index = (index + skip) % prime;
-            if (index == base) {
+            if (index == base && betaIndex == -1) {
                 betaIndex = alphaIndex;
             }
         }

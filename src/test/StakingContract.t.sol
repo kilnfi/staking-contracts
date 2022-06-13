@@ -9,7 +9,6 @@ import "../contracts/ExecutionLayerFeeRecipient.sol";
 import "../contracts/ConsensusLayerFeeRecipient.sol";
 import "./UserFactory.sol";
 import "../contracts/libs/BytesLib.sol";
-import "./console.sol";
 
 contract DepositContractMock is IDepositContract {
     event DepositEvent(bytes pubkey, bytes withdrawal_credentials, bytes amount, bytes signature, bytes index);
@@ -1916,7 +1915,6 @@ contract StakingContractOneValidatorTest is DSTestPlus {
 
         stakingContract.withdraw(publicKey);
 
-        console.log(bob.balance);
         assert(bob.balance == 33.9 ether);
         assert(operatorOne.balance == 0.1 ether);
     }
