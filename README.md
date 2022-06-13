@@ -109,10 +109,11 @@ You will need to prepare the following variable before sending the call
 - `STAKING_CONTRACT_ADDRESS`: Address of the deployed staking contract
 - `RPC_URL`: Ethereum RPC endpoint on the deployment network
 - `MNEMONIC_FILE`: A file containing the operator mnemonic key
+- `OPERATOR_INDEX`: The index of the operator
 
 Run
 
-`cast send --mnemonic-path $MNEMONIC_FILE $STAKING_CONTRACT_ADDRESS "registerValidators(uint256,bytes,bytes)" $KEY_COUNT $PUBLIC_KEYS $SIGNATURES`
+`cast send --mnemonic-path $MNEMONIC_FILE $STAKING_CONTRACT_ADDRESS "addValidators(uint256,uint256,bytes,bytes)" $OPERATOR_INDEX $KEY_COUNT $PUBLIC_KEYS $SIGNATURES`
 
 # Upgrade
 
@@ -154,6 +155,10 @@ Generate by running `yarn docs`
 
 The Staking Contract is the main input of the system. Node Operator pre-register batchs of validator keys. End users can send multiples of 32 ETH directly to the contract, and if enough keys are available the validator deposit(s) will occur. Stakers are also able to define Withdrawer accounts, an account that is allow to withdraw the funds and the collected fees. This allows them to not only specify a different address than the one they use for deposits but also to change this account in the future.
 
-## [Withdraw Contract](./natspec/WithdrawContract.md)
+## [Execution Layer Fee Recipient](./natspec/ExecutionLayerFeeRecipient.md)
 
-This contract is an upgradeable stub contract that will handle all the validator withdrawals once the process is written in stone in the Ethereum specs.
+This Contract is deployed as the implementation for minimal proxy clones used to gather the fees from the Execution Layer. One clone will be deployed per public key at a deterministic address.
+
+## [Consensus Layer Fee Recipient](./natspec/ConsensusLayerFeeRecipient.md)
+
+This Contract serves the same purpose as the Execution Layer Fee Recipient but for the Consensus Layer fees.

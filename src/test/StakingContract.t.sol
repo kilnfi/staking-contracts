@@ -5,6 +5,8 @@ import "solmate/test/utils/DSTestPlus.sol";
 import "forge-std/Vm.sol";
 import "../contracts/StakingContract.sol";
 import "../contracts/interfaces/IDepositContract.sol";
+import "../contracts/ExecutionLayerFeeRecipient.sol";
+import "../contracts/ConsensusLayerFeeRecipient.sol";
 import "./UserFactory.sol";
 import "../contracts/libs/BytesLib.sol";
 
@@ -49,6 +51,8 @@ contract StakingContractTest is DSTestPlus {
 
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
+    ExecutionLayerFeeRecipient internal elfr;
+    ConsensusLayerFeeRecipient internal clfr;
     UserFactory internal uf;
 
     address internal admin = address(1);
@@ -61,9 +65,19 @@ contract StakingContractTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
+        elfr = new ExecutionLayerFeeRecipient(1);
+        clfr = new ConsensusLayerFeeRecipient(1);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), withdrawalCredentials);
+        stakingContract.initialize_1(
+            admin,
+            address(depositContract),
+            address(elfr),
+            address(clfr),
+            withdrawalCredentials,
+            500,
+            500
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
@@ -112,6 +126,19 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.setAdmin(newAdmin);
         vm.stopPrank();
         assertEq(stakingContract.getAdmin(), newAdmin);
+    }
+
+    function testReinitialization() public {
+        vm.expectRevert(abi.encodeWithSignature("AlreadyInitialized()"));
+        stakingContract.initialize_1(
+            admin,
+            address(depositContract),
+            address(0),
+            address(0),
+            withdrawalCredentials,
+            500,
+            500
+        );
     }
 
     function testSetAdminUnauthorized(uint256 _adminSalt) public {
@@ -614,7 +641,15 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), withdrawalCredentials);
+        stakingContract.initialize_1(
+            admin,
+            address(depositContract),
+            address(0),
+            address(0),
+            withdrawalCredentials,
+            500,
+            500
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
@@ -996,7 +1031,15 @@ contract StakingContractDistributionTest is DSTestPlus {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), withdrawalCredentials);
+        stakingContract.initialize_1(
+            admin,
+            address(depositContract),
+            address(0),
+            address(0),
+            withdrawalCredentials,
+            500,
+            500
+        );
     }
 
     function genBytes(uint256 len) internal returns (bytes memory) {
@@ -1090,7 +1133,15 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), withdrawalCredentials);
+        stakingContract.initialize_1(
+            admin,
+            address(depositContract),
+            address(0),
+            address(0),
+            withdrawalCredentials,
+            500,
+            500
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
@@ -1377,6 +1428,8 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     address internal bob = address(2);
     address internal alice = address(3);
     address internal operatorOne = address(4);
+    ExecutionLayerFeeRecipient internal elfr;
+    ConsensusLayerFeeRecipient internal clfr;
 
     bytes32 internal withdrawalCredentials = bytes32(uint256(4));
 
@@ -1384,7 +1437,17 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), withdrawalCredentials);
+        elfr = new ExecutionLayerFeeRecipient(1);
+        clfr = new ConsensusLayerFeeRecipient(1);
+        stakingContract.initialize_1(
+            admin,
+            address(depositContract),
+            address(elfr),
+            address(clfr),
+            withdrawalCredentials,
+            500,
+            500
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
@@ -1612,5 +1675,247 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         (bool _success, ) = address(stakingContract).call{value: 31.9 ether}("");
         assert(_success == true);
         vm.stopPrank();
+    }
+
+    function testEditELFee() public {
+        assert(stakingContract.getELFee() == 500);
+        vm.startPrank(admin);
+        stakingContract.setELFee(1000);
+        vm.stopPrank();
+        assert(stakingContract.getELFee() == 1000);
+    }
+
+    function testEditCLFee() public {
+        assert(stakingContract.getCLFee() == 500);
+        vm.startPrank(admin);
+        stakingContract.setCLFee(1000);
+        vm.stopPrank();
+        assert(stakingContract.getCLFee() == 1000);
+    }
+
+    function testFeeRecipients() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        address _elfr = stakingContract.getELFeeRecipient(publicKey);
+        address _clfr = stakingContract.getCLFeeRecipient(publicKey);
+        assert(_elfr != _clfr);
+    }
+
+    function testWithdrawELFees() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address elfrBob = stakingContract.getELFeeRecipient(publicKey);
+        assert(elfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(elfrBob), 1 ether);
+        stakingContract.withdrawELFee(publicKey);
+        assert(elfrBob.code.length != 0);
+        assert(bob.balance == 0.95 ether);
+        assert(operatorOne.balance == 0.05 ether);
+    }
+
+    function testWithdrawELFeesEditedFeeBps() public {
+        vm.startPrank(admin);
+        stakingContract.setELFee(1000);
+        vm.stopPrank();
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address elfrBob = stakingContract.getELFeeRecipient(publicKey);
+        assert(elfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(elfrBob), 1 ether);
+        stakingContract.withdrawELFee(publicKey);
+        assert(elfrBob.code.length != 0);
+        assert(bob.balance == 0.9 ether);
+        assert(operatorOne.balance == 0.1 ether);
+    }
+
+    function testWithdrawELFeesAlreadyDeployed() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address elfrBob = stakingContract.getELFeeRecipient(publicKey);
+        assert(elfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(elfrBob), 1 ether);
+        stakingContract.withdrawELFee(publicKey);
+        assert(elfrBob.code.length != 0);
+        assert(bob.balance == 0.95 ether);
+        assert(operatorOne.balance == 0.05 ether);
+        vm.deal(address(elfrBob), 1 ether);
+        stakingContract.withdrawELFee(publicKey);
+        assert(bob.balance == 1.90 ether);
+        assert(operatorOne.balance == 0.1 ether);
+    }
+
+    function testWithdrawELFeesEmptyWithdrawal() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
+        stakingContract.withdrawELFee(publicKey);
+    }
+
+    function testWithdrawCLFeesExitedValidator() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(clfrBob), 33 ether);
+        stakingContract.withdrawCLFee(publicKey);
+        assert(clfrBob.code.length != 0);
+        assert(bob.balance == 32.95 ether);
+        assert(operatorOne.balance == 0.05 ether);
+    }
+
+    function testWithdrawCLFeesEditedFeeBps() public {
+        vm.startPrank(admin);
+        stakingContract.setCLFee(1000);
+        vm.stopPrank();
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(clfrBob), 33 ether);
+        stakingContract.withdrawCLFee(publicKey);
+        assert(clfrBob.code.length != 0);
+        assert(bob.balance == 32.90 ether);
+        assert(operatorOne.balance == 0.1 ether);
+    }
+
+    function testWithdrawCLFeesSkimmedValidator() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(clfrBob), 1 ether);
+        stakingContract.withdrawCLFee(publicKey);
+        assert(clfrBob.code.length != 0);
+        assert(bob.balance == 0.95 ether);
+        assert(operatorOne.balance == 0.05 ether);
+    }
+
+    function testWithdrawCLFeesSlashedValidator() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(clfrBob), 31.95 ether);
+        stakingContract.withdrawCLFee(publicKey);
+        assert(clfrBob.code.length != 0);
+        assert(bob.balance == 31.95 ether);
+        assert(operatorOne.balance == 0);
+    }
+
+    function testWithdrawCLFeesAlreadyDeployed() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(clfrBob), 33 ether);
+        stakingContract.withdrawCLFee(publicKey);
+        assert(clfrBob.code.length != 0);
+        assert(bob.balance == 32.95 ether);
+        assert(operatorOne.balance == 0.05 ether);
+        vm.deal(address(clfrBob), 1 ether);
+        stakingContract.withdrawCLFee(publicKey);
+        assert(bob.balance == 33.9 ether);
+        assert(operatorOne.balance == 0.1 ether);
+    }
+
+    function testWithdrawCLFeesEmptyWithdrawal() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
+        stakingContract.withdrawCLFee(publicKey);
+    }
+
+    function testWithdrawAllFees() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}(bob);
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        vm.deal(address(clfrBob), 33 ether);
+
+        address elfrBob = stakingContract.getELFeeRecipient(publicKey);
+        assert(elfrBob.code.length == 0);
+        vm.deal(address(elfrBob), 1 ether);
+
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+
+        stakingContract.withdraw(publicKey);
+
+        assert(bob.balance == 33.9 ether);
+        assert(operatorOne.balance == 0.1 ether);
     }
 }

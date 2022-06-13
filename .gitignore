@@ -1,7 +1,7 @@
 cache/
 out/
 node_modules
-.vscode
 artifacts
+.vscode
 forge-cache
 .DS_Store

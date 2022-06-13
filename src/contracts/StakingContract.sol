@@ -1,19 +1,33 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "./libs/State.sol";
+import "./libs/StakingContractStorageLib.sol";
 import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
 import "./interfaces/IDepositContract.sol";
+import "./interfaces/IFeeRecipient.sol";
+
+import "@openzeppelin/contracts/proxy/Clones.sol";
 
 /// @title Ethereum Staking Contract
-/// @author SkillZ
+/// @author Kiln
 /// @notice You can use this contract to store validator keys and have users fund them and trigger deposits.
 contract StakingContract {
+    using StakingContractStorageLib for bytes32;
+
+    uint256 internal constant EXECUTION_LAYER_SALT_PREFIX = 0;
+    uint256 internal constant CONSENSUS_LAYER_SALT_PREFIX = 1;
+    uint256 public constant SIGNATURE_LENGTH = 96;
+    uint256 public constant PUBLIC_KEY_LENGTH = 48;
+    uint256 public constant DEPOSIT_SIZE = 32 ether;
+    uint256 internal constant BASIS_POINTS = 10_000;
+
     error NoOperators();
     error InvalidCall();
     error Unauthorized();
+    error InvalidFee();
+    error NotEnoughKeys();
     error DepositFailure();
     error InvalidArgument();
     error UnsortedIndexes();
@@ -33,26 +47,22 @@ contract StakingContract {
         uint32 available;
     }
 
-    uint256 public constant SIGNATURE_LENGTH = 96;
-    uint256 public constant PUBLIC_KEY_LENGTH = 48;
-    uint256 public constant DEPOSIT_SIZE = 32 ether;
-
     event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
 
     /// @notice Ensures an initialisation call has been called only once per _version value
     /// @param _version The current initialisation value
     modifier init(uint256 _version) {
-        if (_version != State.getVersion() + 1) {
+        if (_version != StakingContractStorageLib.getVersion() + 1) {
             revert AlreadyInitialized();
         }
 
-        State.setVersion(_version);
+        StakingContractStorageLib.setVersion(_version);
         _;
     }
 
     /// @notice Ensures that the caller is the admin
     modifier onlyAdmin() {
-        if (msg.sender != State.getAdmin()) {
+        if (msg.sender != StakingContractStorageLib.getAdmin()) {
             revert Unauthorized();
         }
 
@@ -61,7 +71,7 @@ contract StakingContract {
 
     /// @notice Ensures that the caller is the admin
     modifier onlyOperator(uint256 _operatorIndex) {
-        if (msg.sender != State.getOperators().value[_operatorIndex].operator) {
+        if (msg.sender != StakingContractStorageLib.getOperators().value[_operatorIndex].operator) {
             revert Unauthorized();
         }
 
@@ -95,16 +105,69 @@ contract StakingContract {
     function initialize_1(
         address _admin,
         address _depositContract,
-        bytes32 _withdrawalCredentials
+        address _elFeeRecipientImplementation,
+        address _clFeeRecipientImplementation,
+        bytes32 _withdrawalCredentials,
+        uint256 _elFee,
+        uint256 _clFee
     ) external init(1) {
-        State.setWithdrawalCredentials(_withdrawalCredentials);
-        State.setDepositContract(_depositContract);
-        State.setAdmin(_admin);
+        StakingContractStorageLib.setAdmin(_admin);
+        StakingContractStorageLib.setWithdrawalCredentials(_withdrawalCredentials);
+        StakingContractStorageLib.setDepositContract(_depositContract);
+
+        StakingContractStorageLib.setELFeeRecipientImplementation(_elFeeRecipientImplementation);
+        StakingContractStorageLib.setELFee(_elFee);
+
+        StakingContractStorageLib.setCLFeeRecipientImplementation(_clFeeRecipientImplementation);
+        StakingContractStorageLib.setCLFee(_clFee);
     }
 
     /// @notice Retrieve system admin
     function getAdmin() external view returns (address) {
-        return State.getAdmin();
+        return StakingContractStorageLib.getAdmin();
+    }
+
+    /// @notice Retrieve the Execution Layer Fee taken by the node operator
+    function getELFee() external view returns (uint256) {
+        return StakingContractStorageLib.getELFee();
+    }
+
+    /// @notice Retrieve the Consensus Layer Fee taken by the node operator
+    function getCLFee() external view returns (uint256) {
+        return StakingContractStorageLib.getCLFee();
+    }
+
+    /// @notice Compute the Execution Layer Fee recipient address for a given validator public key
+    /// @param _publicKey Validator to get the recipient
+    function getELFeeRecipient(bytes calldata _publicKey) external view returns (address) {
+        return _getDeterministicELFeeRecipientAddress(_publicKey);
+    }
+
+    /// @notice Compute the Consensus Layer Fee recipient address for a given validator public key
+    /// @param _publicKey Validator to get the recipient
+    function getCLFeeRecipient(bytes calldata _publicKey) external view returns (address) {
+        return _getDeterministicCLFeeRecipientAddress(_publicKey);
+    }
+
+    /// @notice Retrieve the Execution & Consensus Layer Fee operator recipient for a given public key
+    function getFeeTreasury(bytes32 pubKeyRoot) external view returns (address) {
+        return
+            StakingContractStorageLib
+                .getOperators()
+                .value[StakingContractStorageLib.getOperatorIndexPerValidator().value[pubKeyRoot]]
+                .operator;
+    }
+
+    /// @notice Retrieve withdrawer of public key
+    /// @param _publicKey Public Key to check
+    function getWithdrawer(bytes calldata _publicKey) external view returns (address) {
+        return _getWithdrawer(_getPubKeyRoot(_publicKey));
+    }
+
+    /// @notice Retrieve withdrawer of public key root
+    /// @param _publicKeyRoot Hash of the public key
+    function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address) {
+        return _getWithdrawer(_publicKeyRoot);
     }
 
     /// @notice Retrieve operator details
@@ -120,9 +183,10 @@ contract StakingContract {
             uint256 available
         )
     {
-        State.OperatorsSlot storage operators = State.getOperators();
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         if (_operatorIndex < operators.value.length) {
-            State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
+            StakingContractStorageLib.ValidatorsFundingInfo memory operatorInfo = StakingContractStorageLib
+                .getValidatorsFundingInfo(_operatorIndex);
 
             (operatorAddress, limit, keys) = (
                 operators.value[_operatorIndex].operator,
@@ -133,25 +197,44 @@ contract StakingContract {
         }
     }
 
-    /// @notice Retrieve withdrawer of public key
-    /// @param _publicKey Public Key to check
-    function getWithdrawer(bytes calldata _publicKey) external view returns (address) {
-        return _getWithdrawer(_publicKey);
+    /// @notice Get details about a validator
+    /// @param _operatorIndex Index of the operator running the validator
+    /// @param _validatorIndex Index of the validator
+    function getValidator(uint256 _operatorIndex, uint256 _validatorIndex)
+        external
+        view
+        returns (
+            bytes memory publicKey,
+            bytes memory signature,
+            address withdrawer,
+            bool funded
+        )
+    {
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        publicKey = operators.value[_operatorIndex].publicKeys[_validatorIndex];
+        signature = operators.value[_operatorIndex].signatures[_validatorIndex];
+        withdrawer = _getWithdrawer(_getPubKeyRoot(publicKey));
+        funded = _validatorIndex < StakingContractStorageLib.getValidatorsFundingInfo(_operatorIndex).funded;
+    }
+
+    /// @notice Get the total available keys that are redy to be used for deposits
+    function getAvailableValidatorCount() external view returns (uint256) {
+        return StakingContractStorageLib.getTotalAvailableValidators();
     }
 
     /// @notice Set new admin
     /// @dev Only callable by admin
     /// @param _newAdmin New Administrator address
     function setAdmin(address _newAdmin) external onlyAdmin {
-        State.setAdmin(_newAdmin);
+        StakingContractStorageLib.setAdmin(_newAdmin);
     }
 
     /// @notice Add new operator
     /// @dev Only callable by admin
     /// @param _operatorAddress Operator address allowed to add / remove validators
     function addOperator(address _operatorAddress) external onlyAdmin returns (uint256) {
-        State.OperatorsSlot storage operators = State.getOperators();
-        State.OperatorInfo memory newOperator;
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        StakingContractStorageLib.OperatorInfo memory newOperator;
         newOperator.operator = _operatorAddress;
         operators.value.push(newOperator);
         return operators.value.length - 1;
@@ -163,7 +246,7 @@ contract StakingContract {
     /// @param _newWithdrawer New withdrawer address
     function setWithdrawer(bytes calldata _publicKey, address _newWithdrawer) external {
         bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        State.WithdrawersSlot storage withdrawers = State.getWithdrawers();
+        StakingContractStorageLib.WithdrawersSlot storage withdrawers = StakingContractStorageLib.getWithdrawers();
 
         if (withdrawers.value[pubkeyRoot] != msg.sender) {
             revert Unauthorized();
@@ -177,9 +260,27 @@ contract StakingContract {
     /// @param _operatorIndex Operator Index
     /// @param _limit New staking limit
     function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external onlyAdmin {
-        State.OperatorsSlot storage operators = State.getOperators();
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         operators.value[_operatorIndex].limit = _limit;
         _updateAvailableValidatorCount(_operatorIndex);
+    }
+
+    /// @notice Change the Execution Layer Fee taken by the node operator
+    /// @param _fee Fee in Basis Point
+    function setELFee(uint256 _fee) external onlyAdmin {
+        if (_fee > BASIS_POINTS) {
+            revert InvalidFee();
+        }
+        StakingContractStorageLib.setELFee(_fee);
+    }
+
+    /// @notice Change the Consensus Layer Fee taken by the node operator
+    /// @param _fee Fee in Basis Point
+    function setCLFee(uint256 _fee) external onlyAdmin {
+        if (_fee > BASIS_POINTS) {
+            revert InvalidFee();
+        }
+        StakingContractStorageLib.setCLFee(_fee);
     }
 
     /// @notice Add new validator public keys and signatures
@@ -206,7 +307,9 @@ contract StakingContract {
             revert InvalidSignatures();
         }
 
-        State.OperatorsSlot storage operators = State.getOperators();
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        StakingContractStorageLib.OperatorIndexPerValidatorSlot
+            storage operatorIndexPerValidator = StakingContractStorageLib.getOperatorIndexPerValidator();
 
         for (uint256 i; i < _keyCount; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
@@ -214,6 +317,8 @@ contract StakingContract {
 
             operators.value[_operatorIndex].publicKeys.push(publicKey);
             operators.value[_operatorIndex].signatures.push(signature);
+
+            operatorIndexPerValidator.value[_getPubKeyRoot(publicKey)] = _operatorIndex;
 
             unchecked {
                 ++i;
@@ -236,8 +341,9 @@ contract StakingContract {
             revert InvalidArgument();
         }
 
-        State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
-        State.OperatorsSlot storage operators = State.getOperators();
+        StakingContractStorageLib.ValidatorsFundingInfo memory operatorInfo = StakingContractStorageLib
+            .getValidatorsFundingInfo(_operatorIndex);
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
 
         for (uint256 i; i < _indexes.length; ) {
             if (i > 0 && _indexes[i] >= _indexes[i - 1]) {
@@ -270,25 +376,28 @@ contract StakingContract {
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
-    function getValidator(uint256 _operatorIndex, uint256 _validatorIndex)
-        external
-        view
-        returns (
-            bytes memory publicKey,
-            bytes memory signature,
-            address withdrawer,
-            bool funded
-        )
-    {
-        State.OperatorsSlot storage operators = State.getOperators();
-        publicKey = operators.value[_operatorIndex].publicKeys[_validatorIndex];
-        signature = operators.value[_operatorIndex].signatures[_validatorIndex];
-        withdrawer = _getWithdrawer(publicKey);
-        funded = _validatorIndex < State.getValidatorsFundingInfo(_operatorIndex).funded;
+    /// @notice Withdraw the Execution Layer Fee for a given validator public key
+    /// @dev Funds are sent to the withdrawer account
+    /// @dev This method is public on purpose
+    /// @param _publicKey Validator to withdraw Execution Layer Fees from
+    function withdrawELFee(bytes calldata _publicKey) external {
+        _deployAndWithdrawELFee(_publicKey);
     }
 
-    function getAvailableValidatorCount() external view returns (uint256) {
-        return State.getTotalAvailableValidators();
+    /// @notice Withdraw the Consensus Layer Fee for a given validator public key
+    /// @dev Funds are sent to the withdrawer account
+    /// @dev This method is public on purpose
+    /// @param _publicKey Validator to withdraw Consensus Layer Fees from
+    function withdrawCLFee(bytes calldata _publicKey) external {
+        _deployAndWithdrawCLFee(_publicKey);
+    }
+
+    /// @notice Withdraw both Consensus and Execution Layer Fee for a given validator public key
+    /// @dev Reverts if any is null
+    /// @param _publicKey Validator to withdraw Execution and Consensus Layer Fees from
+    function withdraw(bytes calldata _publicKey) external {
+        _deployAndWithdrawELFee(_publicKey);
+        _deployAndWithdrawCLFee(_publicKey);
     }
 
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
@@ -297,36 +406,42 @@ contract StakingContract {
     /// ██ ██  ██ ██    ██    ██      ██   ██ ██  ██ ██ ██   ██ ██
     /// ██ ██   ████    ██    ███████ ██   ██ ██   ████ ██   ██ ███████
 
-    function _getWithdrawer(bytes memory _publicKey) internal view returns (address) {
-        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
-        State.WithdrawersSlot storage withdrawers = State.getWithdrawers();
+    function _getPubKeyRoot(bytes memory _publicKey) internal pure returns (bytes32) {
+        return sha256(BytesLib.pad64(_publicKey));
+    }
 
-        return withdrawers.value[pubkeyRoot];
+    function _getWithdrawer(bytes32 _publicKeyRoot) internal view returns (address) {
+        return StakingContractStorageLib.getWithdrawers().value[_publicKeyRoot];
     }
 
     function _updateAvailableValidatorCount(uint256 _operatorIndex) internal {
-        State.ValidatorsFundingInfo memory operatorInfo = State.getValidatorsFundingInfo(_operatorIndex);
-        State.OperatorsSlot storage operators = State.getOperators();
+        StakingContractStorageLib.ValidatorsFundingInfo memory operatorInfo = StakingContractStorageLib
+            .getValidatorsFundingInfo(_operatorIndex);
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
 
         uint32 oldAvailableCount = operatorInfo.availableKeys;
         uint32 newAvailableCount = 0;
         uint256 cap = _min(operators.value[_operatorIndex].limit, operators.value[_operatorIndex].publicKeys.length);
 
         if (cap <= operatorInfo.funded) {
-            State.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
+            StakingContractStorageLib.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
         } else {
             newAvailableCount = uint32(cap - operatorInfo.funded);
-            State.setOperatorInfo(_operatorIndex, uint32(cap - operatorInfo.funded), operatorInfo.funded);
+            StakingContractStorageLib.setOperatorInfo(
+                _operatorIndex,
+                uint32(cap - operatorInfo.funded),
+                operatorInfo.funded
+            );
         }
 
         if (oldAvailableCount != newAvailableCount) {
             if (oldAvailableCount > newAvailableCount) {
-                State.setTotalAvailableValidators(
-                    State.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
+                StakingContractStorageLib.setTotalAvailableValidators(
+                    StakingContractStorageLib.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
                 );
             } else {
-                State.setTotalAvailableValidators(
-                    State.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
+                StakingContractStorageLib.setTotalAvailableValidators(
+                    StakingContractStorageLib.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
                 );
             }
         }
@@ -337,36 +452,42 @@ contract StakingContract {
         uint256 _validatorCount,
         address _withdrawer
     ) internal {
-        State.OperatorsSlot storage operators = State.getOperators();
-        State.OperatorInfo storage operator = operators.value[_operatorIndex];
-        State.ValidatorsFundingInfo memory osi = State.getValidatorsFundingInfo(_operatorIndex);
-        bytes32 withdrawalCredentials = State.getWithdrawalCredentials();
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        StakingContractStorageLib.OperatorInfo storage operator = operators.value[_operatorIndex];
+        StakingContractStorageLib.ValidatorsFundingInfo memory osi = StakingContractStorageLib.getValidatorsFundingInfo(
+            _operatorIndex
+        );
+        bytes32 withdrawalCredentials = StakingContractStorageLib.getWithdrawalCredentials();
 
         for (uint256 i = osi.funded; i < osi.funded + _validatorCount; ) {
             bytes memory publicKey = operator.publicKeys[i];
             bytes memory signature = operator.signatures[i];
             _depositValidator(publicKey, signature, withdrawalCredentials);
-            bytes32 pubkeyRoot = sha256(BytesLib.pad64(publicKey));
-            State.getWithdrawers().value[pubkeyRoot] = _withdrawer;
+            bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
+            StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = _withdrawer;
             emit Deposit(msg.sender, _withdrawer, publicKey, pubkeyRoot);
             unchecked {
                 ++i;
             }
         }
 
-        State.setOperatorInfo(
+        StakingContractStorageLib.setOperatorInfo(
             _operatorIndex,
             uint32(osi.availableKeys - _validatorCount),
             uint32(osi.funded + _validatorCount)
         );
     }
 
+    /// @notice Internal utility to deposit a public key, its signature and 32 ETH to the consensus layer
+    /// @param _publicKey The Public Key to deposit
+    /// @param _signature The Signature to deposit
+    /// @param _withdrawalCredentials The Withdrawal Credentials to deposit
     function _depositValidator(
         bytes memory _publicKey,
         bytes memory _signature,
         bytes32 _withdrawalCredentials
     ) internal {
-        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
+        bytes32 pubkeyRoot = _getPubKeyRoot(_publicKey);
         bytes32 signatureRoot = sha256(
             abi.encodePacked(
                 sha256(BytesLib.slice(_signature, 0, 64)),
@@ -386,7 +507,7 @@ contract StakingContract {
 
         uint256 targetBalance = address(this).balance - DEPOSIT_SIZE;
 
-        IDepositContract(State.getDepositContract()).deposit{value: DEPOSIT_SIZE}(
+        IDepositContract(StakingContractStorageLib.getDepositContract()).deposit{value: DEPOSIT_SIZE}(
             _publicKey,
             abi.encodePacked(_withdrawalCredentials),
             _signature,
@@ -404,7 +525,7 @@ contract StakingContract {
         uint256 _totalAvailableValidators
     ) internal {
         _depositValidatorsOfOperator(0, _depositCount, _withdrawer);
-        State.setTotalAvailableValidators(_totalAvailableValidators - _depositCount);
+        StakingContractStorageLib.setTotalAvailableValidators(_totalAvailableValidators - _depositCount);
     }
 
     function _depositOnTwoOperators(
@@ -412,8 +533,10 @@ contract StakingContract {
         uint256 _depositCount,
         uint256 _totalAvailableValidators
     ) internal {
-        State.ValidatorsFundingInfo memory oneOsi = State.getValidatorsFundingInfo(0);
-        State.ValidatorsFundingInfo memory twoOsi = State.getValidatorsFundingInfo(1);
+        StakingContractStorageLib.ValidatorsFundingInfo memory oneOsi = StakingContractStorageLib
+            .getValidatorsFundingInfo(0);
+        StakingContractStorageLib.ValidatorsFundingInfo memory twoOsi = StakingContractStorageLib
+            .getValidatorsFundingInfo(1);
 
         uint256 oneDepositCount;
         uint256 twoDepositCount;
@@ -441,7 +564,9 @@ contract StakingContract {
         if (twoDepositCount > 0) {
             _depositValidatorsOfOperator(1, twoDepositCount, _withdrawer);
         }
-        State.setTotalAvailableValidators(_totalAvailableValidators - (oneDepositCount + twoDepositCount));
+        StakingContractStorageLib.setTotalAvailableValidators(
+            _totalAvailableValidators - (oneDepositCount + twoDepositCount)
+        );
     }
 
     function _getBaseSkip(
@@ -462,7 +587,8 @@ contract StakingContract {
             return 0;
         }
         if (vd[operatorIndex].used == false) {
-            State.ValidatorsFundingInfo memory osi = State.getValidatorsFundingInfo(operatorIndex);
+            StakingContractStorageLib.ValidatorsFundingInfo memory osi = StakingContractStorageLib
+                .getValidatorsFundingInfo(operatorIndex);
             vd[operatorIndex].used = true;
             vd[operatorIndex].funded = osi.funded;
             vd[operatorIndex].available = osi.availableKeys;
@@ -479,7 +605,8 @@ contract StakingContract {
             return 0;
         }
         if (vd[operatorIndex].used == false) {
-            State.ValidatorsFundingInfo memory osi = State.getValidatorsFundingInfo(operatorIndex);
+            StakingContractStorageLib.ValidatorsFundingInfo memory osi = StakingContractStorageLib
+                .getValidatorsFundingInfo(operatorIndex);
             vd[operatorIndex].used = true;
             vd[operatorIndex].funded = osi.funded;
             vd[operatorIndex].available = osi.availableKeys;
@@ -531,7 +658,7 @@ contract StakingContract {
                 }
             }
             index = (index + skip) % prime;
-            if (index == base) {
+            if (index == base && betaIndex == -1) {
                 betaIndex = alphaIndex;
             }
         }
@@ -542,7 +669,7 @@ contract StakingContract {
         address _withdrawer,
         uint256 _depositCount,
         uint256 _totalAvailableValidators,
-        State.OperatorsSlot storage _operators
+        StakingContractStorageLib.OperatorsSlot storage _operators
     ) internal {
         uint256 operatorCount = _operators.value.length;
         uint8 optimusPrime = _getClosestPrimeAbove(uint8(operatorCount));
@@ -581,19 +708,19 @@ contract StakingContract {
             }
         }
 
-        State.setTotalAvailableValidators(_totalAvailableValidators - _depositCount);
+        StakingContractStorageLib.setTotalAvailableValidators(_totalAvailableValidators - _depositCount);
     }
 
     function _deposit(address _withdrawer) internal {
         if (msg.value == 0 || msg.value % DEPOSIT_SIZE != 0) {
             revert InvalidMessageValue();
         }
-        uint256 totalAvailableValidators = State.getTotalAvailableValidators();
+        uint256 totalAvailableValidators = StakingContractStorageLib.getTotalAvailableValidators();
         uint256 depositCount = msg.value / DEPOSIT_SIZE;
         if (depositCount > totalAvailableValidators) {
             revert NotEnoughValidators();
         }
-        State.OperatorsSlot storage operators = State.getOperators();
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         if (operators.value.length == 0) {
             revert NoOperators();
         } else if (operators.value.length == 1) {
@@ -682,5 +809,53 @@ contract StakingContract {
             return _a;
         }
         return _b;
+    }
+
+    /// @notice Computes the execution layer fee recipient for the given validator public key
+    /// @param _publicKey The public key linked to the recipient
+    function _getDeterministicELFeeRecipientAddress(bytes calldata _publicKey) internal view returns (address) {
+        bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_SALT_PREFIX, publicKeyRoot));
+        address implementation = StakingContractStorageLib.getELFeeRecipientImplementation();
+        return Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+    }
+
+    /// @notice Computes the consensus layer fee recipient for the given validator public key
+    /// @param _publicKey The public key linked to the recipient
+    function _getDeterministicCLFeeRecipientAddress(bytes calldata _publicKey) internal view returns (address) {
+        bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_SALT_PREFIX, publicKeyRoot));
+        address implementation = StakingContractStorageLib.getCLFeeRecipientImplementation();
+        return Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+    }
+
+    /// @notice Computes the execution layer fee recipient for the given validator public key, checks if a
+    ///         contract exists at given address, creates a minimal Clone if not and then performs withdrawal
+    /// @param _publicKey The public key linked to the recipient
+    function _deployAndWithdrawELFee(bytes calldata _publicKey) internal {
+        bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_SALT_PREFIX, publicKeyRoot));
+        address implementation = StakingContractStorageLib.getELFeeRecipientImplementation();
+        address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+        if (feeRecipientAddress.code.length == 0) {
+            Clones.cloneDeterministic(implementation, feeRecipientSalt);
+            IELFeeRecipient(feeRecipientAddress).initELFR(address(this), publicKeyRoot);
+        }
+        IELFeeRecipient(feeRecipientAddress).withdraw();
+    }
+
+    /// @notice Computes the consensus layer fee recipient for the given validator public key, checks if a
+    ///         contract exists at given address, creates a minimal Clone if not and then performs withdrawal
+    /// @param _publicKey The public key linked to the recipient
+    function _deployAndWithdrawCLFee(bytes calldata _publicKey) internal {
+        bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_SALT_PREFIX, publicKeyRoot));
+        address implementation = StakingContractStorageLib.getCLFeeRecipientImplementation();
+        address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+        if (feeRecipientAddress.code.length == 0) {
+            Clones.cloneDeterministic(implementation, feeRecipientSalt);
+            ICLFeeRecipient(feeRecipientAddress).initCLFR(address(this), publicKeyRoot);
+        }
+        ICLFeeRecipient(feeRecipientAddress).withdraw();
     }
 }
