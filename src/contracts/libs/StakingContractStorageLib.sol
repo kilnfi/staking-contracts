@@ -84,20 +84,6 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant WITHDRAWAL_CREDENTIALS_SLOT = keccak256("StakingContract.withdrawalCredentials");
-
-    function getWithdrawalCredentials() internal view returns (bytes32) {
-        return getBytes32(WITHDRAWAL_CREDENTIALS_SLOT);
-    }
-
-    function setWithdrawalCredentials(bytes32 _newCredentials) internal {
-        setBytes32(WITHDRAWAL_CREDENTIALS_SLOT, _newCredentials);
-    }
-
-    /* ========================================
-    ===========================================
-    =========================================*/
-
     bytes32 internal constant OPERATORS_SLOT = keccak256("StakingContract.operators");
 
     struct OperatorInfo {

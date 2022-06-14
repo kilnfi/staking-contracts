@@ -61,23 +61,13 @@ contract StakingContractTest is DSTestPlus {
     address internal operatorOne = address(4);
     address internal operatorTwo = address(5);
 
-    bytes32 internal withdrawalCredentials = bytes32(uint256(4));
-
     function setUp() public {
         uf = new UserFactory();
         elfr = new ExecutionLayerFeeRecipient(1);
         clfr = new ConsensusLayerFeeRecipient(1);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(
-            admin,
-            address(depositContract),
-            address(elfr),
-            address(clfr),
-            withdrawalCredentials,
-            500,
-            500
-        );
+        stakingContract.initialize_1(admin, address(depositContract), address(elfr), address(clfr), 500, 500);
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
@@ -130,15 +120,7 @@ contract StakingContractTest is DSTestPlus {
 
     function testReinitialization() public {
         vm.expectRevert(abi.encodeWithSignature("AlreadyInitialized()"));
-        stakingContract.initialize_1(
-            admin,
-            address(depositContract),
-            address(0),
-            address(0),
-            withdrawalCredentials,
-            500,
-            500
-        );
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
     }
 
     function testSetAdminUnauthorized(uint256 _adminSalt) public {
@@ -635,21 +617,11 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
     address internal operatorTwo = address(5);
     address internal operatorThree = address(5);
 
-    bytes32 internal withdrawalCredentials = bytes32(uint256(4));
-
     function setUp() public {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(
-            admin,
-            address(depositContract),
-            address(0),
-            address(0),
-            withdrawalCredentials,
-            500,
-            500
-        );
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
@@ -1025,21 +997,11 @@ contract StakingContractDistributionTest is DSTestPlus {
     address[] internal operators;
     bytes32 salt = bytes32(0);
 
-    bytes32 internal withdrawalCredentials = bytes32(uint256(4));
-
     function setUp() public {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(
-            admin,
-            address(depositContract),
-            address(0),
-            address(0),
-            withdrawalCredentials,
-            500,
-            500
-        );
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
     }
 
     function genBytes(uint256 len) internal returns (bytes memory) {
@@ -1127,21 +1089,11 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
     address internal operatorOne = address(4);
     address internal operatorTwo = address(5);
 
-    bytes32 internal withdrawalCredentials = bytes32(uint256(4));
-
     function setUp() public {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(
-            admin,
-            address(depositContract),
-            address(0),
-            address(0),
-            withdrawalCredentials,
-            500,
-            500
-        );
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
@@ -1431,23 +1383,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     ExecutionLayerFeeRecipient internal elfr;
     ConsensusLayerFeeRecipient internal clfr;
 
-    bytes32 internal withdrawalCredentials = bytes32(uint256(4));
-
     function setUp() public {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         elfr = new ExecutionLayerFeeRecipient(1);
         clfr = new ConsensusLayerFeeRecipient(1);
-        stakingContract.initialize_1(
-            admin,
-            address(depositContract),
-            address(elfr),
-            address(clfr),
-            withdrawalCredentials,
-            500,
-            500
-        );
+        stakingContract.initialize_1(admin, address(depositContract), address(elfr), address(clfr), 500, 500);
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne);
@@ -1473,6 +1415,44 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     }
 
     event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
+    event DepositEvent(bytes pubkey, bytes withdrawal_credentials, bytes amount, bytes signature, bytes index);
+
+    function testExplicitDepositOneValidatorCheckDepositEvent(uint256 _userSalt, uint256 _withdrawerSalt) public {
+        address user = uf._new(_userSalt);
+        address withdrawer = uf._new(_withdrawerSalt);
+        vm.deal(user, 32 ether);
+
+        vm.startPrank(user);
+        bytes memory expectedWithdrawalCredentials = abi.encodePacked(
+            bytes32(
+                uint256(
+                    uint160(
+                        stakingContract.getCLFeeRecipient(
+                            hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759"
+                        )
+                    )
+                ) + 0x0100000000000000000000000000000000000000000000000000000000000000
+            )
+        );
+        vm.expectEmit(true, true, true, true);
+        emit DepositEvent(
+            hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759",
+            expectedWithdrawalCredentials,
+            hex"0040597307000000",
+            hex"ccb81f4485957f440bc17dbe760f374cbb112c6f12fa10e8709fac4522b30440d918c7bb867fa04f6b3cfbd977455f8f2fde586fdf3d7baa429e98e497ff871f3b8db1528b2b964fa24d26e377c74746496cc719c50dbf391fb3f74f5ca4b93a",
+            hex"0000000000000000"
+        );
+        stakingContract.deposit{value: 32 ether}(withdrawer);
+        vm.stopPrank();
+
+        assertEq(user.balance, 0);
+
+        (, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(0);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 1);
+        assertEq(available, 9);
+    }
 
     function testExplicitDepositOneValidator(uint256 _userSalt, uint256 _withdrawerSalt) public {
         address user = uf._new(_userSalt);

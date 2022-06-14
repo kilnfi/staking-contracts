@@ -101,18 +101,19 @@ contract StakingContract {
     /// @notice Initializes version 1 of Staking Contract
     /// @param _admin Address of the admin allowed to change the operator and admin
     /// @param _depositContract Address of the Deposit Contract
-    /// @param _withdrawalCredentials Withdrawal Credentials to apply to all provided keys upon deposit
+    /// @param _elFeeRecipientImplementation Address of the Execution Layer fee recipient implementation
+    /// @param _clFeeRecipientImplementation Address of the Consensus Layer fee recipient implementation
+    /// @param _elFee Fee in bps to take on any Execution Layer fee withdrawal
+    /// @param _clFee Fee in bps to take on any Consensus Layer fee withdrawal
     function initialize_1(
         address _admin,
         address _depositContract,
         address _elFeeRecipientImplementation,
         address _clFeeRecipientImplementation,
-        bytes32 _withdrawalCredentials,
         uint256 _elFee,
         uint256 _clFee
     ) external init(1) {
         StakingContractStorageLib.setAdmin(_admin);
-        StakingContractStorageLib.setWithdrawalCredentials(_withdrawalCredentials);
         StakingContractStorageLib.setDepositContract(_depositContract);
 
         StakingContractStorageLib.setELFeeRecipientImplementation(_elFeeRecipientImplementation);
@@ -447,6 +448,11 @@ contract StakingContract {
         }
     }
 
+    function _addressToWithdrawalCredentials(address _recipient) internal pure returns (bytes32) {
+        return
+            bytes32(uint256(uint160(_recipient)) + 0x0100000000000000000000000000000000000000000000000000000000000000);
+    }
+
     function _depositValidatorsOfOperator(
         uint256 _operatorIndex,
         uint256 _validatorCount,
@@ -457,11 +463,12 @@ contract StakingContract {
         StakingContractStorageLib.ValidatorsFundingInfo memory osi = StakingContractStorageLib.getValidatorsFundingInfo(
             _operatorIndex
         );
-        bytes32 withdrawalCredentials = StakingContractStorageLib.getWithdrawalCredentials();
 
         for (uint256 i = osi.funded; i < osi.funded + _validatorCount; ) {
             bytes memory publicKey = operator.publicKeys[i];
             bytes memory signature = operator.signatures[i];
+            address consensusLayerRecipient = _getDeterministicCLFeeRecipientAddress(publicKey);
+            bytes32 withdrawalCredentials = _addressToWithdrawalCredentials(consensusLayerRecipient);
             _depositValidator(publicKey, signature, withdrawalCredentials);
             bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
             StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = _withdrawer;
@@ -813,7 +820,7 @@ contract StakingContract {
 
     /// @notice Computes the execution layer fee recipient for the given validator public key
     /// @param _publicKey The public key linked to the recipient
-    function _getDeterministicELFeeRecipientAddress(bytes calldata _publicKey) internal view returns (address) {
+    function _getDeterministicELFeeRecipientAddress(bytes memory _publicKey) internal view returns (address) {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_SALT_PREFIX, publicKeyRoot));
         address implementation = StakingContractStorageLib.getELFeeRecipientImplementation();
@@ -822,7 +829,7 @@ contract StakingContract {
 
     /// @notice Computes the consensus layer fee recipient for the given validator public key
     /// @param _publicKey The public key linked to the recipient
-    function _getDeterministicCLFeeRecipientAddress(bytes calldata _publicKey) internal view returns (address) {
+    function _getDeterministicCLFeeRecipientAddress(bytes memory _publicKey) internal view returns (address) {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_SALT_PREFIX, publicKeyRoot));
         address implementation = StakingContractStorageLib.getCLFeeRecipientImplementation();
