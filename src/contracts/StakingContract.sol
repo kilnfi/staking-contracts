@@ -78,6 +78,15 @@ contract StakingContract {
         _;
     }
 
+    /// @notice Ensures that the caller is the operator fee recipient
+    modifier onlyOperatorRecipient(uint256 _operatorIndex) {
+        if (msg.sender != StakingContractStorageLib.getOperators().value[_operatorIndex].feeRecipient) {
+            revert Unauthorized();
+        }
+
+        _;
+    }
+
     /// @notice Explicit deposit method
     /// @dev A multiple of 32 ETH should be sent
     /// @param _withdrawer The withdrawer address
@@ -156,7 +165,7 @@ contract StakingContract {
             StakingContractStorageLib
                 .getOperators()
                 .value[StakingContractStorageLib.getOperatorIndexPerValidator().value[pubKeyRoot]]
-                .operator;
+                .feeRecipient;
     }
 
     /// @notice Retrieve withdrawer of public key
@@ -233,12 +242,31 @@ contract StakingContract {
     /// @notice Add new operator
     /// @dev Only callable by admin
     /// @param _operatorAddress Operator address allowed to add / remove validators
-    function addOperator(address _operatorAddress) external onlyAdmin returns (uint256) {
+    /// @param _feeRecipientAddress Operator address used to manage rewards
+    function addOperator(address _operatorAddress, address _feeRecipientAddress) external onlyAdmin returns (uint256) {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         StakingContractStorageLib.OperatorInfo memory newOperator;
         newOperator.operator = _operatorAddress;
+        newOperator.feeRecipient = _feeRecipientAddress;
         operators.value.push(newOperator);
         return operators.value.length - 1;
+    }
+
+    /// @notice Set new operator addresses (operations and reward management)
+    /// @dev Only callable by fee recipient address manager
+    /// @param _operatorIndex Index of the operator to update
+    /// @param _operatorAddress New operator address for operations management
+    /// @param _feeRecipientAddress New operator address for reward management
+    function setOperatorAddresses(
+        uint256 _operatorIndex,
+        address _operatorAddress,
+        address _feeRecipientAddress
+    ) external onlyOperatorRecipient(_operatorIndex)
+    {
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+
+        operators.value[_operatorIndex].operator = _operatorAddress;
+        operators.value[_operatorIndex].feeRecipient = _feeRecipientAddress;
     }
 
     /// @notice Set withdrawer for public key

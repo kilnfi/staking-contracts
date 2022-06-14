@@ -59,7 +59,9 @@ contract StakingContractTest is DSTestPlus {
     address internal bob = address(2);
     address internal alice = address(3);
     address internal operatorOne = address(4);
+    address internal feeRecipientOne = address(44);
     address internal operatorTwo = address(5);
+    address internal feeRecipientTwo = address(55);
 
     function setUp() public {
         uf = new UserFactory();
@@ -70,8 +72,8 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.initialize_1(admin, address(depositContract), address(elfr), address(clfr), 500, 500);
 
         vm.startPrank(admin);
-        stakingContract.addOperator(operatorOne);
-        stakingContract.addOperator(operatorTwo);
+        stakingContract.addOperator(operatorOne, feeRecipientOne);
+        stakingContract.addOperator(operatorTwo, feeRecipientTwo);
         vm.stopPrank();
 
         {
@@ -148,11 +150,12 @@ contract StakingContractTest is DSTestPlus {
 
     function testAddOperator(uint256 _operatorSalt) public {
         address newOperator = uf._new(_operatorSalt);
+        address newOperatorFeeRecipient = uf._new(_operatorSalt);
 
         uint256 operatorIndex;
 
         vm.startPrank(admin);
-        operatorIndex = stakingContract.addOperator(newOperator);
+        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
         vm.stopPrank();
 
         (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract
@@ -166,20 +169,66 @@ contract StakingContractTest is DSTestPlus {
 
     function testAddOperatorUnauthorized(uint256 _operatorSalt) public {
         address newOperator = uf._new(_operatorSalt);
+        address newOperatorFeeRecipient = uf._new(_operatorSalt);
 
         uint256 operatorIndex;
 
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        operatorIndex = stakingContract.addOperator(newOperator);
+        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
+    }
+
+    function testSetOperatorAddresses(uint256 _operatorSalt) public {
+        address newOperator = uf._new(_operatorSalt);
+        address newOperatorFeeRecipient = uf._new(_operatorSalt);
+
+        uint256 operatorIndex;
+
+        // Registers an operator
+        vm.startPrank(admin);
+        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
+        vm.stopPrank();
+
+        address updatedOperator = uf._new(_operatorSalt);
+        
+        // Try to update the operator address
+        vm.startPrank(newOperatorFeeRecipient);
+        stakingContract.setOperatorAddresses(operatorIndex, updatedOperator, newOperatorFeeRecipient);
+        vm.stopPrank();
+
+        (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract
+            .getOperator(operatorIndex);
+        assertEq(operatorAddress, updatedOperator);
+        assertEq(limit, 0);
+        assertEq(keys, 0);
+        assertEq(funded, 0);
+        assertEq(available, 0);
+    }
+
+    function testSetOperatorAddressesUnauthorized(uint256 _operatorSalt) public {
+        address newOperator = uf._new(_operatorSalt);
+        address newOperatorFeeRecipient = uf._new(_operatorSalt);
+        address wrongOperatorFeeRecipient = uf._new(_operatorSalt);
+
+        uint256 operatorIndex;
+
+        // Register the operator to try an update right after
+        vm.startPrank(admin);
+        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
+        vm.stopPrank();
+
+        // Try to update the operator addresses
+        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+        stakingContract.setOperatorAddresses(operatorIndex, newOperator, wrongOperatorFeeRecipient);
     }
 
     function testSetOperatorLimit(uint256 _operatorSalt, uint256 _limit) public {
         address newOperator = uf._new(_operatorSalt);
+        address newOperatorFeeRecipient = uf._new(_operatorSalt);
 
         uint256 operatorIndex;
 
         vm.startPrank(admin);
-        operatorIndex = stakingContract.addOperator(newOperator);
+        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
         vm.stopPrank();
 
         (, uint256 limit, , , ) = stakingContract.getOperator(operatorIndex);
@@ -195,11 +244,12 @@ contract StakingContractTest is DSTestPlus {
 
     function testSetOperatorLimitUnauthorized(uint256 _operatorSalt, uint256 _limit) public {
         address newOperator = uf._new(_operatorSalt);
+        address newOperatorFeeRecipient = uf._new(_operatorSalt);
 
         uint256 operatorIndex;
 
         vm.startPrank(admin);
-        operatorIndex = stakingContract.addOperator(newOperator);
+        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
         vm.stopPrank();
 
         (, uint256 limit, , , ) = stakingContract.getOperator(operatorIndex);
@@ -294,8 +344,10 @@ contract StakingContractTest is DSTestPlus {
         for (uint256 i; i < 100; ) {
             uint256 operatorIndex = 2 + i;
             address newOperatorAddress = uf._new(operatorIndex);
+            address newOperatorFeeRecipient = uf._new(operatorIndex);
+
             vm.startPrank(admin);
-            stakingContract.addOperator(newOperatorAddress);
+            stakingContract.addOperator(newOperatorAddress, newOperatorFeeRecipient);
             vm.stopPrank();
 
             (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract
@@ -344,8 +396,10 @@ contract StakingContractTest is DSTestPlus {
         for (uint256 i; i < 100; ) {
             uint256 operatorIndex = 2 + i;
             address newOperatorAddress = uf._new(operatorIndex);
+            address newOperatorFeeRecipient = uf._new(operatorIndex);
+
             vm.startPrank(admin);
-            stakingContract.addOperator(newOperatorAddress);
+            stakingContract.addOperator(newOperatorAddress, newOperatorFeeRecipient);
             vm.stopPrank();
 
             (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract
@@ -614,8 +668,13 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
     address internal bob = address(2);
     address internal alice = address(3);
     address internal operatorOne = address(4);
+    address internal feeRecipientOne = address(44);
+
     address internal operatorTwo = address(5);
+    address internal feeRecipientTwo = address(55);
+
     address internal operatorThree = address(5);
+    address internal feeRecipientThree = address(55);
 
     function setUp() public {
         uf = new UserFactory();
@@ -624,9 +683,9 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
 
         vm.startPrank(admin);
-        stakingContract.addOperator(operatorOne);
-        stakingContract.addOperator(operatorTwo);
-        stakingContract.addOperator(operatorThree);
+        stakingContract.addOperator(operatorOne, feeRecipientOne);
+        stakingContract.addOperator(operatorTwo, feeRecipientTwo);
+        stakingContract.addOperator(operatorThree, feeRecipientThree);
         vm.stopPrank();
 
         {
@@ -1034,7 +1093,9 @@ contract StakingContractDistributionTest is DSTestPlus {
         for (uint256 i; i < newOps; ++i) {
             vm.startPrank(admin);
             address newOperator = uf._new(uint256(keccak256(abi.encodePacked(i))));
-            stakingContract.addOperator(newOperator);
+            address newOperatorFeeRecipient = uf._new(uint256(keccak256(abi.encodePacked(i))));
+
+            stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
             stakingContract.setOperatorLimit(i, keyPerOperator);
             operators.push(newOperator);
             vm.stopPrank();
@@ -1087,7 +1148,9 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
     address internal bob = address(2);
     address internal alice = address(3);
     address internal operatorOne = address(4);
+    address internal feeRecipientOne = address(44);
     address internal operatorTwo = address(5);
+    address internal feeRecipientTwo = address(55);
 
     function setUp() public {
         uf = new UserFactory();
@@ -1096,8 +1159,8 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
 
         vm.startPrank(admin);
-        stakingContract.addOperator(operatorOne);
-        stakingContract.addOperator(operatorTwo);
+        stakingContract.addOperator(operatorOne, feeRecipientOne);
+        stakingContract.addOperator(operatorTwo, feeRecipientTwo);
         vm.stopPrank();
 
         {
@@ -1380,6 +1443,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     address internal bob = address(2);
     address internal alice = address(3);
     address internal operatorOne = address(4);
+    address internal feeRecipientOne = address(44);
     ExecutionLayerFeeRecipient internal elfr;
     ConsensusLayerFeeRecipient internal clfr;
 
@@ -1392,7 +1456,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         stakingContract.initialize_1(admin, address(depositContract), address(elfr), address(clfr), 500, 500);
 
         vm.startPrank(admin);
-        stakingContract.addOperator(operatorOne);
+        stakingContract.addOperator(operatorOne, feeRecipientOne);
         vm.stopPrank();
 
         {
@@ -1695,11 +1759,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(elfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0);
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
         assert(bob.balance == 0.95 ether);
-        assert(operatorOne.balance == 0.05 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.05 ether);
     }
 
     function testWithdrawELFeesEditedFeeBps() public {
@@ -1717,11 +1783,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(elfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0);
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
         assert(bob.balance == 0.9 ether);
-        assert(operatorOne.balance == 0.1 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.1 ether);
     }
 
     function testWithdrawELFeesAlreadyDeployed() public {
@@ -1736,15 +1804,18 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(elfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0);
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
         assert(bob.balance == 0.95 ether);
-        assert(operatorOne.balance == 0.05 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.05 ether);
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(bob.balance == 1.90 ether);
-        assert(operatorOne.balance == 0.1 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.1 ether);
     }
 
     function testWithdrawELFeesEmptyWithdrawal() public {
@@ -1771,11 +1842,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 33 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.95 ether);
-        assert(operatorOne.balance == 0.05 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.05 ether);
     }
 
     function testWithdrawCLFeesEditedFeeBps() public {
@@ -1793,11 +1866,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 33 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.90 ether);
-        assert(operatorOne.balance == 0.1 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.1 ether);
     }
 
     function testWithdrawCLFeesSkimmedValidator() public {
@@ -1812,11 +1887,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0);        
         vm.deal(address(clfrBob), 1 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 0.95 ether);
-        assert(operatorOne.balance == 0.05 ether);
+        assert(feeRecipientOne.balance == 0.05 ether);
+        assert(operatorOne.balance == 0);
     }
 
     function testWithdrawCLFeesSlashedValidator() public {
@@ -1850,15 +1927,18 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 33 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.95 ether);
-        assert(operatorOne.balance == 0.05 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.05 ether);
         vm.deal(address(clfrBob), 1 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(bob.balance == 33.9 ether);
-        assert(operatorOne.balance == 0.1 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.1 ether);
     }
 
     function testWithdrawCLFeesEmptyWithdrawal() public {
@@ -1892,10 +1972,12 @@ contract StakingContractOneValidatorTest is DSTestPlus {
 
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0);
 
         stakingContract.withdraw(publicKey);
 
         assert(bob.balance == 33.9 ether);
-        assert(operatorOne.balance == 0.1 ether);
+        assert(operatorOne.balance == 0);
+        assert(feeRecipientOne.balance == 0.1 ether);
     }
 }

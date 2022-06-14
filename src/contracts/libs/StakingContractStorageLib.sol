@@ -88,6 +88,7 @@ library StakingContractStorageLib {
 
     struct OperatorInfo {
         address operator;
+        address feeRecipient;
         uint256 limit;
         bytes[] publicKeys;
         bytes[] signatures;
