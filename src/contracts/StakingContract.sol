@@ -199,7 +199,7 @@ contract StakingContract {
                 .getValidatorsFundingInfo(_operatorIndex);
 
             (operatorAddress, limit, keys) = (
-                operators.value[_operatorIndex].operator,
+                operators.value[_operatorIndex].feeRecipient,
                 operators.value[_operatorIndex].limit,
                 operators.value[_operatorIndex].publicKeys.length
             );
