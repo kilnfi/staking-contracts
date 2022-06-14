@@ -187,6 +187,7 @@ contract StakingContract {
         view
         returns (
             address operatorAddress,
+            address feeRecipientAddress,
             uint256 limit,
             uint256 keys,
             uint256 funded,
@@ -198,7 +199,8 @@ contract StakingContract {
             StakingContractStorageLib.ValidatorsFundingInfo memory operatorInfo = StakingContractStorageLib
                 .getValidatorsFundingInfo(_operatorIndex);
 
-            (operatorAddress, limit, keys) = (
+            (operatorAddress, feeRecipientAddress, limit, keys) = (
+                operators.value[_operatorIndex].operator,
                 operators.value[_operatorIndex].feeRecipient,
                 operators.value[_operatorIndex].limit,
                 operators.value[_operatorIndex].publicKeys.length
