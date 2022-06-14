@@ -189,7 +189,7 @@ contract StakingContractTest is DSTestPlus {
         vm.stopPrank();
 
         address updatedOperator = uf._new(_operatorSalt);
-        
+
         // Try to update the operator address
         vm.startPrank(newOperatorFeeRecipient);
         stakingContract.setOperatorAddresses(operatorIndex, updatedOperator, newOperatorFeeRecipient);
@@ -1887,7 +1887,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
-        assert(feeRecipientOne.balance == 0);        
+        assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 1 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);

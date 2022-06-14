@@ -261,8 +261,7 @@ contract StakingContract {
         uint256 _operatorIndex,
         address _operatorAddress,
         address _feeRecipientAddress
-    ) external onlyOperatorRecipient(_operatorIndex)
-    {
+    ) external onlyOperatorRecipient(_operatorIndex) {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
 
         operators.value[_operatorIndex].operator = _operatorAddress;
