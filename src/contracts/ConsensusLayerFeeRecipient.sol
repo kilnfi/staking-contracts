@@ -61,7 +61,7 @@ contract ConsensusLayerFeeRecipient {
         bytes32 pubKeyRoot = VALIDATOR_PUBLIC_KEY_SLOT.getBytes32();
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
         uint256 feeBps = stakingContract.getCLFee();
-        address feeRecipient = stakingContract.getFeeTreasury(pubKeyRoot);
+        address feeRecipient = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
 
         uint256 fee;
         if (balance >= 32 ether) {

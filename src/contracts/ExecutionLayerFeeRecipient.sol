@@ -61,7 +61,7 @@ contract ExecutionLayerFeeRecipient {
         bytes32 pubKeyRoot = VALIDATOR_PUBLIC_KEY_SLOT.getBytes32();
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
         uint256 feeBps = stakingContract.getELFee();
-        address feeRecipient = stakingContract.getFeeTreasury(pubKeyRoot);
+        address feeRecipient = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
         uint256 fee = (balance * feeBps) / BASIS_POINTS;
         (bool status, bytes memory data) = withdrawer.call{value: balance - fee}("");
         if (status == false) {

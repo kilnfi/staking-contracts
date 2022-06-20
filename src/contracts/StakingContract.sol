@@ -79,7 +79,7 @@ contract StakingContract {
     }
 
     /// @notice Ensures that the caller is the operator fee recipient
-    modifier onlyOperatorRecipient(uint256 _operatorIndex) {
+    modifier onlyOperatorFeeRecipient(uint256 _operatorIndex) {
         if (msg.sender != StakingContractStorageLib.getOperators().value[_operatorIndex].feeRecipient) {
             revert Unauthorized();
         }
@@ -160,7 +160,7 @@ contract StakingContract {
     }
 
     /// @notice Retrieve the Execution & Consensus Layer Fee operator recipient for a given public key
-    function getFeeTreasury(bytes32 pubKeyRoot) external view returns (address) {
+    function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (address) {
         return
             StakingContractStorageLib
                 .getOperators()
@@ -263,7 +263,7 @@ contract StakingContract {
         uint256 _operatorIndex,
         address _operatorAddress,
         address _feeRecipientAddress
-    ) external onlyOperatorRecipient(_operatorIndex) {
+    ) external onlyOperatorFeeRecipient(_operatorIndex) {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
 
         operators.value[_operatorIndex].operator = _operatorAddress;
