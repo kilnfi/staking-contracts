@@ -5,7 +5,7 @@ const func: DeployFunction = async function ({
 	deployments,
 	getNamedAccounts,
   }: HardhatRuntimeEnvironment) {
-	const { deployer, proxyAdmin, operator, admin, depositContract } = await getNamedAccounts();
+	const { deployer, proxyAdmin } = await getNamedAccounts();
 
 	  await deployments.deploy("ConsensusLayerFeeRecipient", {
 		from: deployer,

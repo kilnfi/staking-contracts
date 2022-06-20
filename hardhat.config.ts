@@ -39,10 +39,6 @@ const hhuc: HardhatUserConfig = {
       default: 2,
       goerli: '0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb'
     },
-    operator: {
-      default: 3,
-      goerli: '0x0000000000000000000000000000000000000000'
-    },
     depositContract: {
       default: 4,
       goerli: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
