@@ -22,7 +22,7 @@ contract StakingContractMock {
         return 500;
     }
 
-    function getFeeTreasury(bytes32) external pure returns (address) {
+    function getOperatorFeeRecipient(bytes32) external pure returns (address) {
         return operator;
     }
 }
