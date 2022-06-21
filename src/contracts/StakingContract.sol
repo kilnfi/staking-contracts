@@ -346,13 +346,12 @@ contract StakingContract {
             .getValidatorsFundingInfo(_operatorIndex);
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
 
+        if (_indexes[_indexes.length - 1] < operatorInfo.funded) {
+            revert FundedValidatorDeletionAttempt();
+        }
         for (uint256 i; i < _indexes.length; ) {
             if (i > 0 && _indexes[i] >= _indexes[i - 1]) {
                 revert UnsortedIndexes();
-            }
-
-            if (_indexes[i] < operatorInfo.funded) {
-                revert FundedValidatorDeletionAttempt();
             }
 
             if (_indexes[i] == operators.value[_operatorIndex].publicKeys.length - 1) {
