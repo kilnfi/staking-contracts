@@ -23,6 +23,7 @@ contract StakingContract {
     uint256 public constant DEPOSIT_SIZE = 32 ether;
     uint256 internal constant BASIS_POINTS = 10_000;
 
+    error Banned();
     error NoOperators();
     error InvalidCall();
     error Unauthorized();
@@ -71,9 +72,38 @@ contract StakingContract {
         _;
     }
 
-    /// @notice Ensures that the caller is the operator
+    /// @notice Ensures that the caller is the admin or the operator
+    modifier onlyOperatorOrAdmin(uint256 _operatorIndex) {
+        if (msg.sender == StakingContractStorageLib.getAdmin()) {
+            _;
+        } else {
+            StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
+                _operatorIndex
+            ];
+
+            if (operatorInfo.banned) {
+                revert Banned();
+            }
+
+            if (msg.sender != operatorInfo.operator) {
+                revert Unauthorized();
+            }
+
+            _;
+        }
+    }
+
+    /// @notice Ensures that the caller is the admin
     modifier onlyOperator(uint256 _operatorIndex) {
-        if (msg.sender != StakingContractStorageLib.getOperators().value[_operatorIndex].operator) {
+        StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
+            _operatorIndex
+        ];
+
+        if (operatorInfo.banned) {
+            revert Banned();
+        }
+
+        if (msg.sender != operatorInfo.operator) {
             revert Unauthorized();
         }
 
@@ -82,7 +112,15 @@ contract StakingContract {
 
     /// @notice Ensures that the caller is the operator fee recipient
     modifier onlyOperatorFeeRecipient(uint256 _operatorIndex) {
-        if (msg.sender != StakingContractStorageLib.getOperators().value[_operatorIndex].feeRecipient) {
+        StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
+            _operatorIndex
+        ];
+
+        if (operatorInfo.banned) {
+            revert Banned();
+        }
+
+        if (msg.sender != operatorInfo.feeRecipient) {
             revert Unauthorized();
         }
 
@@ -193,21 +231,24 @@ contract StakingContract {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool banned
         )
     {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         if (_operatorIndex < operators.value.length) {
-            StakingContractStorageLib.ValidatorsFundingInfo memory operatorInfo = StakingContractStorageLib
+            StakingContractStorageLib.ValidatorsFundingInfo memory _operatorInfo = StakingContractStorageLib
                 .getValidatorsFundingInfo(_operatorIndex);
+            StakingContractStorageLib.OperatorInfo memory _operator = operators.value[_operatorIndex];
 
-            (operatorAddress, feeRecipientAddress, limit, keys) = (
-                operators.value[_operatorIndex].operator,
-                operators.value[_operatorIndex].feeRecipient,
-                operators.value[_operatorIndex].limit,
-                operators.value[_operatorIndex].publicKeys.length
+            (operatorAddress, feeRecipientAddress, limit, keys, banned) = (
+                _operator.operator,
+                _operator.feeRecipient,
+                _operator.limit,
+                _operator.publicKeys.length,
+                _operator.banned
             );
-            (funded, available) = (operatorInfo.funded, operatorInfo.availableKeys);
+            (funded, available) = (_operatorInfo.funded, _operatorInfo.availableKeys);
         }
     }
 
@@ -304,6 +345,20 @@ contract StakingContract {
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
+    function banOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external onlyAdmin {
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        operators.value[_operatorIndex].limit = 0;
+        operators.value[_operatorIndex].banned = true;
+        operators.value[_operatorIndex].feeRecipient = _temporaryFeeRecipient;
+        _updateAvailableValidatorCount(_operatorIndex);
+    }
+
+    function unbanOperator(uint256 _operatorIndex, address _newFeeRecipient) external onlyAdmin {
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        operators.value[_operatorIndex].banned = false;
+        operators.value[_operatorIndex].feeRecipient = _newFeeRecipient;
+    }
+
     /// @notice Change the Execution Layer Fee taken by the node operator
     /// @param _fee Fee in Basis Point
     function setELFee(uint256 _fee) external onlyAdmin {
@@ -385,7 +440,7 @@ contract StakingContract {
     /// @param _indexes List of indexes to delete, in decreasing order
     function removeValidators(uint256 _operatorIndex, uint256[] calldata _indexes)
         external
-        onlyOperator(_operatorIndex)
+        onlyOperatorOrAdmin(_operatorIndex)
     {
         if (_indexes.length == 0) {
             revert InvalidArgument();
