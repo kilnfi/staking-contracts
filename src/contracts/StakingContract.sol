@@ -37,7 +37,7 @@ contract StakingContract {
     error InvalidDepositValue();
     error NotEnoughValidators();
     error InvalidValidatorCount();
-    error DuplicatePublicKey(bytes);
+    error DuplicateValidatorKey(bytes);
     error FundedValidatorDeletionAttempt();
 
     struct ValidatorAllocationCache {
@@ -352,7 +352,7 @@ contract StakingContract {
             bytes32 pubKeyRoot = _getPubKeyRoot(publicKey);
 
             if (operatorIndexPerValidator.value[pubKeyRoot].enabled) {
-                revert DuplicatePublicKey(publicKey);
+                revert DuplicateValidatorKey(publicKey);
             }
 
             operatorIndexPerValidator.value[pubKeyRoot] = StakingContractStorageLib.OperatorIndex({

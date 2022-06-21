@@ -356,7 +356,7 @@ contract StakingContractTest is DSTestPlus {
         vm.startPrank(operatorOne);
         vm.expectRevert(
             abi.encodeWithSignature(
-                "DuplicatePublicKey(bytes)",
+                "DuplicateValidatorKey(bytes)",
                 hex"0c74b6d3d877bbb2083f1bcc83b302f3ed533eaf3cd39cff97daf2c7b9b776168481aa7b51778df673a37049886f25b0"
             )
         );
