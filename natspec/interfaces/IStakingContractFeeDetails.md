@@ -44,10 +44,10 @@ function getELFee() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### getFeeTreasury
+### getOperatorFeeRecipient
 
 ```solidity
-function getFeeTreasury(bytes32 pubKeyRoot) external view returns (address)
+function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (address)
 ```
 
 

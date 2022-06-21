@@ -289,6 +289,9 @@ contract StakingContract {
 
     /// @notice Set operator staking limits
     /// @dev Only callable by admin
+    /// @dev Limit should not exceed the validator key count of the operator
+    /// @dev Keys should be registered before limit is increased
+    /// @dev Allows all keys to be verified by the system admin before limit is increased
     /// @param _operatorIndex Operator Index
     /// @param _limit New staking limit
     function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external onlyAdmin {
@@ -376,6 +379,8 @@ contract StakingContract {
     /// @notice Remove unfunded validators
     /// @dev Only callable by operator
     /// @dev Indexes should be provided in decreasing order
+    /// @dev The limit will be set to the lowest removed operator index to ensure all changes above the
+    ///      lowest removed validator key are verified by the system administrator
     /// @param _operatorIndex Operator Index
     /// @param _indexes List of indexes to delete, in decreasing order
     function removeValidators(uint256 _operatorIndex, uint256[] calldata _indexes)
