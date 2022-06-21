@@ -7,7 +7,15 @@ import '@primitivefi/hardhat-dodoc';
  * @type import('hardhat/config').HardhatUserConfig
  */
 const hhuc: HardhatUserConfig = {
-  solidity: "0.8.13",
+  solidity: {
+    version: "0.8.13",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      }
+    }
+  },
   paths: {
     sources: "./src/contracts",
   },

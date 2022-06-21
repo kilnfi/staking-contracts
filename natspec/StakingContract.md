@@ -176,7 +176,7 @@ Retrieve system admin
 function getAvailableValidatorCount() external view returns (uint256)
 ```
 
-Get the total available keys that are redy to be used for deposits
+Get the total available keys that are ready to be used for deposits
 
 
 
