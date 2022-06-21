@@ -64,7 +64,7 @@ function SIGNATURE_LENGTH() external view returns (uint256)
 ### addOperator
 
 ```solidity
-function addOperator(address _operatorAddress) external nonpayable returns (uint256)
+function addOperator(address _operatorAddress, address _feeRecipientAddress) external nonpayable returns (uint256)
 ```
 
 Add new operator
@@ -76,6 +76,7 @@ Add new operator
 | Name | Type | Description |
 |---|---|---|
 | _operatorAddress | address | Operator address allowed to add / remove validators |
+| _feeRecipientAddress | address | Operator address used to manage rewards |
 
 #### Returns
 
@@ -230,32 +231,10 @@ Compute the Execution Layer Fee recipient address for a given validator public k
 |---|---|---|
 | _0 | address | undefined |
 
-### getFeeTreasury
-
-```solidity
-function getFeeTreasury(bytes32 pubKeyRoot) external view returns (address)
-```
-
-Retrieve the Execution &amp; Consensus Layer Fee operator recipient for a given public key
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| pubKeyRoot | bytes32 | undefined |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
-
 ### getOperator
 
 ```solidity
-function getOperator(uint256 _operatorIndex) external view returns (address operatorAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available)
+function getOperator(uint256 _operatorIndex) external view returns (address operatorAddress, address feeRecipientAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available)
 ```
 
 Retrieve operator details
@@ -273,10 +252,33 @@ Retrieve operator details
 | Name | Type | Description |
 |---|---|---|
 | operatorAddress | address | undefined |
+| feeRecipientAddress | address | undefined |
 | limit | uint256 | undefined |
 | keys | uint256 | undefined |
 | funded | uint256 | undefined |
 | available | uint256 | undefined |
+
+### getOperatorFeeRecipient
+
+```solidity
+function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (address)
+```
+
+Retrieve the Execution &amp; Consensus Layer Fee operator recipient for a given public key
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| pubKeyRoot | bytes32 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
 
 ### getValidator
 
@@ -351,7 +353,7 @@ Retrieve withdrawer of public key root
 ### initialize_1
 
 ```solidity
-function initialize_1(address _admin, address _depositContract, address _elFeeRecipientImplementation, address _clFeeRecipientImplementation, bytes32 _withdrawalCredentials, uint256 _elFee, uint256 _clFee) external nonpayable
+function initialize_1(address _admin, address _depositContract, address _elFeeRecipientImplementation, address _clFeeRecipientImplementation, uint256 _elFee, uint256 _clFee) external nonpayable
 ```
 
 Initializes version 1 of Staking Contract
@@ -364,11 +366,10 @@ Initializes version 1 of Staking Contract
 |---|---|---|
 | _admin | address | Address of the admin allowed to change the operator and admin |
 | _depositContract | address | Address of the Deposit Contract |
-| _elFeeRecipientImplementation | address | undefined |
-| _clFeeRecipientImplementation | address | undefined |
-| _withdrawalCredentials | bytes32 | Withdrawal Credentials to apply to all provided keys upon deposit |
-| _elFee | uint256 | undefined |
-| _clFee | uint256 | undefined |
+| _elFeeRecipientImplementation | address | Address of the Execution Layer fee recipient implementation |
+| _clFeeRecipientImplementation | address | Address of the Consensus Layer fee recipient implementation |
+| _elFee | uint256 | Fee in bps to take on any Execution Layer fee withdrawal |
+| _clFee | uint256 | Fee in bps to take on any Consensus Layer fee withdrawal |
 
 ### removeValidators
 
@@ -378,7 +379,7 @@ function removeValidators(uint256 _operatorIndex, uint256[] _indexes) external n
 
 Remove unfunded validators
 
-*Only callable by operatorIndexes should be provided in decreasing order*
+*Only callable by operatorIndexes should be provided in decreasing orderThe limit will be set to the lowest removed operator index to ensure all changes above the      lowest removed validator key are verified by the system administrator*
 
 #### Parameters
 
@@ -435,6 +436,24 @@ Change the Execution Layer Fee taken by the node operator
 |---|---|---|
 | _fee | uint256 | Fee in Basis Point |
 
+### setOperatorAddresses
+
+```solidity
+function setOperatorAddresses(uint256 _operatorIndex, address _operatorAddress, address _feeRecipientAddress) external nonpayable
+```
+
+Set new operator addresses (operations and reward management)
+
+*Only callable by fee recipient address manager*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex | uint256 | Index of the operator to update |
+| _operatorAddress | address | New operator address for operations management |
+| _feeRecipientAddress | address | New operator address for reward management |
+
 ### setOperatorLimit
 
 ```solidity
@@ -443,7 +462,7 @@ function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external nonpa
 
 Set operator staking limits
 
-*Only callable by admin*
+*Only callable by adminLimit should not exceed the validator key count of the operatorKeys should be registered before limit is increasedAllows all keys to be verified by the system admin before limit is increased*
 
 #### Parameters
 
@@ -599,10 +618,10 @@ error InvalidCall()
 
 
 
-### InvalidFee
+### InvalidDepositValue
 
 ```solidity
-error InvalidFee()
+error InvalidDepositValue()
 ```
 
 
@@ -610,10 +629,10 @@ error InvalidFee()
 
 
 
-### InvalidDepositValue
+### InvalidFee
 
 ```solidity
-error InvalidDepositValue()
+error InvalidFee()
 ```
 
 
@@ -686,6 +705,23 @@ error NotEnoughValidators()
 
 
 
+
+### OperatorLimitTooHigh
+
+```solidity
+error OperatorLimitTooHigh(uint256 limit, uint256 keyCount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| limit | uint256 | undefined |
+| keyCount | uint256 | undefined |
 
 ### Unauthorized
 
