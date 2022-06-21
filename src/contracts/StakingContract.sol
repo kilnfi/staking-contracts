@@ -73,40 +73,18 @@ contract StakingContract {
     }
 
     /// @notice Ensures that the caller is the admin or the operator
-    modifier onlyOperatorOrAdmin(uint256 _operatorIndex) {
+    modifier onlyActiveOperatorOrAdmin(uint256 _operatorIndex) {
         if (msg.sender == StakingContractStorageLib.getAdmin()) {
             _;
         } else {
-            StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
-                _operatorIndex
-            ];
-
-            if (operatorInfo.deactivated) {
-                revert Deactivated();
-            }
-
-            if (msg.sender != operatorInfo.operator) {
-                revert Unauthorized();
-            }
-
+            _onlyActiveOperator(_operatorIndex);
             _;
         }
     }
 
     /// @notice Ensures that the caller is the admin
-    modifier onlyOperator(uint256 _operatorIndex) {
-        StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
-            _operatorIndex
-        ];
-
-        if (operatorInfo.deactivated) {
-            revert Deactivated();
-        }
-
-        if (msg.sender != operatorInfo.operator) {
-            revert Unauthorized();
-        }
-
+    modifier onlyActiveOperator(uint256 _operatorIndex) {
+        _onlyActiveOperator(_operatorIndex);
         _;
     }
 
@@ -394,7 +372,7 @@ contract StakingContract {
         uint256 _keyCount,
         bytes calldata _publicKeys,
         bytes calldata _signatures
-    ) external onlyOperator(_operatorIndex) {
+    ) external onlyActiveOperator(_operatorIndex) {
         if (_keyCount == 0) {
             revert InvalidArgument();
         }
@@ -446,7 +424,7 @@ contract StakingContract {
     /// @param _indexes List of indexes to delete, in decreasing order
     function removeValidators(uint256 _operatorIndex, uint256[] calldata _indexes)
         external
-        onlyOperatorOrAdmin(_operatorIndex)
+        onlyActiveOperatorOrAdmin(_operatorIndex)
     {
         if (_indexes.length == 0) {
             revert InvalidArgument();
@@ -519,6 +497,20 @@ contract StakingContract {
     /// ██ ██ ██  ██    ██    █████   ██████  ██ ██  ██ ███████ ██
     /// ██ ██  ██ ██    ██    ██      ██   ██ ██  ██ ██ ██   ██ ██
     /// ██ ██   ████    ██    ███████ ██   ██ ██   ████ ██   ██ ███████
+
+    function _onlyActiveOperator(uint256 _operatorIndex) internal view {
+        StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
+            _operatorIndex
+        ];
+
+        if (operatorInfo.deactivated) {
+            revert Deactivated();
+        }
+
+        if (msg.sender != operatorInfo.operator) {
+            revert Unauthorized();
+        }
+    }
 
     function _getPubKeyRoot(bytes memory _publicKey) internal pure returns (bytes32) {
         return sha256(BytesLib.pad64(_publicKey));
