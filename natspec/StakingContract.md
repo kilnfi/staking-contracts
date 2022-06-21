@@ -103,6 +103,23 @@ Add new validator public keys and signatures
 | _publicKeys | bytes | Concatenated _keyCount public keys |
 | _signatures | bytes | Concatenated _keyCount signatures |
 
+### banOperator
+
+```solidity
+function banOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external nonpayable
+```
+
+Ban an operator and changes the fee recipient address and the staking limit
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex | uint256 | Operator Index |
+| _temporaryFeeRecipient | address | Temporary address to receive funds decided by the system admin |
+
 ### deposit
 
 ```solidity
@@ -234,7 +251,7 @@ Compute the Execution Layer Fee recipient address for a given validator public k
 ### getOperator
 
 ```solidity
-function getOperator(uint256 _operatorIndex) external view returns (address operatorAddress, address feeRecipientAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available)
+function getOperator(uint256 _operatorIndex) external view returns (address operatorAddress, address feeRecipientAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available, bool banned)
 ```
 
 Retrieve operator details
@@ -257,6 +274,7 @@ Retrieve operator details
 | keys | uint256 | undefined |
 | funded | uint256 | undefined |
 | available | uint256 | undefined |
+| banned | bool | undefined |
 
 ### getOperatorFeeRecipient
 
@@ -488,6 +506,23 @@ Set withdrawer for public key
 | _publicKey | bytes | Public key to change withdrawer |
 | _newWithdrawer | address | New withdrawer address |
 
+### unbanOperator
+
+```solidity
+function unbanOperator(uint256 _operatorIndex, address _newFeeRecipient) external nonpayable
+```
+
+Unban an operator, without changing its 0 staking limit
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex | uint256 | Operator Index |
+| _newFeeRecipient | address | Sets the fee recipient address |
+
 ### withdraw
 
 ```solidity
@@ -574,6 +609,17 @@ error AlreadyInitialized()
 
 
 
+### Banned
+
+```solidity
+error Banned()
+```
+
+
+
+
+
+
 ### DepositFailure
 
 ```solidity
@@ -584,6 +630,22 @@ error DepositFailure()
 
 
 
+
+### DuplicateValidatorKey
+
+```solidity
+error DuplicateValidatorKey(bytes)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bytes | undefined |
 
 ### FundedValidatorDeletionAttempt
 

@@ -345,6 +345,9 @@ contract StakingContract {
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
+    /// @notice Ban an operator and changes the fee recipient address and the staking limit
+    /// @param _operatorIndex Operator Index
+    /// @param _temporaryFeeRecipient Temporary address to receive funds decided by the system admin
     function banOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         operators.value[_operatorIndex].limit = 0;
@@ -353,6 +356,9 @@ contract StakingContract {
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
+    /// @notice Unban an operator, without changing its 0 staking limit
+    /// @param _operatorIndex Operator Index
+    /// @param _newFeeRecipient Sets the fee recipient address
     function unbanOperator(uint256 _operatorIndex, address _newFeeRecipient) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         operators.value[_operatorIndex].banned = false;

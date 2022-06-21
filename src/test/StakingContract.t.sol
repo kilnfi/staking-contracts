@@ -408,6 +408,11 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.removeValidators(0, indexes);
         vm.stopPrank();
 
+        vm.startPrank(feeRecipientOne);
+        vm.expectRevert(abi.encodeWithSignature("Banned()"));
+        stakingContract.setOperatorAddresses(0, operatorOne, feeRecipientOne);
+        vm.stopPrank();
+
         vm.startPrank(admin);
         stakingContract.unbanOperator(0, feeRecipientOne);
         vm.stopPrank();
