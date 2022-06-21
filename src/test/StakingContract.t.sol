@@ -853,7 +853,7 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         vm.deal(user, 31.9 ether);
 
         vm.startPrank(user);
-        vm.expectRevert(abi.encodeWithSignature("InvalidMessageValue()"));
+        vm.expectRevert(abi.encodeWithSignature("InvalidDepositValue()"));
         stakingContract.deposit{value: 31.9 ether}(withdrawer);
         vm.stopPrank();
     }
@@ -977,7 +977,7 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         vm.deal(user, 31.9 ether);
 
         vm.startPrank(user);
-        vm.expectRevert(abi.encodeWithSignature("InvalidMessageValue()"));
+        vm.expectRevert(abi.encodeWithSignature("InvalidDepositValue()"));
         (bool _success, ) = address(stakingContract).call{value: 31.9 ether}("");
         assert(_success == true);
         vm.stopPrank();
@@ -1245,7 +1245,7 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         vm.deal(user, 31.9 ether);
 
         vm.startPrank(user);
-        vm.expectRevert(abi.encodeWithSignature("InvalidMessageValue()"));
+        vm.expectRevert(abi.encodeWithSignature("InvalidDepositValue()"));
         stakingContract.deposit{value: 31.9 ether}(withdrawer);
         vm.stopPrank();
     }
@@ -1362,7 +1362,7 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         vm.deal(user, 31.9 ether);
 
         vm.startPrank(user);
-        vm.expectRevert(abi.encodeWithSignature("InvalidMessageValue()"));
+        vm.expectRevert(abi.encodeWithSignature("InvalidDepositValue()"));
         (bool _success, ) = address(stakingContract).call{value: 31.9 ether}("");
         assert(_success == true);
         vm.stopPrank();
@@ -1550,7 +1550,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         vm.deal(user, 31.9 ether);
 
         vm.startPrank(user);
-        vm.expectRevert(abi.encodeWithSignature("InvalidMessageValue()"));
+        vm.expectRevert(abi.encodeWithSignature("InvalidDepositValue()"));
         stakingContract.deposit{value: 31.9 ether}(withdrawer);
         vm.stopPrank();
     }
@@ -1651,7 +1651,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         vm.deal(user, 31.9 ether);
 
         vm.startPrank(user);
-        vm.expectRevert(abi.encodeWithSignature("InvalidMessageValue()"));
+        vm.expectRevert(abi.encodeWithSignature("InvalidDepositValue()"));
         (bool _success, ) = address(stakingContract).call{value: 31.9 ether}("");
         assert(_success == true);
         vm.stopPrank();

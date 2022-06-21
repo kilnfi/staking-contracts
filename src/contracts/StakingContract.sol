@@ -34,7 +34,7 @@ contract StakingContract {
     error InvalidPublicKeys();
     error InvalidSignatures();
     error AlreadyInitialized();
-    error InvalidMessageValue();
+    error InvalidDepositValue();
     error NotEnoughValidators();
     error InvalidValidatorCount();
     error FundedValidatorDeletionAttempt();
@@ -719,7 +719,7 @@ contract StakingContract {
 
     function _deposit(address _withdrawer) internal {
         if (msg.value == 0 || msg.value % DEPOSIT_SIZE != 0) {
-            revert InvalidMessageValue();
+            revert InvalidDepositValue();
         }
         uint256 totalAvailableValidators = StakingContractStorageLib.getTotalAvailableValidators();
         uint256 depositCount = msg.value / DEPOSIT_SIZE;

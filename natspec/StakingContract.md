@@ -610,10 +610,10 @@ error InvalidFee()
 
 
 
-### InvalidMessageValue
+### InvalidDepositValue
 
 ```solidity
-error InvalidMessageValue()
+error InvalidDepositValue()
 ```
 
 
