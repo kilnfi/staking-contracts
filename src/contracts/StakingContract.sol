@@ -23,6 +23,7 @@ contract StakingContract {
     uint256 public constant DEPOSIT_SIZE = 32 ether;
     uint256 internal constant BASIS_POINTS = 10_000;
 
+    error Deactivated();
     error NoOperators();
     error InvalidCall();
     error Unauthorized();
@@ -71,18 +72,33 @@ contract StakingContract {
         _;
     }
 
-    /// @notice Ensures that the caller is the operator
-    modifier onlyOperator(uint256 _operatorIndex) {
-        if (msg.sender != StakingContractStorageLib.getOperators().value[_operatorIndex].operator) {
-            revert Unauthorized();
+    /// @notice Ensures that the caller is the admin or the operator
+    modifier onlyActiveOperatorOrAdmin(uint256 _operatorIndex) {
+        if (msg.sender == StakingContractStorageLib.getAdmin()) {
+            _;
+        } else {
+            _onlyActiveOperator(_operatorIndex);
+            _;
         }
+    }
 
+    /// @notice Ensures that the caller is the admin
+    modifier onlyActiveOperator(uint256 _operatorIndex) {
+        _onlyActiveOperator(_operatorIndex);
         _;
     }
 
     /// @notice Ensures that the caller is the operator fee recipient
     modifier onlyOperatorFeeRecipient(uint256 _operatorIndex) {
-        if (msg.sender != StakingContractStorageLib.getOperators().value[_operatorIndex].feeRecipient) {
+        StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
+            _operatorIndex
+        ];
+
+        if (operatorInfo.deactivated) {
+            revert Deactivated();
+        }
+
+        if (msg.sender != operatorInfo.feeRecipient) {
             revert Unauthorized();
         }
 
@@ -193,21 +209,24 @@ contract StakingContract {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         )
     {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         if (_operatorIndex < operators.value.length) {
-            StakingContractStorageLib.ValidatorsFundingInfo memory operatorInfo = StakingContractStorageLib
+            StakingContractStorageLib.ValidatorsFundingInfo memory _operatorInfo = StakingContractStorageLib
                 .getValidatorsFundingInfo(_operatorIndex);
+            StakingContractStorageLib.OperatorInfo memory _operator = operators.value[_operatorIndex];
 
-            (operatorAddress, feeRecipientAddress, limit, keys) = (
-                operators.value[_operatorIndex].operator,
-                operators.value[_operatorIndex].feeRecipient,
-                operators.value[_operatorIndex].limit,
-                operators.value[_operatorIndex].publicKeys.length
+            (operatorAddress, feeRecipientAddress, limit, keys, deactivated) = (
+                _operator.operator,
+                _operator.feeRecipient,
+                _operator.limit,
+                _operator.publicKeys.length,
+                _operator.deactivated
             );
-            (funded, available) = (operatorInfo.funded, operatorInfo.availableKeys);
+            (funded, available) = (_operatorInfo.funded, _operatorInfo.availableKeys);
         }
     }
 
@@ -304,6 +323,26 @@ contract StakingContract {
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
+    /// @notice Deactivates an operator and changes the fee recipient address and the staking limit
+    /// @param _operatorIndex Operator Index
+    /// @param _temporaryFeeRecipient Temporary address to receive funds decided by the system admin
+    function deactivateOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external onlyAdmin {
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        operators.value[_operatorIndex].limit = 0;
+        operators.value[_operatorIndex].deactivated = true;
+        operators.value[_operatorIndex].feeRecipient = _temporaryFeeRecipient;
+        _updateAvailableValidatorCount(_operatorIndex);
+    }
+
+    /// @notice Activates an operator, without changing its 0 staking limit
+    /// @param _operatorIndex Operator Index
+    /// @param _newFeeRecipient Sets the fee recipient address
+    function activateOperator(uint256 _operatorIndex, address _newFeeRecipient) external onlyAdmin {
+        StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        operators.value[_operatorIndex].deactivated = false;
+        operators.value[_operatorIndex].feeRecipient = _newFeeRecipient;
+    }
+
     /// @notice Change the Execution Layer Fee taken by the node operator
     /// @param _fee Fee in Basis Point
     function setELFee(uint256 _fee) external onlyAdmin {
@@ -333,7 +372,7 @@ contract StakingContract {
         uint256 _keyCount,
         bytes calldata _publicKeys,
         bytes calldata _signatures
-    ) external onlyOperator(_operatorIndex) {
+    ) external onlyActiveOperator(_operatorIndex) {
         if (_keyCount == 0) {
             revert InvalidArgument();
         }
@@ -385,7 +424,7 @@ contract StakingContract {
     /// @param _indexes List of indexes to delete, in decreasing order
     function removeValidators(uint256 _operatorIndex, uint256[] calldata _indexes)
         external
-        onlyOperator(_operatorIndex)
+        onlyActiveOperatorOrAdmin(_operatorIndex)
     {
         if (_indexes.length == 0) {
             revert InvalidArgument();
@@ -458,6 +497,20 @@ contract StakingContract {
     /// ██ ██ ██  ██    ██    █████   ██████  ██ ██  ██ ███████ ██
     /// ██ ██  ██ ██    ██    ██      ██   ██ ██  ██ ██ ██   ██ ██
     /// ██ ██   ████    ██    ███████ ██   ██ ██   ████ ██   ██ ███████
+
+    function _onlyActiveOperator(uint256 _operatorIndex) internal view {
+        StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
+            _operatorIndex
+        ];
+
+        if (operatorInfo.deactivated) {
+            revert Deactivated();
+        }
+
+        if (msg.sender != operatorInfo.operator) {
+            revert Unauthorized();
+        }
+    }
 
     function _getPubKeyRoot(bytes memory _publicKey) internal pure returns (bytes32) {
         return sha256(BytesLib.pad64(_publicKey));

@@ -153,7 +153,8 @@ contract StakingContractTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -161,14 +162,17 @@ contract StakingContractTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 0);
         assertEq(available, 10);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 0);
         assertEq(available, 10);
+        assert(deactivated == false);
     }
 
     function testAddOperator(uint256 _operatorSalt) public {
@@ -187,7 +191,8 @@ contract StakingContractTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(operatorIndex);
         assertEq(operatorAddress, newOperator);
         assertEq(feeRecipientAddress, newOperatorFeeRecipient);
@@ -195,6 +200,7 @@ contract StakingContractTest is DSTestPlus {
         assertEq(keys, 0);
         assertEq(funded, 0);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testAddOperatorUnauthorized(uint256 _operatorSalt) public {
@@ -231,7 +237,8 @@ contract StakingContractTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(operatorIndex);
         assertEq(operatorAddress, updatedOperator);
         assertEq(feeRecipientAddress, newOperatorFeeRecipient);
@@ -239,6 +246,7 @@ contract StakingContractTest is DSTestPlus {
         assertEq(keys, 0);
         assertEq(funded, 0);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testSetOperatorAddressesUnauthorized(uint256 _operatorSalt) public {
@@ -268,7 +276,7 @@ contract StakingContractTest is DSTestPlus {
         operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
         vm.stopPrank();
 
-        (, , uint256 limit, , , ) = stakingContract.getOperator(operatorIndex);
+        (, , uint256 limit, , , , ) = stakingContract.getOperator(operatorIndex);
         assertEq(limit, 0);
 
         if (_limit > 0) {
@@ -286,7 +294,7 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.setOperatorLimit(operatorIndex, _limit);
         vm.stopPrank();
 
-        (, , limit, , , ) = stakingContract.getOperator(operatorIndex);
+        (, , limit, , , , ) = stakingContract.getOperator(operatorIndex);
         assertEq(limit, _limit);
     }
 
@@ -314,7 +322,8 @@ contract StakingContractTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -322,24 +331,28 @@ contract StakingContractTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 0);
         assertEq(available, 10);
+        assert(deactivated == false);
 
         vm.startPrank(operatorOne);
         stakingContract.addValidators(0, 10, publicKeys, signatures);
         vm.stopPrank();
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(0);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
         assertEq(limit, 10);
         assertEq(keys, 20);
         assertEq(funded, 0);
         assertEq(available, 10);
+        assert(deactivated == false);
 
         vm.startPrank(admin);
         stakingContract.setOperatorLimit(0, 20);
         vm.stopPrank();
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(0);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(0);
 
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -347,6 +360,79 @@ contract StakingContractTest is DSTestPlus {
         assertEq(keys, 20);
         assertEq(funded, 0);
         assertEq(available, 20);
+        assert(deactivated == false);
+    }
+
+    function testAddValidatorsDeactivatedOperatorOne() public {
+        bytes
+            memory publicKeys = hex"0c74b6d3d877bbb2083f1bcc83b302f3ed533eaf3cd39cff97daf2c7b9b776168481aa7b51778df673a37049886f25b07f03dbc79d85fa9d41f9eefa8e598353b652aadf497673744527c73127f872b91cf31ec8041dae1b3a4238683cf442ea23a95fe68b400ab42b14e8c99280a057d1d840e80723c3622b38e6acd1f471bf247cf62312c9b863a75ac0d270cefa4f84fd8586dbda15c67c1a46e85cf56c60550f54cb082770baf3d2bbf4c33f5254bd0b93e017f3ed036b13baec41bb69085f9eff48651be38c8f9e1f67b643f84ec356864aaa057f0042b121b9d040ed9be3f5cc9cc659d8f8fc02575ed3c25708adac2c8d0c50ab7e4599ce9edf300d98e1cfcfc8e0022a24c712f0769de99a3389bac1cdca92ae20fba323142fe2e8d09ef2cb59c3f822779b3fe6410cddce7255d35db01093cc435c0a35bbb4cd8d4eb3bd2cc597c49a7a909c16f67fe8b6702d5d0c22ad189b1c45325190015b0017606f768c7aa2006cc19dfeb5f367eae9dd17a5c307705db1f5cec552fc038e5fa3a76352d9621a4d74b1fd7e1707c7bfb5e912e2b5a33a2f34a419055d0c4065aa787f743aff953d73441e96ffc9b0f5a3248c23398518a758aec8451b626bff7eed063a3b11bf661d10ad6dac5ee62f47be125e3c668e14b3c704d736b4fb1e";
+        bytes
+            memory signatures = hex"fe41ffbe702fb08d01063c9cd99fac11a16e921c784e681e365db00c4bd6760df67cfc0d0555a8ee8bf534a2c0987b7949b18dba726ced579240fa063274bc7ab25e44b758c452c433debfebbc075cbe105f07502402a9591dc891640a9f2b34fe0863bf987ff4b5a601b0ffcecc185f04847e0b97d3fb9457c32efb9c3ce35520308cfcc8ca78d5d4da164f6d1575d32fe466b8076bc4056ad97fa3e3607a60e5e420bdec413e5ffcc3119b1b89a957b14a437e009a858c4c40c0f1fc7f3d1ad83bc96ada6c2c772260637774e5fbdc60791db6de3a31e136c28106b35c21932a8ed610306f0723675730e31d3deceff4f912e6070c9efcd6e3f0c9ad4a0e203f437f21679b87d46351714b5a1b6226f8ffadd19e18f85c918461ab67291e1c8cdfdc05280adf2b923f1269cf7de8bd351a7ede13524e836cbfc7ba22db91aaa5c9a0729a469985f5bd844347ba9a9b4019f4ad42c2025457cf48557494ac3ce6e311a1ded3e903cd3009d18133015d445d02a3ce3858781b582d28701a311ddb271f8a0c91c65b32cc13c512c35e5be9bb9dc556dfd3249a3733f58426718974820f17b3242a089e29b129fcea37c8b84996e2c725b59efccee24068625584e583700346f823ce92e11ac9db5964ca6300905c5e9f294330037ec1cb7d9b8fc28829b98fcc0fc405afcd54f43cb4a14e8cab3f5aa979fe2c3492fe295e1a50170e8857bd94e5b009bcec9626e6eb137b272882037202da7329dadcb5b99bbd7835b8875d696dab41774dcb559bfb4c79a5337efc5f1606bc7c2752389a49b6a578f0c7c58e2bf9efc55eef19beaf3de94da90c712ca3891ac71a6ff6d778a1c0c31f77fdde2c4b7f29adf8ccf000050e9e4829d2de36fda8d6b26020e6f0ece339e9ad96c01b166301238e1aaa30ddfb978968361a5f9d3fcaa381973c967c0dd88c6d54d00fa375ab4df3be57c4360b69d7634e95e4d4201da8f2348d0ce53be690146f0049d5d173a635d21406b10ed23ec9996bd0a43b812df363986fb8dedf5be1cdb3f85a5090460511af617507d24657e3733310b42e1406070a0316620037da35c5227bb85d3aacf3aebf750265838994e03a8770cdc1c31723ca1037232c32d21f31eee561575b18b1b4c0f027f270898aed60ab4bfe41160cd989cd5bdfeb795097ff01cd0ff41fea96311e92798c0a619aa957772cfd408747fc30dcb39210839a4c70b87d3ad881207fa5eee926bc2c6936ce10b382c7a37606d40bb1cf2637768255aae4a4cd18ed7004e3046520bea92c66a7074e4b46d3d566703e44d0c3f9ef49a2ff30632fe3f6a409178db66423809514cd7473f83d0c";
+
+        (
+            address operatorAddress,
+            address feeRecipient,
+            uint256 limit,
+            uint256 keys,
+            uint256 funded,
+            uint256 available,
+            bool deactivated
+        ) = stakingContract.getOperator(0);
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipient, feeRecipientOne);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 0);
+        assertEq(available, 10);
+        assert(deactivated == false);
+
+        vm.startPrank(admin);
+        stakingContract.deactivateOperator(0, address(1));
+        vm.stopPrank();
+
+        (operatorAddress, feeRecipient, limit, keys, funded, available, deactivated) = stakingContract.getOperator(0);
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipient, address(1));
+        assertEq(limit, 0);
+        assertEq(keys, 10);
+        assertEq(funded, 0);
+        assertEq(available, 0);
+        assert(deactivated == true);
+
+        vm.startPrank(operatorOne);
+        vm.expectRevert(abi.encodeWithSignature("Deactivated()"));
+        stakingContract.addValidators(0, 10, publicKeys, signatures);
+        vm.stopPrank();
+
+        vm.startPrank(operatorOne);
+        uint256[] memory indexes = new uint256[](1);
+        indexes[0] = 0;
+        vm.expectRevert(abi.encodeWithSignature("Deactivated()"));
+        stakingContract.removeValidators(0, indexes);
+        vm.stopPrank();
+
+        vm.startPrank(feeRecipientOne);
+        vm.expectRevert(abi.encodeWithSignature("Deactivated()"));
+        stakingContract.setOperatorAddresses(0, operatorOne, feeRecipientOne);
+        vm.stopPrank();
+
+        vm.startPrank(admin);
+        stakingContract.activateOperator(0, feeRecipientOne);
+        vm.stopPrank();
+
+        vm.startPrank(operatorOne);
+        stakingContract.addValidators(0, 10, publicKeys, signatures);
+        vm.stopPrank();
+
+        (operatorAddress, feeRecipient, limit, keys, funded, available, deactivated) = stakingContract.getOperator(0);
+
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipient, feeRecipientOne);
+        assertEq(limit, 0);
+        assertEq(keys, 20);
+        assertEq(funded, 0);
+        assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testAddValidatorsOperatorOneDuplicateKeys() public {
@@ -361,7 +447,8 @@ contract StakingContractTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -369,6 +456,7 @@ contract StakingContractTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 0);
         assertEq(available, 10);
+        assert(deactivated == false);
 
         vm.startPrank(operatorOne);
         stakingContract.addValidators(0, 10, publicKeys, signatures);
@@ -426,7 +514,8 @@ contract StakingContractTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -434,6 +523,7 @@ contract StakingContractTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 0);
         assertEq(available, 10);
+        assert(deactivated == false);
 
         uint256[] memory indexes = new uint256[](10);
         indexes[0] = 9;
@@ -451,13 +541,81 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.removeValidators(0, indexes);
         vm.stopPrank();
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(0);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(0);
 
         assertEq(operatorAddress, operatorOne);
         assertEq(limit, 0);
         assertEq(keys, 0);
         assertEq(funded, 0);
         assertEq(available, 0);
+        assert(deactivated == false);
+    }
+
+    function testRemoveValidatorsDeactivatedOperatorOne() public {
+        (
+            address operatorAddress,
+            address feeRecipientAddress,
+            uint256 limit,
+            uint256 keys,
+            uint256 funded,
+            uint256 available,
+            bool deactivated
+        ) = stakingContract.getOperator(0);
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipientAddress, feeRecipientOne);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 0);
+        assertEq(available, 10);
+        assert(deactivated == false);
+
+        uint256[] memory indexes = new uint256[](10);
+        indexes[0] = 9;
+        indexes[1] = 8;
+        indexes[2] = 7;
+        indexes[3] = 6;
+        indexes[4] = 5;
+        indexes[5] = 4;
+        indexes[6] = 3;
+        indexes[7] = 2;
+        indexes[8] = 1;
+        indexes[9] = 0;
+
+        vm.startPrank(admin);
+        stakingContract.deactivateOperator(0, address(1));
+        vm.stopPrank();
+
+        vm.startPrank(operatorOne);
+        vm.expectRevert(abi.encodeWithSignature("Deactivated()"));
+        stakingContract.removeValidators(0, indexes);
+        vm.stopPrank();
+
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(0);
+
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipientAddress, address(1));
+        assertEq(limit, 0);
+        assertEq(keys, 10);
+        assertEq(funded, 0);
+        assertEq(available, 0);
+        assert(deactivated == true);
+
+        vm.startPrank(admin);
+        stakingContract.removeValidators(0, indexes);
+        vm.stopPrank();
+
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(0);
+
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipientAddress, address(1));
+        assertEq(limit, 0);
+        assertEq(keys, 0);
+        assertEq(funded, 0);
+        assertEq(available, 0);
+        assert(deactivated == true);
     }
 
     function testRemoveValidatorsOperatorOneInvalidIndexes() public {
@@ -528,7 +686,8 @@ contract StakingContractTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
@@ -536,6 +695,7 @@ contract StakingContractTest is DSTestPlus {
         assertEq(keys, 1);
         assertEq(funded, 1);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testRemoveFundedValidator(uint256 _userSalt) public {
@@ -743,13 +903,13 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
-        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(
-            operatorIndex
-        );
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(operatorIndex);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositOneValidator(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -765,13 +925,13 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
-        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(
-            operatorIndex
-        );
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(operatorIndex);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositThreeValidators(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -794,26 +954,32 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
         assertEq(limit, 10);
         assertEq(keys, 10);
+        assert(deactivated == false);
         sum += funded;
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
+        assert(deactivated == false);
         sum += funded;
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(2);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(2);
         assertEq(operatorAddress, operatorThree);
         assertEq(feeRecipientAddress, feeRecipientThree);
         assertEq(limit, 10);
         assertEq(keys, 10);
+        assert(deactivated == false);
         sum += funded;
 
         assert(sum == 3);
@@ -836,7 +1002,8 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -844,22 +1011,27 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(2);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(2);
         assertEq(operatorAddress, operatorThree);
         assertEq(feeRecipientAddress, feeRecipientThree);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositNotEnough(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -911,13 +1083,13 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
-        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(
-            operatorIndex
-        );
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(operatorIndex);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testImplicitDepositThreeValidators(uint256 _userSalt) public {
@@ -938,26 +1110,32 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
         assertEq(limit, 10);
         assertEq(keys, 10);
+        assert(deactivated == false);
         sum += funded;
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
+        assert(deactivated == false);
         sum += funded;
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(2);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(2);
         assertEq(operatorAddress, operatorThree);
         assertEq(feeRecipientAddress, feeRecipientThree);
         assertEq(limit, 10);
         assertEq(keys, 10);
+        assert(deactivated == false);
         sum += funded;
 
         assert(sum == 3);
@@ -980,7 +1158,8 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -988,22 +1167,27 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(2);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(2);
         assertEq(operatorAddress, operatorThree);
         assertEq(feeRecipientAddress, feeRecipientThree);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testImplicitDepositNotEnough(uint256 _userSalt) public {
@@ -1129,9 +1313,10 @@ contract StakingContractDistributionTest is DSTestPlus {
         uint256 availableSum;
 
         for (uint256 i; i < newOps; ++i) {
-            (, , , , uint256 funded, uint256 available) = stakingContract.getOperator(i);
+            (, , , , uint256 funded, uint256 available, bool deactivated) = stakingContract.getOperator(i);
             sum += funded;
             availableSum += available;
+            assert(deactivated == false);
         }
 
         assert(depositCount == sum);
@@ -1212,11 +1397,13 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
-        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(0);
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(0);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositTwoValidators(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -1243,7 +1430,8 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -1251,14 +1439,17 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositAllValidators(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -1278,7 +1469,8 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -1286,14 +1478,17 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositNotEnough(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -1345,11 +1540,13 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
-        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(1);
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(1);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testImplicitDepositTwoValidators(uint256 _userSalt) public {
@@ -1376,7 +1573,8 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -1384,14 +1582,17 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testImplicitDepositAllValidators(uint256 _userSalt) public {
@@ -1411,7 +1612,8 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -1419,14 +1621,17 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
 
-        (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(1);
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testImplicitDepositNotEnough(uint256 _userSalt) public {
@@ -1546,11 +1751,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
-        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(0);
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(0);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositOneValidator(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -1564,11 +1771,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
-        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(0);
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(0);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositTwoValidators(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -1595,7 +1804,8 @@ contract StakingContractOneValidatorTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -1603,6 +1813,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 2);
         assertEq(available, 8);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositAllValidators(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -1622,7 +1833,8 @@ contract StakingContractOneValidatorTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -1630,6 +1842,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testExplicitDepositNotEnough(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -1679,11 +1892,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
 
         assertEq(user.balance, 0);
 
-        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available) = stakingContract.getOperator(0);
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(0);
         assertEq(limit, 10);
         assertEq(keys, 10);
         assertEq(funded, 1);
         assertEq(available, 9);
+        assert(deactivated == false);
     }
 
     function testImplicitDepositTwoValidators(uint256 _userSalt) public {
@@ -1710,7 +1925,8 @@ contract StakingContractOneValidatorTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -1718,6 +1934,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 2);
         assertEq(available, 8);
+        assert(deactivated == false);
     }
 
     function testImplicitDepositAllValidators(uint256 _userSalt) public {
@@ -1737,7 +1954,8 @@ contract StakingContractOneValidatorTest is DSTestPlus {
             uint256 limit,
             uint256 keys,
             uint256 funded,
-            uint256 available
+            uint256 available,
+            bool deactivated
         ) = stakingContract.getOperator(0);
         assertEq(operatorAddress, operatorOne);
         assertEq(feeRecipientAddress, feeRecipientOne);
@@ -1745,6 +1963,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assertEq(keys, 10);
         assertEq(funded, 10);
         assertEq(available, 0);
+        assert(deactivated == false);
     }
 
     function testImplicitDepositNotEnough(uint256 _userSalt) public {
