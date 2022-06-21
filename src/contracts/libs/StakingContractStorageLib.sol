@@ -76,8 +76,8 @@ library StakingContractStorageLib {
         return getAddress(DEPOSIT_CONTRACT_SLOT);
     }
 
-    function setDepositContract(address _newAdmin) internal {
-        setAddress(DEPOSIT_CONTRACT_SLOT, _newAdmin);
+    function setDepositContract(address _newDepositContract) internal {
+        setAddress(DEPOSIT_CONTRACT_SLOT, _newDepositContract);
     }
 
     /* ========================================

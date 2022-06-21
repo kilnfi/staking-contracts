@@ -41,7 +41,7 @@ contract ExecutionLayerFeeRecipient {
         VERSION_SLOT.setUint256(_version);
     }
 
-    /// @notice Initialized the contract by storing the staking contract and the public key in storage
+    /// @notice Initialize the contract by storing the staking contract and the public key in storage
     /// @param _stakingContract Address of the Staking Contract
     /// @param _publicKeyRoot Hash of the public key linked to this fee recipient
     function initELFR(address _stakingContract, bytes32 _publicKeyRoot) external init(1) {
