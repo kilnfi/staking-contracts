@@ -468,19 +468,23 @@ contract StakingContract {
     }
 
     function _updateAvailableValidatorCount(uint256 _operatorIndex) internal {
-        StakingContractStorageLib.ValidatorsFundingInfo memory operatorInfo = StakingContractStorageLib
+        StakingContractStorageLib.ValidatorsFundingInfo memory validatorFundingInfo = StakingContractStorageLib
             .getValidatorsFundingInfo(_operatorIndex);
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
 
-        uint32 oldAvailableCount = operatorInfo.availableKeys;
+        uint32 oldAvailableCount = validatorFundingInfo.availableKeys;
         uint32 newAvailableCount = 0;
         uint256 cap = _min(operators.value[_operatorIndex].limit, operators.value[_operatorIndex].publicKeys.length);
 
-        if (cap <= operatorInfo.funded) {
-            StakingContractStorageLib.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
+        if (cap <= validatorFundingInfo.funded) {
+            StakingContractStorageLib.setValidatorsFundingInfo(_operatorIndex, 0, validatorFundingInfo.funded);
         } else {
-            newAvailableCount = uint32(cap - operatorInfo.funded);
-            StakingContractStorageLib.setOperatorInfo(_operatorIndex, newAvailableCount, operatorInfo.funded);
+            newAvailableCount = uint32(cap - validatorFundingInfo.funded);
+            StakingContractStorageLib.setValidatorsFundingInfo(
+                _operatorIndex,
+                newAvailableCount,
+                validatorFundingInfo.funded
+            );
         }
 
         if (oldAvailableCount != newAvailableCount) {
@@ -502,11 +506,11 @@ contract StakingContract {
     ) internal {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         StakingContractStorageLib.OperatorInfo storage operator = operators.value[_operatorIndex];
-        StakingContractStorageLib.ValidatorsFundingInfo memory osi = StakingContractStorageLib.getValidatorsFundingInfo(
+        StakingContractStorageLib.ValidatorsFundingInfo memory vfi = StakingContractStorageLib.getValidatorsFundingInfo(
             _operatorIndex
         );
 
-        for (uint256 i = osi.funded; i < osi.funded + _validatorCount; ) {
+        for (uint256 i = vfi.funded; i < vfi.funded + _validatorCount; ) {
             bytes memory publicKey = operator.publicKeys[i];
             bytes memory signature = operator.signatures[i];
             address consensusLayerRecipient = _getDeterministicCLFeeRecipientAddress(publicKey);
@@ -520,10 +524,10 @@ contract StakingContract {
             }
         }
 
-        StakingContractStorageLib.setOperatorInfo(
+        StakingContractStorageLib.setValidatorsFundingInfo(
             _operatorIndex,
-            uint32(osi.availableKeys - _validatorCount),
-            uint32(osi.funded + _validatorCount)
+            uint32(vfi.availableKeys - _validatorCount),
+            uint32(vfi.funded + _validatorCount)
         );
     }
 
