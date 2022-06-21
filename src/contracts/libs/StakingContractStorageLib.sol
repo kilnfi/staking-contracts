@@ -189,13 +189,18 @@ library StakingContractStorageLib {
         }
     }
 
-    struct OperatorIndexPerValidatorSlot {
-        mapping(bytes32 => uint256) value;
-    }
-
     /* ========================================
     ===========================================
     =========================================*/
+
+    struct OperatorIndex {
+        bool enabled;
+        uint32 operatorIndex;
+    }
+
+    struct OperatorIndexPerValidatorSlot {
+        mapping(bytes32 => OperatorIndex) value;
+    }
 
     bytes32 internal constant OPERATOR_INDEX_PER_VALIDATOR_SLOT =
         keccak256("StakingContract.operatorIndexPerValidator");
