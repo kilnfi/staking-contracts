@@ -93,6 +93,21 @@ contract ConsensusLayerFeeRecipientTest is DSTestPlus {
         vm.stopPrank();
     }
 
+    function testWithdrawExistingFunds() external {
+        ConsensusLayerFeeRecipient futureRecipientAddress = ConsensusLayerFeeRecipient(payable(address(12345)));
+        vm.deal(address(futureRecipientAddress), 33 ether);
+        vm.etch(address(futureRecipientAddress), address(clfr).code);
+        futureRecipientAddress.initCLFR(address(stakingContract), sha256(BytesLib.pad64(publicKey)));
+
+        assert(bob.balance == 0);
+        assert(operator.balance == 0);
+        vm.expectEmit(true, true, true, true);
+        emit Withdrawal(bob, operator, 32.95 ether, 0.05 ether);
+        futureRecipientAddress.withdraw();
+        assert(bob.balance == 32.95 ether);
+        assert(operator.balance == 0.05 ether);
+    }
+
     function testWithdrawCLFeesExitedValidator() external {
         vm.deal(address(clfr), 33 ether);
         assert(bob.balance == 0);

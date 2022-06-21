@@ -93,6 +93,21 @@ contract ExecutionLayerFeeRecipientTest is DSTestPlus {
         vm.stopPrank();
     }
 
+    function testWithdrawExistingFunds() external {
+        ExecutionLayerFeeRecipient futureRecipientAddress = ExecutionLayerFeeRecipient(payable(address(12345)));
+        vm.deal(address(futureRecipientAddress), 1 ether);
+        vm.etch(address(futureRecipientAddress), address(elfr).code);
+        futureRecipientAddress.initELFR(address(stakingContract), sha256(BytesLib.pad64(publicKey)));
+
+        assert(bob.balance == 0);
+        assert(operator.balance == 0);
+        vm.expectEmit(true, true, true, true);
+        emit Withdrawal(bob, operator, 0.95 ether, 0.05 ether);
+        futureRecipientAddress.withdraw();
+        assert(bob.balance == 0.95 ether);
+        assert(operator.balance == 0.05 ether);
+    }
+
     function testWithdrawELFees() external {
         vm.deal(address(elfr), 1 ether);
         assert(bob.balance == 0);

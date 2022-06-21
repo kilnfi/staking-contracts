@@ -53,9 +53,9 @@ If you want to share the implementation administration between several recipient
 
 This is not the same gnosis safe account as the system administrator, it needs to have a different address.
 
-### Prepare Operator (`OPERATOR`)
+### Prepare Operator(s) (`OPERATOR`)
 
-This account will be in charge of adding keys to the system. It has to be handled by the Node Operator that manages the validator infrastructure.
+This/these account(s) will be in charge of adding keys to the system. They have to be handled by the Node Operator that manages the validator infrastructure.
 
 ## II. Deployment Steps
 
@@ -95,11 +95,48 @@ To start the deployment process, run this command by replacing the variables wit
 
 `env MNEMONIC=$MNEMONIC RPC_URL=$RPC_URL yarn hh deploy --network $NETWORK`
 
-## III. Post Deployment Steps
+## III. Testnet Post Deployment Steps
 
-### Add Validator Keys (Testnet only)
+### Add Operator as `SYSTEM_ADMIN`
 
-This method is intended for testnet only purposes. In production, it is expected from the operator to properly submit keys from its infrastructure and making sure the operator wallet is stored in the adequate hardware or service. This solution is mainly meant to quickly populate the contract.
+The method to call on the `StakingContract` to add a node operator is `function addOperator(address _operatorAddress)` from the system administrator account.
+
+This command is intended for testnet only purposes. In production, it is expected from the system administrator to properly submit transactions from the multisig account.
+
+You will need to prepare the following variable before sending the call
+
+- `OPERATOR_ADDRESS`: Address of a node operator
+- `STAKING_CONTRACT_ADDRESS`: Address of the deployed staking contract
+- `RPC_URL`: Ethereum RPC endpoint on the deployment network
+- `MNEMONIC_FILE`: A file containing the system administrator mnemonic wallet (testnet only !)
+
+Run
+
+`cast send --mnemonic-path $MNEMONIC_FILE $STAKING_CONTRACT_ADDRESS "addOperator(address)" $OPERATOR_ADDRESS`
+
+### Set Operator staking limit as `SYSTEM_ADMIN`
+
+The method to call on the `StakingContract` to set a node operator staking limit is `function setOperatorLimit(uint256 _operatorIndex, uint256 _limit)` from the system administrator account.
+
+This command is intended for testnet only purposes. In production, it is expected from the system administrator to properly submit transactions from the multisig account.
+
+You will need to prepare the following variable before sending the call
+
+- `OPERATOR_INDEX`: Index of a registered node operator
+- `STAKING_LIMIT`: The maximum amount of funded validators the node operator can have
+- `STAKING_CONTRACT_ADDRESS`: Address of the deployed staking contract
+- `RPC_URL`: Ethereum RPC endpoint on the deployment network
+- `MNEMONIC_FILE`: A file containing the system administrator mnemonic wallet (testnet only !)
+
+Run
+
+`cast send --mnemonic-path $MNEMONIC_FILE $STAKING_CONTRACT_ADDRESS "setOperatorLimit(uint256,uint256)" $OPERATOR_INDEX` `$STAKING_LIMIT`
+
+### Add Validator Keys as `OPERATOR`
+
+The method to call on the `StakingContract` to add new validator keys is `function addValidators(uint256 _operatorIndex, uint256 _keyCount, bytes calldata _publicKeys, bytes calldata _signatures)` from the node operator account registered at index `_operatorIndex`.
+
+This command is intended for testnet only purposes. In production, it is expected from the operator to properly submit keys from its infrastructure and making sure the operator wallet is stored in the adequate hardware or service. This solution is mainly meant to quickly populate the contract.
 
 You will need to prepare the following variable before sending the call
 
@@ -155,10 +192,32 @@ Generate by running `yarn docs`
 
 The Staking Contract is the main input of the system. Node Operator pre-register batchs of validator keys. End users can send multiples of 32 ETH directly to the contract, and if enough keys are available the validator deposit(s) will occur. Stakers are also able to define Withdrawer accounts, an account that is allow to withdraw the funds and the collected fees. This allows them to not only specify a different address than the one they use for deposits but also to change this account in the future.
 
+### Fee Recipients
+
+There are two types of fee recipients that can be deployed by the `StakingContract`:
+- the Execution Layer fee recipient
+- the Consensus Layer fee recipient
+
+Each validator public key has two unique fee recipients. We are using the `CREATE2` instruction in order to perform a deterministic and state agnostic deployment for both of these fee recipients. What this means is that the address of these recipients can be computed before they are deployed by the `StakingContract` and they can also start receiving fees / withdrawals before they are deployed. Users can then ask for withdrawals and the fee recipients will be deployed only at this point, allowing the system to take a fee given to the node operator. Node operators can also trigger withdrawals in behalf of their users to actively collect fees when required.
+
 ## [Execution Layer Fee Recipient](./natspec/ExecutionLayerFeeRecipient.md)
 
-This Contract is deployed as the implementation for minimal proxy clones used to gather the fees from the Execution Layer. One clone will be deployed per public key at a deterministic address.
+This Contract is deployed as the implementation for minimal proxy clones used to gather the fees from the Execution Layer. One clone will be deployed per public key at a deterministic address. It is required from node operators to compute this address and use it as the execution client `feeRecipient` for the blocks proposed by the validator identified by the public key.
+
+### Computing the Execution Layer Fee Recipient address for a specific public key
+
+As the recipient address is deterministic, we can compute this address before publishing the key to the contract. 
+
+To compute this address, call `function getELFeeRecipient(bytes calldata _publicKey) view` on the `StakingContract`.
 
 ## [Consensus Layer Fee Recipient](./natspec/ConsensusLayerFeeRecipient.md)
 
 This Contract serves the same purpose as the Execution Layer Fee Recipient but for the Consensus Layer fees.
+It is required from node operators to compute this address and use it as the withdrawal crendetial for the given public key.
+
+### Computing the Consensus Layer Fee Recipient address for a specific public key
+
+As the recipient address is deterministic, we can compute this address before publishing the key to the contract. 
+
+To compute this address, call `function getCLFeeRecipient(bytes calldata _publicKey) view` on the `StakingContract`.
+
