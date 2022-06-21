@@ -37,6 +37,7 @@ contract StakingContract {
     error InvalidDepositValue();
     error NotEnoughValidators();
     error InvalidValidatorCount();
+    error DuplicateValidatorKey(bytes);
     error FundedValidatorDeletionAttempt();
 
     struct ValidatorAllocationCache {
@@ -164,7 +165,7 @@ contract StakingContract {
         return
             StakingContractStorageLib
                 .getOperators()
-                .value[StakingContractStorageLib.getOperatorIndexPerValidator().value[pubKeyRoot]]
+                .value[StakingContractStorageLib.getOperatorIndexPerValidator().value[pubKeyRoot].operatorIndex]
                 .feeRecipient;
     }
 
@@ -348,7 +349,16 @@ contract StakingContract {
             operators.value[_operatorIndex].publicKeys.push(publicKey);
             operators.value[_operatorIndex].signatures.push(signature);
 
-            operatorIndexPerValidator.value[_getPubKeyRoot(publicKey)] = _operatorIndex;
+            bytes32 pubKeyRoot = _getPubKeyRoot(publicKey);
+
+            if (operatorIndexPerValidator.value[pubKeyRoot].enabled) {
+                revert DuplicateValidatorKey(publicKey);
+            }
+
+            operatorIndexPerValidator.value[pubKeyRoot] = StakingContractStorageLib.OperatorIndex({
+                enabled: true,
+                operatorIndex: uint32(_operatorIndex)
+            });
 
             unchecked {
                 ++i;
