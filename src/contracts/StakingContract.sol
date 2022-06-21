@@ -488,15 +488,9 @@ contract StakingContract {
         }
 
         if (oldAvailableCount != newAvailableCount) {
-            if (oldAvailableCount > newAvailableCount) {
-                StakingContractStorageLib.setTotalAvailableValidators(
-                    StakingContractStorageLib.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
-                );
-            } else {
-                StakingContractStorageLib.setTotalAvailableValidators(
-                    StakingContractStorageLib.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
-                );
-            }
+            StakingContractStorageLib.setTotalAvailableValidators(
+                (StakingContractStorageLib.getTotalAvailableValidators() - oldAvailableCount) + newAvailableCount
+            );
         }
     }
 
