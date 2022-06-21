@@ -92,7 +92,7 @@ library StakingContractStorageLib {
         uint256 limit;
         bytes[] publicKeys;
         bytes[] signatures;
-        bool banned;
+        bool deactivated;
     }
 
     struct OperatorsSlot {

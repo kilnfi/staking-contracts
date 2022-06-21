@@ -61,6 +61,23 @@ function SIGNATURE_LENGTH() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### activateOperator
+
+```solidity
+function activateOperator(uint256 _operatorIndex, address _newFeeRecipient) external nonpayable
+```
+
+Activates an operator, without changing its 0 staking limit
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex | uint256 | Operator Index |
+| _newFeeRecipient | address | Sets the fee recipient address |
+
 ### addOperator
 
 ```solidity
@@ -103,13 +120,13 @@ Add new validator public keys and signatures
 | _publicKeys | bytes | Concatenated _keyCount public keys |
 | _signatures | bytes | Concatenated _keyCount signatures |
 
-### banOperator
+### deactivateOperator
 
 ```solidity
-function banOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external nonpayable
+function deactivateOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external nonpayable
 ```
 
-Ban an operator and changes the fee recipient address and the staking limit
+Deactivates an operator and changes the fee recipient address and the staking limit
 
 
 
@@ -251,7 +268,7 @@ Compute the Execution Layer Fee recipient address for a given validator public k
 ### getOperator
 
 ```solidity
-function getOperator(uint256 _operatorIndex) external view returns (address operatorAddress, address feeRecipientAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available, bool banned)
+function getOperator(uint256 _operatorIndex) external view returns (address operatorAddress, address feeRecipientAddress, uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated)
 ```
 
 Retrieve operator details
@@ -274,7 +291,7 @@ Retrieve operator details
 | keys | uint256 | undefined |
 | funded | uint256 | undefined |
 | available | uint256 | undefined |
-| banned | bool | undefined |
+| deactivated | bool | undefined |
 
 ### getOperatorFeeRecipient
 
@@ -506,23 +523,6 @@ Set withdrawer for public key
 | _publicKey | bytes | Public key to change withdrawer |
 | _newWithdrawer | address | New withdrawer address |
 
-### unbanOperator
-
-```solidity
-function unbanOperator(uint256 _operatorIndex, address _newFeeRecipient) external nonpayable
-```
-
-Unban an operator, without changing its 0 staking limit
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _operatorIndex | uint256 | Operator Index |
-| _newFeeRecipient | address | Sets the fee recipient address |
-
 ### withdraw
 
 ```solidity
@@ -609,10 +609,10 @@ error AlreadyInitialized()
 
 
 
-### Banned
+### Deactivated
 
 ```solidity
-error Banned()
+error Deactivated()
 ```
 
 

@@ -23,7 +23,7 @@ contract StakingContract {
     uint256 public constant DEPOSIT_SIZE = 32 ether;
     uint256 internal constant BASIS_POINTS = 10_000;
 
-    error Banned();
+    error Deactivated();
     error NoOperators();
     error InvalidCall();
     error Unauthorized();
@@ -81,8 +81,8 @@ contract StakingContract {
                 _operatorIndex
             ];
 
-            if (operatorInfo.banned) {
-                revert Banned();
+            if (operatorInfo.deactivated) {
+                revert Deactivated();
             }
 
             if (msg.sender != operatorInfo.operator) {
@@ -99,8 +99,8 @@ contract StakingContract {
             _operatorIndex
         ];
 
-        if (operatorInfo.banned) {
-            revert Banned();
+        if (operatorInfo.deactivated) {
+            revert Deactivated();
         }
 
         if (msg.sender != operatorInfo.operator) {
@@ -116,8 +116,8 @@ contract StakingContract {
             _operatorIndex
         ];
 
-        if (operatorInfo.banned) {
-            revert Banned();
+        if (operatorInfo.deactivated) {
+            revert Deactivated();
         }
 
         if (msg.sender != operatorInfo.feeRecipient) {
@@ -232,7 +232,7 @@ contract StakingContract {
             uint256 keys,
             uint256 funded,
             uint256 available,
-            bool banned
+            bool deactivated
         )
     {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
@@ -241,12 +241,12 @@ contract StakingContract {
                 .getValidatorsFundingInfo(_operatorIndex);
             StakingContractStorageLib.OperatorInfo memory _operator = operators.value[_operatorIndex];
 
-            (operatorAddress, feeRecipientAddress, limit, keys, banned) = (
+            (operatorAddress, feeRecipientAddress, limit, keys, deactivated) = (
                 _operator.operator,
                 _operator.feeRecipient,
                 _operator.limit,
                 _operator.publicKeys.length,
-                _operator.banned
+                _operator.deactivated
             );
             (funded, available) = (_operatorInfo.funded, _operatorInfo.availableKeys);
         }
@@ -345,23 +345,23 @@ contract StakingContract {
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
-    /// @notice Ban an operator and changes the fee recipient address and the staking limit
+    /// @notice Deactivates an operator and changes the fee recipient address and the staking limit
     /// @param _operatorIndex Operator Index
     /// @param _temporaryFeeRecipient Temporary address to receive funds decided by the system admin
-    function banOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external onlyAdmin {
+    function deactivateOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         operators.value[_operatorIndex].limit = 0;
-        operators.value[_operatorIndex].banned = true;
+        operators.value[_operatorIndex].deactivated = true;
         operators.value[_operatorIndex].feeRecipient = _temporaryFeeRecipient;
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
-    /// @notice Unban an operator, without changing its 0 staking limit
+    /// @notice Activates an operator, without changing its 0 staking limit
     /// @param _operatorIndex Operator Index
     /// @param _newFeeRecipient Sets the fee recipient address
-    function unbanOperator(uint256 _operatorIndex, address _newFeeRecipient) external onlyAdmin {
+    function activateOperator(uint256 _operatorIndex, address _newFeeRecipient) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
-        operators.value[_operatorIndex].banned = false;
+        operators.value[_operatorIndex].deactivated = false;
         operators.value[_operatorIndex].feeRecipient = _newFeeRecipient;
     }
 
