@@ -71,7 +71,7 @@ contract StakingContract {
         _;
     }
 
-    /// @notice Ensures that the caller is the admin
+    /// @notice Ensures that the caller is the operator
     modifier onlyOperator(uint256 _operatorIndex) {
         if (msg.sender != StakingContractStorageLib.getOperators().value[_operatorIndex].operator) {
             revert Unauthorized();
@@ -231,7 +231,7 @@ contract StakingContract {
         funded = _validatorIndex < StakingContractStorageLib.getValidatorsFundingInfo(_operatorIndex).funded;
     }
 
-    /// @notice Get the total available keys that are redy to be used for deposits
+    /// @notice Get the total available keys that are ready to be used for deposits
     function getAvailableValidatorCount() external view returns (uint256) {
         return StakingContractStorageLib.getTotalAvailableValidators();
     }
