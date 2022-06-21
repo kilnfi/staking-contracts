@@ -128,16 +128,14 @@ library StakingContractStorageLib {
             p.slot := slot
         }
 
-        uint256 slotIndex = _index / 4;
-        uint256 innerIndex = _index % 4;
-
-        uint256 slotValue = p.value[slotIndex];
-
-        vfi.availableKeys = uint32(slotValue >> ((innerIndex * 8) * 8));
-        vfi.funded = uint32(slotValue >> (((innerIndex * 8) + 4) * 8));
+        uint256 slotIndex = _index >> 2;
+        uint256 innerIndex = (_index & 3) << 6;
+        uint256 value = p.value[slotIndex] >> innerIndex;
+        vfi.availableKeys = uint32(value);
+        vfi.funded = uint32(value >> 32);
     }
 
-    function setOperatorInfo(
+    function setValidatorsFundingInfo(
         uint256 _index,
         uint32 _availableKeys,
         uint32 _funded
@@ -149,13 +147,11 @@ library StakingContractStorageLib {
             p.slot := slot
         }
 
-        uint256 slotIndex = _index / 4;
-        uint256 innerIndex = _index % 4;
-
-        p.value[slotIndex] &= (type(uint256).max - (0xFFFFFFFFFFFFFFFF << ((innerIndex * 8) * 8)));
-        p.value[slotIndex] +=
-            (uint256(_availableKeys) << ((innerIndex * 8) * 8)) +
-            (uint256(_funded) << (((innerIndex * 8) + 4) * 8));
+        uint256 slotIndex = _index >> 2;
+        uint256 innerIndex = (_index & 3) << 6;
+        p.value[slotIndex] =
+            (p.value[slotIndex] & (~(uint256(0xFFFFFFFFFFFFFFFF) << innerIndex))) |
+            ((uint256(_availableKeys) | (uint256(_funded) << 32)) << innerIndex);
     }
 
     /* ========================================
