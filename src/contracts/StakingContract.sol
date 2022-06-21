@@ -39,6 +39,7 @@ contract StakingContract {
     error InvalidValidatorCount();
     error DuplicateValidatorKey(bytes);
     error FundedValidatorDeletionAttempt();
+    error OperatorLimitTooHigh(uint256 limit, uint256 keyCount);
 
     struct ValidatorAllocationCache {
         bool used;
@@ -292,6 +293,10 @@ contract StakingContract {
     /// @param _limit New staking limit
     function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        uint256 publicKeyCount = operators.value[_operatorIndex].publicKeys.length;
+        if (publicKeyCount < _limit) {
+            revert OperatorLimitTooHigh(_limit, publicKeyCount);
+        }
         operators.value[_operatorIndex].limit = _limit;
         _updateAvailableValidatorCount(_operatorIndex);
     }
@@ -410,6 +415,10 @@ contract StakingContract {
             unchecked {
                 ++i;
             }
+        }
+
+        if (_indexes[_indexes.length - 1] < operators.value[_operatorIndex].limit) {
+            operators.value[_operatorIndex].limit = _indexes[_indexes.length - 1];
         }
 
         _updateAvailableValidatorCount(_operatorIndex);
