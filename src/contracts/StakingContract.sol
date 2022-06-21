@@ -480,23 +480,13 @@ contract StakingContract {
             StakingContractStorageLib.setOperatorInfo(_operatorIndex, 0, operatorInfo.funded);
         } else {
             newAvailableCount = uint32(cap - operatorInfo.funded);
-            StakingContractStorageLib.setOperatorInfo(
-                _operatorIndex,
-                uint32(cap - operatorInfo.funded),
-                operatorInfo.funded
-            );
+            StakingContractStorageLib.setOperatorInfo(_operatorIndex, newAvailableCount, operatorInfo.funded);
         }
 
         if (oldAvailableCount != newAvailableCount) {
-            if (oldAvailableCount > newAvailableCount) {
-                StakingContractStorageLib.setTotalAvailableValidators(
-                    StakingContractStorageLib.getTotalAvailableValidators() - (oldAvailableCount - newAvailableCount)
-                );
-            } else {
-                StakingContractStorageLib.setTotalAvailableValidators(
-                    StakingContractStorageLib.getTotalAvailableValidators() + (newAvailableCount - oldAvailableCount)
-                );
-            }
+            StakingContractStorageLib.setTotalAvailableValidators(
+                (StakingContractStorageLib.getTotalAvailableValidators() - oldAvailableCount) + newAvailableCount
+            );
         }
     }
 
