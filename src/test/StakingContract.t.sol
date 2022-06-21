@@ -548,6 +548,70 @@ contract StakingContractTest is DSTestPlus {
         assert(banned == false);
     }
 
+    function testRemoveValidatorsBannedOperatorOne() public {
+        (
+            address operatorAddress,
+            address feeRecipientAddress,
+            uint256 limit,
+            uint256 keys,
+            uint256 funded,
+            uint256 available,
+            bool banned
+        ) = stakingContract.getOperator(0);
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipientAddress, feeRecipientOne);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 0);
+        assertEq(available, 10);
+        assert(banned == false);
+
+        uint256[] memory indexes = new uint256[](10);
+        indexes[0] = 9;
+        indexes[1] = 8;
+        indexes[2] = 7;
+        indexes[3] = 6;
+        indexes[4] = 5;
+        indexes[5] = 4;
+        indexes[6] = 3;
+        indexes[7] = 2;
+        indexes[8] = 1;
+        indexes[9] = 0;
+
+        vm.startPrank(admin);
+        stakingContract.banOperator(0, address(1));
+        vm.stopPrank();
+
+        vm.startPrank(operatorOne);
+        vm.expectRevert(abi.encodeWithSignature("Banned()"));
+        stakingContract.removeValidators(0, indexes);
+        vm.stopPrank();
+
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, banned) = stakingContract.getOperator(0);
+
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipientAddress, address(1));
+        assertEq(limit, 0);
+        assertEq(keys, 10);
+        assertEq(funded, 0);
+        assertEq(available, 0);
+        assert(banned == true);
+
+        vm.startPrank(admin);
+        stakingContract.removeValidators(0, indexes);
+        vm.stopPrank();
+
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, banned) = stakingContract.getOperator(0);
+
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipientAddress, address(1));
+        assertEq(limit, 0);
+        assertEq(keys, 0);
+        assertEq(funded, 0);
+        assertEq(available, 0);
+        assert(banned == true);
+    }
+
     function testRemoveValidatorsOperatorOneInvalidIndexes() public {
         uint256[] memory indexes = new uint256[](10);
         indexes[0] = 8;
