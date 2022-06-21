@@ -501,7 +501,7 @@ contract StakingContractTest is DSTestPlus {
         (operatorAddress, feeRecipientAddress, limit, keys, funded, available) = stakingContract.getOperator(0);
 
         assertEq(operatorAddress, operatorOne);
-        assertEq(limit, 0);
+        assertEq(limit, 10);
         assertEq(keys, 0);
         assertEq(funded, 0);
         assertEq(available, 0);
@@ -579,7 +579,7 @@ contract StakingContractTest is DSTestPlus {
         ) = stakingContract.getOperator(1);
         assertEq(operatorAddress, operatorTwo);
         assertEq(feeRecipientAddress, feeRecipientTwo);
-        assertEq(limit, 1);
+        assertEq(limit, 10);
         assertEq(keys, 1);
         assertEq(funded, 1);
         assertEq(available, 0);

@@ -412,11 +412,6 @@ contract StakingContract {
             }
         }
 
-        uint256 lastIndex = _indexes[_indexes.length - 1];
-        if (lastIndex < operators.value[_operatorIndex].limit) {
-            operators.value[_operatorIndex].limit = lastIndex;
-        }
-
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
