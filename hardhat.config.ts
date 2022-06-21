@@ -7,7 +7,15 @@ import '@primitivefi/hardhat-dodoc';
  * @type import('hardhat/config').HardhatUserConfig
  */
 const hhuc: HardhatUserConfig = {
-  solidity: "0.8.13",
+  solidity: {
+    version: "0.8.13",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      }
+    }
+  },
   paths: {
     sources: "./src/contracts",
   },
@@ -38,10 +46,6 @@ const hhuc: HardhatUserConfig = {
     admin: {
       default: 2,
       goerli: '0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb'
-    },
-    operator: {
-      default: 3,
-      goerli: '0x0000000000000000000000000000000000000000'
     },
     depositContract: {
       default: 4,

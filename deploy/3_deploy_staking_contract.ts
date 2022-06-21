@@ -4,14 +4,11 @@ import {DeployFunction} from 'hardhat-deploy/types';
 const func: DeployFunction = async function ({
 	deployments,
 	getNamedAccounts,
-	ethers,
-	artifacts,
   }: HardhatRuntimeEnvironment) {
-	const { deployer, proxyAdmin, operator, admin, depositContract } = await getNamedAccounts();
+	const { deployer, proxyAdmin, admin, depositContract } = await getNamedAccounts();
 
-	const withdrawDeployment = await deployments.get("WithdrawContract");
-	const WithdrawContract = await ethers.getContractAt("WithdrawContract", withdrawDeployment.address);
-	const withdrawalCredentials = await WithdrawContract.getWithdrawalCredentials();
+	const elfrDeployment = await deployments.get("ExecutionLayerFeeRecipient");
+	const clfrDeployment = await deployments.get("ConsensusLayerFeeRecipient");
 
 	await deployments.deploy("StakingContract", {
 		from: deployer,
@@ -23,10 +20,12 @@ const func: DeployFunction = async function ({
 			  init: {
 				  methodName: 'initialize_1',
 				  args: [
-			operator,
 			admin,
 			depositContract,
-			withdrawalCredentials
+			elfrDeployment.address,
+			clfrDeployment.address,
+			500,
+			500
 				  ]
 			  }
 		  }

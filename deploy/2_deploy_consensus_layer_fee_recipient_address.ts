@@ -4,18 +4,28 @@ import {DeployFunction} from 'hardhat-deploy/types';
 const func: DeployFunction = async function ({
 	deployments,
 	getNamedAccounts,
-	ethers,
-	artifacts,
   }: HardhatRuntimeEnvironment) {
 	const { deployer, proxyAdmin } = await getNamedAccounts();
-	await deployments.deploy("WithdrawContract", {
+
+	  await deployments.deploy("ConsensusLayerFeeRecipient", {
 		from: deployer,
 		log: true,
+		args: [1],
 		proxy: {
 		  owner: proxyAdmin,
 		  proxyContract: "TUPProxy",
+		  execute: {
+			  init: {
+				  methodName: 'initCLFR',
+				  args: [
+					"0x0000000000000000000000000000000000000000",
+					"0x0000000000000000000000000000000000000000000000000000000000000000"
+				  ]
+			  }
+		  }
 		},
 	  });
+
 };
 
 export default func;

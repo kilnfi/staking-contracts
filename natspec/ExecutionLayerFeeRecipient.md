@@ -67,7 +67,7 @@ Retrieve the assigned withdrawer
 function initELFR(address _stakingContract, bytes32 _publicKeyRoot) external nonpayable
 ```
 
-Initialized the contract by storing the staking contract and the public key in storage
+Initialize the contract by storing the staking contract and the public key in storage
 
 
 
