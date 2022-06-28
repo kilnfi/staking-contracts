@@ -26,6 +26,12 @@ const hhuc: HardhatUserConfig = {
         mnemonic: process.env.MNEMONIC || "",
       },
     },
+    ropsten: {
+      url: process.env.RPC_URL || "",
+      accounts: {
+        mnemonic: process.env.MNEMONIC || "",
+      },
+    },
   },
   dodoc: {
     include: [
@@ -41,15 +47,18 @@ const hhuc: HardhatUserConfig = {
     },
     proxyAdmin: {
       default: 1,
-      goerli: '0x3B9B2C07eff60aC828117C997E04c61890Ad2Ed7'
+      goerli: "0x3B9B2C07eff60aC828117C997E04c61890Ad2Ed7",
+      ropsten: "0xD53992E36090ca80C14197C09475fe09909CaeB1",
     },
     admin: {
       default: 2,
-      goerli: '0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb'
+      goerli: "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
+      ropsten: "0x8039f91Ce95F9DE56ab607a20fD27830Ab3A5813",
     },
     depositContract: {
       default: 4,
       goerli: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
+      ropsten: "0x6f22fFbC56eFF051aECF839396DD1eD9aD6BBA9D",
     },
   },
 };
