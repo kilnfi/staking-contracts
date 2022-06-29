@@ -5,3 +5,4 @@ artifacts
 .vscode
 forge-cache
 .DS_Store
+.env
