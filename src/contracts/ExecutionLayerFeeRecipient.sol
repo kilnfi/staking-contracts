@@ -10,8 +10,15 @@ import "./interfaces/IStakingContractFeeDetails.sol";
 contract ExecutionLayerFeeRecipient {
     using FeeRecipientStorageLib for bytes32;
 
-    event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee);
+    event Withdrawal(
+        address indexed withdrawer,
+        address indexed feeRecipient,
+        uint256 rewards,
+        uint256 nodeOperatorFee,
+        uint256 treasuryFee
+    );
 
+    error TreasuryReceiveError(bytes errorData);
     error FeeRecipientReceiveError(bytes errorData);
     error WithdrawerReceiveError(bytes errorData);
     error ZeroBalanceWithdrawal();
@@ -60,10 +67,12 @@ contract ExecutionLayerFeeRecipient {
         );
         bytes32 pubKeyRoot = VALIDATOR_PUBLIC_KEY_SLOT.getBytes32();
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
-        uint256 feeBps = stakingContract.getELFee();
         address feeRecipient = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
-        uint256 fee = (balance * feeBps) / BASIS_POINTS;
-        (bool status, bytes memory data) = withdrawer.call{value: balance - fee}("");
+        address treasury = stakingContract.getTreasury();
+        uint256 fee = (balance * stakingContract.getELFee()) / BASIS_POINTS;
+        uint256 treasuryFee = (balance * stakingContract.getTreasuryFee()) / BASIS_POINTS;
+
+        (bool status, bytes memory data) = withdrawer.call{value: balance - fee - treasuryFee}("");
         if (status == false) {
             revert WithdrawerReceiveError(data);
         }
@@ -73,7 +82,13 @@ contract ExecutionLayerFeeRecipient {
                 revert FeeRecipientReceiveError(data);
             }
         }
-        emit Withdrawal(withdrawer, feeRecipient, balance - fee, fee);
+        if (treasuryFee > 0) {
+            (status, data) = treasury.call{value: treasuryFee}("");
+            if (status == false) {
+                revert TreasuryReceiveError(data);
+            }
+        }
+        emit Withdrawal(withdrawer, feeRecipient, balance - fee - treasuryFee, fee, treasuryFee);
     }
 
     /// @notice Retrieve the staking contract address

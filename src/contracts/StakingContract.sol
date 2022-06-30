@@ -1,13 +1,11 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "./libs/StakingContractStorageLib.sol";
 import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
-
-import "./interfaces/IDepositContract.sol";
 import "./interfaces/IFeeRecipient.sol";
-
+import "./interfaces/IDepositContract.sol";
+import "./libs/StakingContractStorageLib.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 /// @title Ethereum Staking Contract
@@ -134,13 +132,17 @@ contract StakingContract {
     /// @param _clFee Fee in bps to take on any Consensus Layer fee withdrawal
     function initialize_1(
         address _admin,
+        address _treasury,
         address _depositContract,
         address _elFeeRecipientImplementation,
         address _clFeeRecipientImplementation,
         uint256 _elFee,
-        uint256 _clFee
+        uint256 _clFee,
+        uint256 _treasuryFee
     ) external init(1) {
         StakingContractStorageLib.setAdmin(_admin);
+        StakingContractStorageLib.setTreasury(_treasury);
+        StakingContractStorageLib.setTreasuryFee(_treasuryFee);
         StakingContractStorageLib.setDepositContract(_depositContract);
 
         StakingContractStorageLib.setELFeeRecipientImplementation(_elFeeRecipientImplementation);
@@ -153,6 +155,16 @@ contract StakingContract {
     /// @notice Retrieve system admin
     function getAdmin() external view returns (address) {
         return StakingContractStorageLib.getAdmin();
+    }
+
+    /// @notice Retrieve system treasury
+    function getTreasury() external view returns (address) {
+        return StakingContractStorageLib.getTreasury();
+    }
+
+    /// @notice Retrieve treasury fee
+    function getTreasuryFee() external view returns (uint256) {
+        return StakingContractStorageLib.getTreasuryFee();
     }
 
     /// @notice Retrieve the Execution Layer Fee taken by the node operator

@@ -70,6 +70,34 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
+    bytes32 internal constant TREASURY_SLOT = keccak256("StakingContract.treasury");
+
+    function getTreasury() internal view returns (address) {
+        return getAddress(TREASURY_SLOT);
+    }
+
+    function setTreasury(address _newTreasury) internal {
+        setAddress(TREASURY_SLOT, _newTreasury);
+    }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant TREASURY_FEE_SLOT = keccak256("StakingContract.treasuryFee");
+
+    function getTreasuryFee() internal view returns (uint256) {
+        return getUint256(TREASURY_FEE_SLOT);
+    }
+
+    function setTreasuryFee(uint256 _newTreasuryFee) internal {
+        setUint256(TREASURY_FEE_SLOT, _newTreasuryFee);
+    }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
     bytes32 internal constant DEPOSIT_CONTRACT_SLOT = keccak256("StakingContract.depositContract");
 
     function getDepositContract() internal view returns (address) {

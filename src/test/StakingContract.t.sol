@@ -1,14 +1,14 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "solmate/test/utils/DSTestPlus.sol";
 import "forge-std/Vm.sol";
+import "./UserFactory.sol";
+import "../contracts/Treasury.sol";
 import "../contracts/StakingContract.sol";
+import "solmate/test/utils/DSTestPlus.sol";
 import "../contracts/interfaces/IDepositContract.sol";
 import "../contracts/ExecutionLayerFeeRecipient.sol";
 import "../contracts/ConsensusLayerFeeRecipient.sol";
-import "./UserFactory.sol";
-import "../contracts/libs/BytesLib.sol";
 
 contract DepositContractMock is IDepositContract {
     event DepositEvent(bytes pubkey, bytes withdrawal_credentials, bytes amount, bytes signature, bytes index);
@@ -49,6 +49,7 @@ contract DepositContractMock is IDepositContract {
 contract StakingContractTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
+    Treasury internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     ExecutionLayerFeeRecipient internal elfr;
@@ -80,11 +81,21 @@ contract StakingContractTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
+        treasury = new Treasury(admin);
         elfr = new ExecutionLayerFeeRecipient(1);
         clfr = new ConsensusLayerFeeRecipient(1);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), address(elfr), address(clfr), 500, 500);
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(elfr),
+            address(clfr),
+            200,
+            200,
+            800
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
@@ -137,7 +148,16 @@ contract StakingContractTest is DSTestPlus {
 
     function testReinitialization() public {
         vm.expectRevert(abi.encodeWithSignature("AlreadyInitialized()"));
-        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(elfr),
+            address(clfr),
+            200,
+            200,
+            800
+        );
     }
 
     function testSetAdminUnauthorized(uint256 _adminSalt) public {
@@ -779,6 +799,7 @@ contract StakingContractTest is DSTestPlus {
 contract StakingContractThreeValidatorsTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
+    Treasury internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -797,9 +818,19 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
+        treasury = new Treasury(admin);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(0),
+            address(0),
+            200,
+            200,
+            800
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
@@ -1231,6 +1262,7 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
 contract StakingContractDistributionTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
+    Treasury internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -1243,9 +1275,19 @@ contract StakingContractDistributionTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
+        treasury = new Treasury(admin);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(0),
+            address(0),
+            200,
+            200,
+            800
+        );
     }
 
     function genBytes(uint256 len) internal returns (bytes memory) {
@@ -1328,6 +1370,7 @@ contract StakingContractDistributionTest is DSTestPlus {
 contract StakingContractTwoValidatorsTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
+    Treasury internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -1342,9 +1385,19 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
+        treasury = new Treasury(admin);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(0),
+            address(0),
+            200,
+            200,
+            800
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
@@ -1675,6 +1728,7 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
 contract StakingContractOneValidatorTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
+    Treasury internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -1689,11 +1743,21 @@ contract StakingContractOneValidatorTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
+        treasury = new Treasury(admin);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         elfr = new ExecutionLayerFeeRecipient(1);
         clfr = new ConsensusLayerFeeRecipient(1);
-        stakingContract.initialize_1(admin, address(depositContract), address(elfr), address(clfr), 500, 500);
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(elfr),
+            address(clfr),
+            200,
+            200,
+            800
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
@@ -2004,7 +2068,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     }
 
     function testEditELFee() public {
-        assert(stakingContract.getELFee() == 500);
+        assert(stakingContract.getELFee() == 200);
         vm.startPrank(admin);
         stakingContract.setELFee(1000);
         vm.stopPrank();
@@ -2012,7 +2076,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     }
 
     function testEditCLFee() public {
-        assert(stakingContract.getCLFee() == 500);
+        assert(stakingContract.getCLFee() == 200);
         vm.startPrank(admin);
         stakingContract.setCLFee(1000);
         vm.stopPrank();
@@ -2045,9 +2109,10 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
-        assert(bob.balance == 0.95 ether);
+        assert(bob.balance == 0.90 ether);
         assert(operatorOne.balance == 0);
-        assert(feeRecipientOne.balance == 0.05 ether);
+        assert(feeRecipientOne.balance == 0.02 ether);
+        assert(address(treasury).balance == 0.08 ether);
     }
 
     function testWithdrawELFeesEditedFeeBps() public {
@@ -2066,12 +2131,14 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
+        assert(address(treasury).balance == 0);
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
-        assert(bob.balance == 0.9 ether);
+        assert(bob.balance == 0.82 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.1 ether);
+        assert(address(treasury).balance == 0.08 ether);
     }
 
     function testWithdrawELFeesAlreadyDeployed() public {
@@ -2090,14 +2157,16 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
-        assert(bob.balance == 0.95 ether);
+        assert(bob.balance == 0.90 ether);
         assert(operatorOne.balance == 0);
-        assert(feeRecipientOne.balance == 0.05 ether);
+        assert(feeRecipientOne.balance == 0.02 ether);
+        assert(address(treasury).balance == 0.08 ether);
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
-        assert(bob.balance == 1.90 ether);
+        assert(bob.balance == 1.80 ether);
         assert(operatorOne.balance == 0);
-        assert(feeRecipientOne.balance == 0.1 ether);
+        assert(feeRecipientOne.balance == 0.04 ether);
+        assert(address(treasury).balance == 0.16 ether);
     }
 
     function testWithdrawELFeesEmptyWithdrawal() public {
@@ -2124,13 +2193,15 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        assert(address(treasury).balance == 0 ether);
         assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 33 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
-        assert(bob.balance == 32.95 ether);
+        assert(bob.balance == 32.90 ether);
         assert(operatorOne.balance == 0);
-        assert(feeRecipientOne.balance == 0.05 ether);
+        assert(address(treasury).balance == 0.08 ether);
+        assert(feeRecipientOne.balance == 0.02 ether);
     }
 
     function testWithdrawCLFeesEditedFeeBps() public {
@@ -2149,12 +2220,14 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
+        assert(address(treasury).balance == 0);
         vm.deal(address(clfrBob), 33 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
-        assert(bob.balance == 32.90 ether);
+        assert(bob.balance == 32.82 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.1 ether);
+        assert(address(treasury).balance == 0.08 ether);
     }
 
     function testWithdrawCLFeesSkimmedValidator() public {
@@ -2170,12 +2243,14 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
+        assert(address(treasury).balance == 0);
         vm.deal(address(clfrBob), 1 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
-        assert(bob.balance == 0.95 ether);
-        assert(feeRecipientOne.balance == 0.05 ether);
+        assert(bob.balance == 0.90 ether);
+        assert(feeRecipientOne.balance == 0.02 ether);
         assert(operatorOne.balance == 0);
+        assert(address(treasury).balance == 0.08 ether);
     }
 
     function testWithdrawCLFeesSlashedValidator() public {
@@ -2213,14 +2288,16 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         vm.deal(address(clfrBob), 33 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
-        assert(bob.balance == 32.95 ether);
+        assert(bob.balance == 32.90 ether);
+        assert(address(treasury).balance == 0.08 ether);
         assert(operatorOne.balance == 0);
-        assert(feeRecipientOne.balance == 0.05 ether);
+        assert(feeRecipientOne.balance == 0.02 ether);
         vm.deal(address(clfrBob), 1 ether);
         stakingContract.withdrawCLFee(publicKey);
-        assert(bob.balance == 33.9 ether);
+        assert(bob.balance == 33.80 ether);
+        assert(address(treasury).balance == 0.16 ether);
         assert(operatorOne.balance == 0);
-        assert(feeRecipientOne.balance == 0.1 ether);
+        assert(feeRecipientOne.balance == 0.04 ether);
     }
 
     function testWithdrawCLFeesEmptyWithdrawal() public {
@@ -2255,11 +2332,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
+        assert(address(treasury).balance == 0);
 
         stakingContract.withdraw(publicKey);
 
-        assert(bob.balance == 33.9 ether);
+        assert(bob.balance == 33.8 ether);
         assert(operatorOne.balance == 0);
-        assert(feeRecipientOne.balance == 0.1 ether);
+        assert(feeRecipientOne.balance == 0.04 ether);
+        assert(address(treasury).balance == 0.16 ether);
     }
 }

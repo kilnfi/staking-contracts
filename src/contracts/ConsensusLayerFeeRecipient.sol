@@ -10,8 +10,15 @@ import "./interfaces/IStakingContractFeeDetails.sol";
 contract ConsensusLayerFeeRecipient {
     using FeeRecipientStorageLib for bytes32;
 
-    event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee);
+    event Withdrawal(
+        address indexed withdrawer,
+        address indexed feeRecipient,
+        uint256 rewards,
+        uint256 nodeOperatorFee,
+        uint256 treasuryFee
+    );
 
+    error TreasuryReceiveError(bytes errorData);
     error FeeRecipientReceiveError(bytes errorData);
     error WithdrawerReceiveError(bytes errorData);
     error ZeroBalanceWithdrawal();
@@ -60,22 +67,22 @@ contract ConsensusLayerFeeRecipient {
         );
         bytes32 pubKeyRoot = VALIDATOR_PUBLIC_KEY_SLOT.getBytes32();
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
-        uint256 feeBps = stakingContract.getCLFee();
         address feeRecipient = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
-
+        address treasury = stakingContract.getTreasury();
         uint256 fee;
+        uint256 treasuryFee;
+
         if (balance >= 32 ether) {
             // withdrawing a healthy & exited validator
-            fee = ((balance - 32 ether) * feeBps) / BASIS_POINTS;
+            fee = ((balance - 32 ether) * stakingContract.getCLFee()) / BASIS_POINTS;
+            treasuryFee = ((balance - 32 ether) * stakingContract.getTreasuryFee()) / BASIS_POINTS;
         } else if (balance <= 16 ether) {
             // withdrawing from what looks like skimming
-            fee = (balance * feeBps) / BASIS_POINTS;
-        } else {
-            // withdrawing from slashed validator (< 32 eth and > 16 eth)
-            fee = 0;
+            fee = (balance * stakingContract.getCLFee()) / BASIS_POINTS;
+            treasuryFee = (balance * stakingContract.getTreasuryFee()) / BASIS_POINTS;
         }
 
-        (bool status, bytes memory data) = withdrawer.call{value: balance - fee}("");
+        (bool status, bytes memory data) = withdrawer.call{value: balance - fee - treasuryFee}("");
         if (status == false) {
             revert WithdrawerReceiveError(data);
         }
@@ -85,7 +92,13 @@ contract ConsensusLayerFeeRecipient {
                 revert FeeRecipientReceiveError(data);
             }
         }
-        emit Withdrawal(withdrawer, feeRecipient, balance - fee, fee);
+        if (treasuryFee > 0) {
+            (status, data) = treasury.call{value: treasuryFee}("");
+            if (status == false) {
+                revert TreasuryReceiveError(data);
+            }
+        }
+        emit Withdrawal(withdrawer, feeRecipient, balance - fee - treasuryFee, fee, treasuryFee);
     }
 
     /// @notice Retrieve the staking contract address
