@@ -315,6 +315,40 @@ Retrieve the Execution &amp; Consensus Layer Fee operator recipient for a given 
 |---|---|---|
 | _0 | address | undefined |
 
+### getTreasury
+
+```solidity
+function getTreasury() external view returns (address)
+```
+
+Retrieve system treasury
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### getTreasuryFee
+
+```solidity
+function getTreasuryFee() external view returns (uint256)
+```
+
+Retrieve treasury fee
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getValidator
 
 ```solidity
@@ -388,7 +422,7 @@ Retrieve withdrawer of public key root
 ### initialize_1
 
 ```solidity
-function initialize_1(address _admin, address _depositContract, address _elFeeRecipientImplementation, address _clFeeRecipientImplementation, uint256 _elFee, uint256 _clFee) external nonpayable
+function initialize_1(address _admin, address _treasury, address _depositContract, address _elFeeRecipientImplementation, address _clFeeRecipientImplementation, uint256 _elFee, uint256 _clFee, uint256 _treasuryFee) external nonpayable
 ```
 
 Initializes version 1 of Staking Contract
@@ -400,11 +434,13 @@ Initializes version 1 of Staking Contract
 | Name | Type | Description |
 |---|---|---|
 | _admin | address | Address of the admin allowed to change the operator and admin |
+| _treasury | address | undefined |
 | _depositContract | address | Address of the Deposit Contract |
 | _elFeeRecipientImplementation | address | Address of the Execution Layer fee recipient implementation |
 | _clFeeRecipientImplementation | address | Address of the Consensus Layer fee recipient implementation |
 | _elFee | uint256 | Fee in bps to take on any Execution Layer fee withdrawal |
 | _clFee | uint256 | Fee in bps to take on any Consensus Layer fee withdrawal |
+| _treasuryFee | uint256 | undefined |
 
 ### removeValidators
 

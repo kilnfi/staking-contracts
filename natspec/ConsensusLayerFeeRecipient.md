@@ -96,7 +96,7 @@ Performs a withdrawal on this contract&#39;s balance
 ### Withdrawal
 
 ```solidity
-event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee)
+event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 nodeOperatorFee, uint256 treasuryFee)
 ```
 
 
@@ -110,7 +110,8 @@ event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint2
 | withdrawer `indexed` | address | undefined |
 | feeRecipient `indexed` | address | undefined |
 | rewards  | uint256 | undefined |
-| fee  | uint256 | undefined |
+| nodeOperatorFee  | uint256 | undefined |
+| treasuryFee  | uint256 | undefined |
 
 
 
@@ -153,6 +154,22 @@ error InvalidCall()
 
 
 
+
+### TreasuryReceiveError
+
+```solidity
+error TreasuryReceiveError(bytes errorData)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| errorData | bytes | undefined |
 
 ### WithdrawerReceiveError
 

@@ -66,6 +66,40 @@ function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (addr
 |---|---|---|
 | _0 | address | undefined |
 
+### getTreasury
+
+```solidity
+function getTreasury() external view returns (address)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### getTreasuryFee
+
+```solidity
+function getTreasuryFee() external view returns (uint256)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getWithdrawerFromPublicKeyRoot
 
 ```solidity
