@@ -3,11 +3,12 @@ pragma solidity >=0.8.10;
 
 import "./libs/FeeRecipientStorageLib.sol";
 import "./interfaces/IStakingContractFeeDetails.sol";
+import "./interfaces/IDispatcher.sol";
 
 /// @title Execution Layer Fee Recipient
 /// @author Kiln
 /// @notice This contract can be used to receive fees from a validator and split them with a node operator
-contract ExecutionLayerFeeRecipient {
+contract ExecutionLayerDispatcher is IDispatcher {
     using FeeRecipientStorageLib for bytes32;
 
     event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee);
@@ -20,7 +21,6 @@ contract ExecutionLayerFeeRecipient {
 
     bytes32 internal constant STAKING_CONTRACT_ADDRESS_SLOT =
         keccak256("ExecutionLayerFeeRecipient.stakingContractAddress");
-    bytes32 internal constant VALIDATOR_PUBLIC_KEY_SLOT = keccak256("ExecutionLayerFeeRecipient.validatorPublicKey");
     uint256 internal constant BASIS_POINTS = 10_000;
     bytes32 internal constant VERSION_SLOT = keccak256("ExecutionLayerFeeRecipient.version");
 
@@ -43,14 +43,12 @@ contract ExecutionLayerFeeRecipient {
 
     /// @notice Initialize the contract by storing the staking contract and the public key in storage
     /// @param _stakingContract Address of the Staking Contract
-    /// @param _publicKeyRoot Hash of the public key linked to this fee recipient
-    function initELFR(address _stakingContract, bytes32 _publicKeyRoot) external init(1) {
+    function initELD(address _stakingContract) external init(1) {
         STAKING_CONTRACT_ADDRESS_SLOT.setAddress(_stakingContract);
-        VALIDATOR_PUBLIC_KEY_SLOT.setBytes32(_publicKeyRoot);
     }
 
     /// @notice Performs a withdrawal on this contract's balance
-    function withdraw() external {
+    function dispatch(bytes32 _publicKeyRoot) external payable {
         uint256 balance = address(this).balance;
         if (balance == 0) {
             revert ZeroBalanceWithdrawal();
@@ -58,10 +56,9 @@ contract ExecutionLayerFeeRecipient {
         IStakingContractFeeDetails stakingContract = IStakingContractFeeDetails(
             STAKING_CONTRACT_ADDRESS_SLOT.getAddress()
         );
-        bytes32 pubKeyRoot = VALIDATOR_PUBLIC_KEY_SLOT.getBytes32();
-        address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
+        address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);
         uint256 feeBps = stakingContract.getELFee();
-        address feeRecipient = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
+        address feeRecipient = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);
         uint256 fee = (balance * feeBps) / BASIS_POINTS;
         (bool status, bytes memory data) = withdrawer.call{value: balance - fee}("");
         if (status == false) {
@@ -81,22 +78,18 @@ contract ExecutionLayerFeeRecipient {
         return STAKING_CONTRACT_ADDRESS_SLOT.getAddress();
     }
 
-    /// @notice Retrieve the assigned withdrawer
-    function getWithdrawer() external view returns (address) {
+    /// @notice Retrieve the assigned withdrawer for the given public key root
+    /// @param _publicKeyRoot Public key root to get the owner
+    function getWithdrawer(bytes32 _publicKeyRoot) external view returns (address) {
         IStakingContractFeeDetails stakingContract = IStakingContractFeeDetails(
             STAKING_CONTRACT_ADDRESS_SLOT.getAddress()
         );
-        bytes32 pubKeyRoot = VALIDATOR_PUBLIC_KEY_SLOT.getBytes32();
-        address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
-        return withdrawer;
+        return stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);
     }
 
-    /// @notice Retrieve the assigned public key root
-    function getPublicKeyRoot() external view returns (bytes32) {
-        return VALIDATOR_PUBLIC_KEY_SLOT.getBytes32();
+    receive() external payable {
+        revert InvalidCall();
     }
-
-    receive() external payable {}
 
     fallback() external payable {
         revert InvalidCall();

@@ -5,10 +5,12 @@ import "solmate/test/utils/DSTestPlus.sol";
 import "forge-std/Vm.sol";
 import "../contracts/StakingContract.sol";
 import "../contracts/interfaces/IDepositContract.sol";
-import "../contracts/ExecutionLayerFeeRecipient.sol";
-import "../contracts/ConsensusLayerFeeRecipient.sol";
 import "./UserFactory.sol";
 import "../contracts/libs/BytesLib.sol";
+import "../contracts/ConsensusLayerDispatcher.sol";
+import "../contracts/ExecutionLayerDispatcher.sol";
+import "../contracts/MinimalReceiver.sol";
+import "../contracts/TUPProxy.sol";
 
 contract DepositContractMock is IDepositContract {
     event DepositEvent(bytes pubkey, bytes withdrawal_credentials, bytes amount, bytes signature, bytes index);
@@ -51,8 +53,6 @@ contract StakingContractTest is DSTestPlus {
 
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
-    ExecutionLayerFeeRecipient internal elfr;
-    ConsensusLayerFeeRecipient internal clfr;
     UserFactory internal uf;
 
     address internal admin = address(1);
@@ -80,11 +80,9 @@ contract StakingContractTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
-        elfr = new ExecutionLayerFeeRecipient(1);
-        clfr = new ConsensusLayerFeeRecipient(1);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), address(elfr), address(clfr), 500, 500);
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), address(0), 500, 500);
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
@@ -137,7 +135,7 @@ contract StakingContractTest is DSTestPlus {
 
     function testReinitialization() public {
         vm.expectRevert(abi.encodeWithSignature("AlreadyInitialized()"));
-        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), address(0), 500, 500);
     }
 
     function testSetAdminUnauthorized(uint256 _adminSalt) public {
@@ -799,7 +797,7 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), address(0), 500, 500);
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
@@ -1245,7 +1243,7 @@ contract StakingContractDistributionTest is DSTestPlus {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), address(0), 500, 500);
     }
 
     function genBytes(uint256 len) internal returns (bytes memory) {
@@ -1344,7 +1342,7 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), 500, 500);
+        stakingContract.initialize_1(admin, address(depositContract), address(0), address(0), address(0), 500, 500);
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
@@ -1684,16 +1682,40 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     address internal alice = address(3);
     address internal operatorOne = address(4);
     address internal feeRecipientOne = address(44);
-    ExecutionLayerFeeRecipient internal elfr;
-    ConsensusLayerFeeRecipient internal clfr;
+    ExecutionLayerDispatcher internal eld;
+    ConsensusLayerDispatcher internal cld;
+    MinimalReceiver internal minimalReceiverImpl;
 
     function setUp() public {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        elfr = new ExecutionLayerFeeRecipient(1);
-        clfr = new ConsensusLayerFeeRecipient(1);
-        stakingContract.initialize_1(admin, address(depositContract), address(elfr), address(clfr), 500, 500);
+        minimalReceiverImpl = new MinimalReceiver();
+
+        address eldImpl = address(new ExecutionLayerDispatcher(1));
+        address cldImpl = address(new ConsensusLayerDispatcher(1));
+
+        eld = ExecutionLayerDispatcher(
+            payable(
+                address(new TUPProxy(eldImpl, address(1), abi.encodeWithSignature("initELD(address)", stakingContract)))
+            )
+        );
+
+        cld = ConsensusLayerDispatcher(
+            payable(
+                address(new TUPProxy(cldImpl, address(1), abi.encodeWithSignature("initCLD(address)", stakingContract)))
+            )
+        );
+
+        stakingContract.initialize_1(
+            admin,
+            address(depositContract),
+            address(eld),
+            address(cld),
+            address(minimalReceiverImpl),
+            500,
+            500
+        );
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);

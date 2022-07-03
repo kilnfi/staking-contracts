@@ -6,7 +6,7 @@ import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
 import "./interfaces/IDepositContract.sol";
-import "./interfaces/IFeeRecipient.sol";
+import "./interfaces/IMinimalReceiver.sol";
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
@@ -125,29 +125,25 @@ contract StakingContract {
         revert InvalidCall();
     }
 
-    /// @notice Initializes version 1 of Staking Contract
-    /// @param _admin Address of the admin allowed to change the operator and admin
-    /// @param _depositContract Address of the Deposit Contract
-    /// @param _elFeeRecipientImplementation Address of the Execution Layer fee recipient implementation
-    /// @param _clFeeRecipientImplementation Address of the Consensus Layer fee recipient implementation
-    /// @param _elFee Fee in bps to take on any Execution Layer fee withdrawal
-    /// @param _clFee Fee in bps to take on any Consensus Layer fee withdrawal
     function initialize_1(
         address _admin,
         address _depositContract,
-        address _elFeeRecipientImplementation,
-        address _clFeeRecipientImplementation,
+        address _elDispatcher,
+        address _clDispatcher,
+        address _minimalReceiverImplementation,
         uint256 _elFee,
         uint256 _clFee
     ) external init(1) {
         StakingContractStorageLib.setAdmin(_admin);
         StakingContractStorageLib.setDepositContract(_depositContract);
 
-        StakingContractStorageLib.setELFeeRecipientImplementation(_elFeeRecipientImplementation);
+        StakingContractStorageLib.setELDispatcher(_elDispatcher);
         StakingContractStorageLib.setELFee(_elFee);
 
-        StakingContractStorageLib.setCLFeeRecipientImplementation(_clFeeRecipientImplementation);
+        StakingContractStorageLib.setCLDispatcher(_clDispatcher);
         StakingContractStorageLib.setCLFee(_clFee);
+
+        StakingContractStorageLib.setMinimalReceiverImplementation(_minimalReceiverImplementation);
     }
 
     /// @notice Retrieve system admin
@@ -168,13 +164,13 @@ contract StakingContract {
     /// @notice Compute the Execution Layer Fee recipient address for a given validator public key
     /// @param _publicKey Validator to get the recipient
     function getELFeeRecipient(bytes calldata _publicKey) external view returns (address) {
-        return _getDeterministicELFeeRecipientAddress(_publicKey);
+        return _getDeterministicReceiver(_publicKey, EXECUTION_LAYER_SALT_PREFIX);
     }
 
     /// @notice Compute the Consensus Layer Fee recipient address for a given validator public key
     /// @param _publicKey Validator to get the recipient
     function getCLFeeRecipient(bytes calldata _publicKey) external view returns (address) {
-        return _getDeterministicCLFeeRecipientAddress(_publicKey);
+        return _getDeterministicReceiver(_publicKey, CONSENSUS_LAYER_SALT_PREFIX);
     }
 
     /// @notice Retrieve the Execution & Consensus Layer Fee operator recipient for a given public key
@@ -473,7 +469,7 @@ contract StakingContract {
     /// @dev This method is public on purpose
     /// @param _publicKey Validator to withdraw Execution Layer Fees from
     function withdrawELFee(bytes calldata _publicKey) external {
-        _deployAndWithdrawELFee(_publicKey);
+        _deployAndWithdraw(_publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
     }
 
     /// @notice Withdraw the Consensus Layer Fee for a given validator public key
@@ -481,15 +477,15 @@ contract StakingContract {
     /// @dev This method is public on purpose
     /// @param _publicKey Validator to withdraw Consensus Layer Fees from
     function withdrawCLFee(bytes calldata _publicKey) external {
-        _deployAndWithdrawCLFee(_publicKey);
+        _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
     }
 
     /// @notice Withdraw both Consensus and Execution Layer Fee for a given validator public key
     /// @dev Reverts if any is null
     /// @param _publicKey Validator to withdraw Execution and Consensus Layer Fees from
     function withdraw(bytes calldata _publicKey) external {
-        _deployAndWithdrawELFee(_publicKey);
-        _deployAndWithdrawCLFee(_publicKey);
+        _deployAndWithdraw(_publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
+        _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
     }
 
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
@@ -566,7 +562,7 @@ contract StakingContract {
         for (uint256 i = vfi.funded; i < vfi.funded + _validatorCount; ) {
             bytes memory publicKey = operator.publicKeys[i];
             bytes memory signature = operator.signatures[i];
-            address consensusLayerRecipient = _getDeterministicCLFeeRecipientAddress(publicKey);
+            address consensusLayerRecipient = _getDeterministicReceiver(publicKey, CONSENSUS_LAYER_SALT_PREFIX);
             bytes32 withdrawalCredentials = _addressToWithdrawalCredentials(consensusLayerRecipient);
             _depositValidator(publicKey, signature, withdrawalCredentials);
             bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
@@ -917,51 +913,33 @@ contract StakingContract {
         return _b;
     }
 
-    /// @notice Computes the execution layer fee recipient for the given validator public key
-    /// @param _publicKey The public key linked to the recipient
-    function _getDeterministicELFeeRecipientAddress(bytes memory _publicKey) internal view returns (address) {
+    /// @notice Internal utility to compute the receiver deterministic address
+    /// @param _publicKey Public Key assigned to the receiver
+    /// @param _prefix Prefix used to generate multiple receivers per public key
+    function _getDeterministicReceiver(bytes memory _publicKey, uint256 _prefix) internal view returns (address) {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
-        bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_SALT_PREFIX, publicKeyRoot));
-        address implementation = StakingContractStorageLib.getELFeeRecipientImplementation();
-        return Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+        bytes32 salt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
+        address implementation = StakingContractStorageLib.getMinimalReceiverImplementation();
+        return Clones.predictDeterministicAddress(implementation, salt);
     }
 
-    /// @notice Computes the consensus layer fee recipient for the given validator public key
-    /// @param _publicKey The public key linked to the recipient
-    function _getDeterministicCLFeeRecipientAddress(bytes memory _publicKey) internal view returns (address) {
+    /// @notice Internal utility to deploy and withdraw the fees from a receiver
+    /// @param _publicKey Public Key assigned to the receiver
+    /// @param _prefix Prefix used to generate multiple receivers per public key
+    /// @param _dispatcher Address of the dispatcher contract
+    function _deployAndWithdraw(
+        bytes calldata _publicKey,
+        uint256 _prefix,
+        address _dispatcher
+    ) internal {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
-        bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_SALT_PREFIX, publicKeyRoot));
-        address implementation = StakingContractStorageLib.getCLFeeRecipientImplementation();
-        return Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
-    }
-
-    /// @notice Computes the execution layer fee recipient for the given validator public key, checks if a
-    ///         contract exists at given address, creates a minimal Clone if not and then performs withdrawal
-    /// @param _publicKey The public key linked to the recipient
-    function _deployAndWithdrawELFee(bytes calldata _publicKey) internal {
-        bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
-        bytes32 feeRecipientSalt = sha256(abi.encodePacked(EXECUTION_LAYER_SALT_PREFIX, publicKeyRoot));
-        address implementation = StakingContractStorageLib.getELFeeRecipientImplementation();
-        address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
-        if (feeRecipientAddress.code.length == 0) {
+        bytes32 feeRecipientSalt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
+        address implementation = StakingContractStorageLib.getMinimalReceiverImplementation();
+        address minimalReceiverAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+        if (minimalReceiverAddress.code.length == 0) {
             Clones.cloneDeterministic(implementation, feeRecipientSalt);
-            IELFeeRecipient(feeRecipientAddress).initELFR(address(this), publicKeyRoot);
+            IMinimalReceiver(minimalReceiverAddress).init(_dispatcher, publicKeyRoot);
         }
-        IELFeeRecipient(feeRecipientAddress).withdraw();
-    }
-
-    /// @notice Computes the consensus layer fee recipient for the given validator public key, checks if a
-    ///         contract exists at given address, creates a minimal Clone if not and then performs withdrawal
-    /// @param _publicKey The public key linked to the recipient
-    function _deployAndWithdrawCLFee(bytes calldata _publicKey) internal {
-        bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
-        bytes32 feeRecipientSalt = sha256(abi.encodePacked(CONSENSUS_LAYER_SALT_PREFIX, publicKeyRoot));
-        address implementation = StakingContractStorageLib.getCLFeeRecipientImplementation();
-        address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
-        if (feeRecipientAddress.code.length == 0) {
-            Clones.cloneDeterministic(implementation, feeRecipientSalt);
-            ICLFeeRecipient(feeRecipientAddress).initCLFR(address(this), publicKeyRoot);
-        }
-        ICLFeeRecipient(feeRecipientAddress).withdraw();
+        IMinimalReceiver(minimalReceiverAddress).withdraw();
     }
 }

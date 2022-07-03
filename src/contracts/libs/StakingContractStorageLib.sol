@@ -241,29 +241,42 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT =
-        keccak256("StakingContract.executionLayerFeeRecipientImplementation");
+    bytes32 internal constant EL_DISPATCHER_SLOT = keccak256("StakingContract.executionLayerDispatcher");
 
-    function getELFeeRecipientImplementation() internal view returns (address) {
-        return getAddress(EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT);
+    function getELDispatcher() internal view returns (address) {
+        return getAddress(EL_DISPATCHER_SLOT);
     }
 
-    function setELFeeRecipientImplementation(address _newElFeeRecipientImplementation) internal {
-        setAddress(EL_FEE_RECIPIENT_IMPLEMENTATION_SLOT, _newElFeeRecipientImplementation);
+    function setELDispatcher(address _newElDispatcher) internal {
+        setAddress(EL_DISPATCHER_SLOT, _newElDispatcher);
     }
 
     /* ========================================
     ===========================================
     =========================================*/
 
-    bytes32 internal constant CL_FEE_RECIPIENT_IMPLEMENTATION_SLOT =
-        keccak256("StakingContract.consensusLayerFeeRecipientImplementation");
+    bytes32 internal constant CL_DISPATCHER_SLOT = keccak256("StakingContract.consensusLayerDispatcher");
 
-    function getCLFeeRecipientImplementation() internal view returns (address) {
-        return getAddress(CL_FEE_RECIPIENT_IMPLEMENTATION_SLOT);
+    function getCLDispatcher() internal view returns (address) {
+        return getAddress(CL_DISPATCHER_SLOT);
     }
 
-    function setCLFeeRecipientImplementation(address _newClFeeRecipientImplementation) internal {
-        setAddress(CL_FEE_RECIPIENT_IMPLEMENTATION_SLOT, _newClFeeRecipientImplementation);
+    function setCLDispatcher(address _newClDispatcher) internal {
+        setAddress(CL_DISPATCHER_SLOT, _newClDispatcher);
+    }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant MINIMAL_RECEIVER_IMPLEMENTATION_SLOT =
+        keccak256("StakingContract.minimalReceiverImplementation");
+
+    function getMinimalReceiverImplementation() internal view returns (address) {
+        return getAddress(MINIMAL_RECEIVER_IMPLEMENTATION_SLOT);
+    }
+
+    function setMinimalReceiverImplementation(address _newMinimalReceiverImplementation) internal {
+        setAddress(MINIMAL_RECEIVER_IMPLEMENTATION_SLOT, _newMinimalReceiverImplementation);
     }
 }

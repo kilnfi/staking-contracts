@@ -388,10 +388,10 @@ Retrieve withdrawer of public key root
 ### initialize_1
 
 ```solidity
-function initialize_1(address _admin, address _depositContract, address _elFeeRecipientImplementation, address _clFeeRecipientImplementation, uint256 _elFee, uint256 _clFee) external nonpayable
+function initialize_1(address _admin, address _depositContract, address _elDispatcher, address _clDispatcher, address _minimalReceiverImplementation, uint256 _elFee, uint256 _clFee) external nonpayable
 ```
 
-Initializes version 1 of Staking Contract
+
 
 
 
@@ -399,12 +399,13 @@ Initializes version 1 of Staking Contract
 
 | Name | Type | Description |
 |---|---|---|
-| _admin | address | Address of the admin allowed to change the operator and admin |
-| _depositContract | address | Address of the Deposit Contract |
-| _elFeeRecipientImplementation | address | Address of the Execution Layer fee recipient implementation |
-| _clFeeRecipientImplementation | address | Address of the Consensus Layer fee recipient implementation |
-| _elFee | uint256 | Fee in bps to take on any Execution Layer fee withdrawal |
-| _clFee | uint256 | Fee in bps to take on any Consensus Layer fee withdrawal |
+| _admin | address | undefined |
+| _depositContract | address | undefined |
+| _elDispatcher | address | undefined |
+| _clDispatcher | address | undefined |
+| _minimalReceiverImplementation | address | undefined |
+| _elFee | uint256 | undefined |
+| _clFee | uint256 | undefined |
 
 ### removeValidators
 
