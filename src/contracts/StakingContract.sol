@@ -51,7 +51,7 @@ contract StakingContract {
     }
 
     event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey);
-    event ValidatorKeyAdded(uint256 indexed operatorIndex, bytes publicKey);
+    event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys);
     event ValidatorKeyRemoved(uint256 indexed operatorIndex, bytes publicKey);
 
     /// @notice Ensures an initialisation call has been called only once per _version value
@@ -395,8 +395,6 @@ contract StakingContract {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
             bytes memory signature = BytesLib.slice(_signatures, i * SIGNATURE_LENGTH, SIGNATURE_LENGTH);
 
-            emit ValidatorKeyAdded(_operatorIndex, publicKey);
-
             operators.value[_operatorIndex].publicKeys.push(publicKey);
             operators.value[_operatorIndex].signatures.push(signature);
 
@@ -415,6 +413,8 @@ contract StakingContract {
                 ++i;
             }
         }
+
+        emit ValidatorKeysAdded(_operatorIndex, _publicKeys);
 
         _updateAvailableValidatorCount(_operatorIndex);
     }
