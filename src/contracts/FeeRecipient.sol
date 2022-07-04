@@ -1,13 +1,13 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "./interfaces/IDispatcher.sol";
+import "./interfaces/IFeeDispatcher.sol";
 
 contract FeeRecipient {
     /// @notice Constructor replay prevention
     bool internal initialized;
     /// @notice Address where funds are sent to be dispatched
-    IDispatcher internal dispatcher;
+    IFeeDispatcher internal dispatcher;
     /// @notice Public Key root assigned to this receiver
     bytes32 internal publicKeyRoot;
 
@@ -21,7 +21,7 @@ contract FeeRecipient {
             revert AlreadyInitialized();
         }
         initialized = true;
-        dispatcher = IDispatcher(_dispatcher);
+        dispatcher = IFeeDispatcher(_dispatcher);
         publicKeyRoot = _publicKeyRoot;
     }
 

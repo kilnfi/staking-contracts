@@ -20,14 +20,14 @@ contract DispatcherMock {
 contract FeeRecipientTest {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
     FeeRecipient internal feeRecipient;
-    IDispatcher internal dispatcher;
+    IFeeDispatcher internal dispatcher;
 
     address internal bob = address(123);
     address internal alice = address(456);
 
     function setUp() external {
         feeRecipient = new FeeRecipient();
-        dispatcher = IDispatcher(address(new DispatcherMock()));
+        dispatcher = IFeeDispatcher(address(new DispatcherMock()));
     }
 
     function _init(bytes32 _publicKeyRoot) internal {
