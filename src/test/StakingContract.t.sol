@@ -65,6 +65,10 @@ contract StakingContractTest is DSTestPlus {
 
     bytes32 salt = bytes32(0);
 
+    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey);
+    event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKey);
+    event ValidatorKeyRemoved(uint256 indexed operatorIndex, bytes publicKey);
+
     function genBytes(uint256 len) internal returns (bytes memory) {
         bytes memory res = "";
         while (res.length < len) {
@@ -334,6 +338,11 @@ contract StakingContractTest is DSTestPlus {
         assert(deactivated == false);
 
         vm.startPrank(operatorOne);
+        vm.expectEmit(true, true, true, true);
+        emit ValidatorKeysAdded(
+            0,
+            hex"0c74b6d3d877bbb2083f1bcc83b302f3ed533eaf3cd39cff97daf2c7b9b776168481aa7b51778df673a37049886f25b07f03dbc79d85fa9d41f9eefa8e598353b652aadf497673744527c73127f872b91cf31ec8041dae1b3a4238683cf442ea23a95fe68b400ab42b14e8c99280a057d1d840e80723c3622b38e6acd1f471bf247cf62312c9b863a75ac0d270cefa4f84fd8586dbda15c67c1a46e85cf56c60550f54cb082770baf3d2bbf4c33f5254bd0b93e017f3ed036b13baec41bb69085f9eff48651be38c8f9e1f67b643f84ec356864aaa057f0042b121b9d040ed9be3f5cc9cc659d8f8fc02575ed3c25708adac2c8d0c50ab7e4599ce9edf300d98e1cfcfc8e0022a24c712f0769de99a3389bac1cdca92ae20fba323142fe2e8d09ef2cb59c3f822779b3fe6410cddce7255d35db01093cc435c0a35bbb4cd8d4eb3bd2cc597c49a7a909c16f67fe8b6702d5d0c22ad189b1c45325190015b0017606f768c7aa2006cc19dfeb5f367eae9dd17a5c307705db1f5cec552fc038e5fa3a76352d9621a4d74b1fd7e1707c7bfb5e912e2b5a33a2f34a419055d0c4065aa787f743aff953d73441e96ffc9b0f5a3248c23398518a758aec8451b626bff7eed063a3b11bf661d10ad6dac5ee62f47be125e3c668e14b3c704d736b4fb1e"
+        );
         stakingContract.addValidators(0, 10, publicKeys, signatures);
         vm.stopPrank();
 
@@ -538,6 +547,11 @@ contract StakingContractTest is DSTestPlus {
         indexes[9] = 0;
 
         vm.startPrank(operatorOne);
+        vm.expectEmit(true, true, true, true);
+        emit ValidatorKeyRemoved(
+            0,
+            hex"fdca2994adc49ddccb195bda2510e50a4ae10de26cf96dee5e577689f51650a610a33da0a826ae47247d8d1189cb3386"
+        );
         stakingContract.removeValidators(0, indexes);
         vm.stopPrank();
 
@@ -850,7 +864,7 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         }
     }
 
-    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
+    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey);
 
     function testValidatorInfoRetrieval(uint256 _userSalt, uint256 _withdrawerSalt) public {
         address user = uf._new(_userSalt);
@@ -1382,7 +1396,7 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         }
     }
 
-    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
+    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey);
 
     function testExplicitDepositOneValidator(uint256 _userSalt, uint256 _withdrawerSalt) public {
         address user = uf._new(_userSalt);
@@ -1416,8 +1430,7 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         emit Deposit(
             user,
             withdrawer,
-            hex"24046f7be8644e2b872363d5a4d58836deeb2deab6996a7e57f8c7583872786d1b81e378c4188ec3094236a31e31bd83",
-            bytes32(0x97e0fcc0cd21a2beb0f53a4f824b6eeb7297c74a3b8dafb2b56cd870ece6ee56)
+            hex"24046f7be8644e2b872363d5a4d58836deeb2deab6996a7e57f8c7583872786d1b81e378c4188ec3094236a31e31bd83"
         );
         stakingContract.deposit{value: 32 * 2 ether}(withdrawer);
         vm.stopPrank();
@@ -1558,8 +1571,7 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
         emit Deposit(
             user,
             user,
-            hex"24046f7be8644e2b872363d5a4d58836deeb2deab6996a7e57f8c7583872786d1b81e378c4188ec3094236a31e31bd83",
-            bytes32(0x97e0fcc0cd21a2beb0f53a4f824b6eeb7297c74a3b8dafb2b56cd870ece6ee56)
+            hex"24046f7be8644e2b872363d5a4d58836deeb2deab6996a7e57f8c7583872786d1b81e378c4188ec3094236a31e31bd83"
         );
         (bool _success, ) = address(stakingContract).call{value: 32 * 2 ether}("");
         assert(_success == true);
@@ -1718,7 +1730,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         }
     }
 
-    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
+    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey);
     event DepositEvent(bytes pubkey, bytes withdrawal_credentials, bytes amount, bytes signature, bytes index);
 
     function testExplicitDepositOneValidatorCheckDepositEvent(uint256 _userSalt, uint256 _withdrawerSalt) public {
@@ -1790,8 +1802,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         emit Deposit(
             user,
             withdrawer,
-            hex"b0ce3fa164aae897adca509ed44429e7b1f91b7c46ddbe199cee848e09b1ccbb9736b78b68aacff1011b7266fe11e060",
-            bytes32(0xf01ffef8921186d42b508056be28fc1b50c6f3268645d82aba851f341c7e03d4)
+            hex"b0ce3fa164aae897adca509ed44429e7b1f91b7c46ddbe199cee848e09b1ccbb9736b78b68aacff1011b7266fe11e060"
         );
         stakingContract.deposit{value: 32 * 2 ether}(withdrawer);
         vm.stopPrank();
@@ -1910,8 +1921,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         emit Deposit(
             user,
             user,
-            hex"b0ce3fa164aae897adca509ed44429e7b1f91b7c46ddbe199cee848e09b1ccbb9736b78b68aacff1011b7266fe11e060",
-            bytes32(0xf01ffef8921186d42b508056be28fc1b50c6f3268645d82aba851f341c7e03d4)
+            hex"b0ce3fa164aae897adca509ed44429e7b1f91b7c46ddbe199cee848e09b1ccbb9736b78b68aacff1011b7266fe11e060"
         );
         (bool _success, ) = address(stakingContract).call{value: 32 * 2 ether}("");
         assert(_success == true);

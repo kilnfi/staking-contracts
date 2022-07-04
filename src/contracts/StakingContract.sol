@@ -50,7 +50,9 @@ contract StakingContract {
         uint32 available;
     }
 
-    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot);
+    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey);
+    event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys);
+    event ValidatorKeyRemoved(uint256 indexed operatorIndex, bytes publicKey);
 
     /// @notice Ensures an initialisation call has been called only once per _version value
     /// @param _version The current initialisation value
@@ -412,6 +414,8 @@ contract StakingContract {
             }
         }
 
+        emit ValidatorKeysAdded(_operatorIndex, _publicKeys);
+
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
@@ -442,6 +446,7 @@ contract StakingContract {
                 revert UnsortedIndexes();
             }
 
+            emit ValidatorKeyRemoved(_operatorIndex, operators.value[_operatorIndex].publicKeys[_indexes[i]]);
             if (_indexes[i] == operators.value[_operatorIndex].publicKeys.length - 1) {
                 operators.value[_operatorIndex].publicKeys.pop();
                 operators.value[_operatorIndex].signatures.pop();
@@ -571,7 +576,7 @@ contract StakingContract {
             _depositValidator(publicKey, signature, withdrawalCredentials);
             bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
             StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = _withdrawer;
-            emit Deposit(msg.sender, _withdrawer, publicKey, pubkeyRoot);
+            emit Deposit(msg.sender, _withdrawer, publicKey);
             unchecked {
                 ++i;
             }
