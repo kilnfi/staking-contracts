@@ -17,27 +17,27 @@ contract Treasury {
     uint256 constant BASIS_POINT = 10_000;
 
     address public admin;
-    address[] public recipients;
+    address[] public beneficiaries;
     uint256[] public percents;
     uint256 internal locked = 1;
 
     constructor(
         address _admin,
-        address[] memory _recipients,
+        address[] memory _beneficiaries,
         uint256[] memory _percents
     ) {
-        if (_recipients.length != _percents.length) {
+        if (_beneficiaries.length != _percents.length) {
             revert InvalidArrayLengths();
         }
 
-        if (_recipients.length == 0) {
+        if (_beneficiaries.length == 0) {
             revert InvalidEmptyArray();
         }
 
         _checkPercents(_percents);
 
         admin = _admin;
-        recipients = _recipients;
+        beneficiaries = _beneficiaries;
         percents = _percents;
     }
 
@@ -58,34 +58,34 @@ contract Treasury {
     }
 
     /// @notice Sets the splitting parameters for the withdrawal
-    /// @param _recipients The list of recipients to withdraw the funds to
+    /// @param _beneficiaries The list of beneficiaries to withdraw the funds to
     /// @param _percents The list of percents to use for the splitting
-    function setParameters(address[] memory _recipients, uint256[] memory _percents) external onlyAdmin {
-        if (_recipients.length != _percents.length) {
+    function setBeneficiaries(address[] memory _beneficiaries, uint256[] memory _percents) external onlyAdmin {
+        if (_beneficiaries.length != _percents.length) {
             revert InvalidArrayLengths();
         }
 
-        if (_recipients.length == 0) {
+        if (_beneficiaries.length == 0) {
             revert InvalidEmptyArray();
         }
 
         _checkPercents(_percents);
 
-        recipients = _recipients;
+        beneficiaries = _beneficiaries;
         percents = _percents;
     }
 
     /// @notice Withdraws the current balance based on the provided percents, expected in basis point.
     /// @notice If the sum is greater than 10_000, transfers will end up failing
-    /// @param _amount Amount to split between recipients
+    /// @param _amount Amount to split between beneficiaries
     function withdraw(uint256 _amount) external onlyAdmin lock {
         if (_amount > address(this).balance) {
             revert InvalidAmount();
         }
 
-        for (uint256 idx = 0; idx < recipients.length; ++idx) {
+        for (uint256 idx = 0; idx < beneficiaries.length; ++idx) {
             uint256 amountToTransfer = (_amount * percents[idx]) / BASIS_POINT;
-            (bool status, bytes memory data) = recipients[idx].call{value: amountToTransfer}("");
+            (bool status, bytes memory data) = beneficiaries[idx].call{value: amountToTransfer}("");
             if (!status) {
                 revert TransferError(data);
             }

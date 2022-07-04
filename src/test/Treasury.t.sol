@@ -111,7 +111,7 @@ contract TreasuryTest {
         percents[0] = BASIS_POINT;
 
         vm.startPrank(admin);
-        treasury.setParameters(recipients, percents);
+        treasury.setBeneficiaries(recipients, percents);
         assert(bob.balance == 0);
         assert(address(treasury).balance == 3 ether);
 
@@ -139,7 +139,7 @@ contract TreasuryTest {
         percents[1] = BASIS_POINT / 2;
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("InvalidArrayLengths()"));
-        treasury.setParameters(recipients, percents);
+        treasury.setBeneficiaries(recipients, percents);
         vm.stopPrank();
     }
 
@@ -149,7 +149,7 @@ contract TreasuryTest {
         uint256[] memory percents = new uint256[](0);
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("InvalidEmptyArray()"));
-        treasury.setParameters(recipients, percents);
+        treasury.setBeneficiaries(recipients, percents);
         vm.stopPrank();
     }
 
@@ -161,7 +161,7 @@ contract TreasuryTest {
         percents[0] = BASIS_POINT + 1;
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("InvalidPercents()"));
-        treasury.setParameters(recipients, percents);
+        treasury.setBeneficiaries(recipients, percents);
         vm.stopPrank();
     }
 
@@ -172,7 +172,7 @@ contract TreasuryTest {
         uint256[] memory percents = new uint256[](1);
         percents[0] = BASIS_POINT;
         vm.startPrank(admin);
-        treasury.setParameters(recipients, percents);
+        treasury.setBeneficiaries(recipients, percents);
         vm.expectRevert(
             abi.encodeWithSignature("TransferError(bytes)", abi.encodeWithSignature("Error(string)", "no eth allowed"))
         );
