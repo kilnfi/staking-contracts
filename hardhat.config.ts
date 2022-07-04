@@ -36,8 +36,7 @@ const hhuc: HardhatUserConfig = {
   dodoc: {
     include: [
       "StakingContract",
-      "ExecutionLayerFeeRecipient",
-      "ConsensusLayerFeeRecipient"
+      "MinimalReceiver"
     ],
     outputDir: 'natspec'
   },
