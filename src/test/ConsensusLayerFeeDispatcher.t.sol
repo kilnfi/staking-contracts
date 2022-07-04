@@ -3,7 +3,7 @@ pragma solidity >=0.8.10;
 
 import "solmate/test/utils/DSTestPlus.sol";
 import "forge-std/Vm.sol";
-import "../contracts/ConsensusLayerDispatcher.sol";
+import "../contracts/ConsensusLayerFeeDispatcher.sol";
 import "../contracts/libs/BytesLib.sol";
 
 contract StakingContractMock {
@@ -31,18 +31,18 @@ contract StakingContractMock {
     }
 }
 
-contract ConsensusLayerDispatcherTest is DSTestPlus {
+contract ConsensusLayerFeeDispatcherTest is DSTestPlus {
     event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee);
 
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
     IStakingContractFeeDetails internal stakingContract;
-    ConsensusLayerDispatcher internal cld;
+    ConsensusLayerFeeDispatcher internal cld;
     address internal constant bob = address(1);
     address internal constant operator = address(2);
 
     function setUp() public {
         stakingContract = IStakingContractFeeDetails(address(new StakingContractMock()));
-        cld = new ConsensusLayerDispatcher(0);
+        cld = new ConsensusLayerFeeDispatcher(0);
         cld.initCLD(address(stakingContract));
     }
 

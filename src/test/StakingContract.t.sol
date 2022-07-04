@@ -7,8 +7,8 @@ import "../contracts/StakingContract.sol";
 import "../contracts/interfaces/IDepositContract.sol";
 import "./UserFactory.sol";
 import "../contracts/libs/BytesLib.sol";
-import "../contracts/ConsensusLayerDispatcher.sol";
-import "../contracts/ExecutionLayerDispatcher.sol";
+import "../contracts/ConsensusLayerFeeDispatcher.sol";
+import "../contracts/ExecutionLayerFeeDispatcher.sol";
 import "../contracts/FeeRecipient.sol";
 import "../contracts/TUPProxy.sol";
 
@@ -1682,8 +1682,8 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     address internal alice = address(3);
     address internal operatorOne = address(4);
     address internal feeRecipientOne = address(44);
-    ExecutionLayerDispatcher internal eld;
-    ConsensusLayerDispatcher internal cld;
+    ExecutionLayerFeeDispatcher internal eld;
+    ConsensusLayerFeeDispatcher internal cld;
     FeeRecipient internal feeRecipientImpl;
 
     function setUp() public {
@@ -1692,16 +1692,16 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         depositContract = new DepositContractMock();
         feeRecipientImpl = new FeeRecipient();
 
-        address eldImpl = address(new ExecutionLayerDispatcher(1));
-        address cldImpl = address(new ConsensusLayerDispatcher(1));
+        address eldImpl = address(new ExecutionLayerFeeDispatcher(1));
+        address cldImpl = address(new ConsensusLayerFeeDispatcher(1));
 
-        eld = ExecutionLayerDispatcher(
+        eld = ExecutionLayerFeeDispatcher(
             payable(
                 address(new TUPProxy(eldImpl, address(1), abi.encodeWithSignature("initELD(address)", stakingContract)))
             )
         );
 
-        cld = ConsensusLayerDispatcher(
+        cld = ConsensusLayerFeeDispatcher(
             payable(
                 address(new TUPProxy(cldImpl, address(1), abi.encodeWithSignature("initCLD(address)", stakingContract)))
             )
@@ -2298,8 +2298,8 @@ contract StakingContractBehindTest is DSTestPlus {
     address internal alice = address(3);
     address internal operatorOne = address(4);
     address internal feeRecipientOne = address(44);
-    ExecutionLayerDispatcher internal eld;
-    ConsensusLayerDispatcher internal cld;
+    ExecutionLayerFeeDispatcher internal eld;
+    ConsensusLayerFeeDispatcher internal cld;
     FeeRecipient internal feeRecipientImpl;
 
     function setUp() public {
@@ -2307,19 +2307,19 @@ contract StakingContractBehindTest is DSTestPlus {
         depositContract = new DepositContractMock();
         feeRecipientImpl = new FeeRecipient();
 
-        address eldImpl = address(new ExecutionLayerDispatcher(1));
-        address cldImpl = address(new ConsensusLayerDispatcher(1));
+        address eldImpl = address(new ExecutionLayerFeeDispatcher(1));
+        address cldImpl = address(new ConsensusLayerFeeDispatcher(1));
         address stakingContractImpl = address(new StakingContract());
 
         stakingContract = StakingContract(payable(address(new TUPProxy(stakingContractImpl, address(12345), ""))));
 
-        eld = ExecutionLayerDispatcher(
+        eld = ExecutionLayerFeeDispatcher(
             payable(
                 address(new TUPProxy(eldImpl, address(1), abi.encodeWithSignature("initELD(address)", stakingContract)))
             )
         );
 
-        cld = ConsensusLayerDispatcher(
+        cld = ConsensusLayerFeeDispatcher(
             payable(
                 address(new TUPProxy(cldImpl, address(1), abi.encodeWithSignature("initCLD(address)", stakingContract)))
             )

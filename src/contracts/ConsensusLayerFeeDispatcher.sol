@@ -8,7 +8,7 @@ import "./interfaces/IFeeDispatcher.sol";
 /// @title Consensus Layer Fee Recipient
 /// @author Kiln
 /// @notice This contract can be used to receive fees from a validator and split them with a node operator
-contract ConsensusLayerDispatcher is IFeeDispatcher {
+contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
     using FeeRecipientStorageLib for bytes32;
 
     event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee);

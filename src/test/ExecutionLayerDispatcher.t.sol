@@ -3,7 +3,7 @@ pragma solidity >=0.8.10;
 
 import "solmate/test/utils/DSTestPlus.sol";
 import "forge-std/Vm.sol";
-import "../contracts/ExecutionLayerDispatcher.sol";
+import "../contracts/ExecutionLayerFeeDispatcher.sol";
 import "../contracts/libs/BytesLib.sol";
 
 contract StakingContractMock {
@@ -36,13 +36,13 @@ contract ExecutionLayerFeeRecipientTest is DSTestPlus {
 
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
     IStakingContractFeeDetails internal stakingContract;
-    ExecutionLayerDispatcher internal eld;
+    ExecutionLayerFeeDispatcher internal eld;
     address internal constant bob = address(1);
     address internal constant operator = address(2);
 
     function setUp() public {
         stakingContract = IStakingContractFeeDetails(address(new StakingContractMock()));
-        eld = new ExecutionLayerDispatcher(0);
+        eld = new ExecutionLayerFeeDispatcher(0);
         eld.initELD(address(stakingContract));
     }
 

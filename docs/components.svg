@@ -13,7 +13,7 @@
 <g id="node1" class="node">
 <title>0</title>
 <polygon fill="#f2f2f2" stroke="#000000" points="945.8071,-.5 945.8071,-293.3 1532.5703,-293.3 1532.5703,-.5 945.8071,-.5"/>
-<text text-anchor="middle" x="1239.1887" y="-276.7" font-family="Times,serif" font-size="14.00" fill="#000000">ConsensusLayerDispatcher</text>
+<text text-anchor="middle" x="1239.1887" y="-276.7" font-family="Times,serif" font-size="14.00" fill="#000000">ConsensusLayerFeeDispatcher</text>
 <polyline fill="none" stroke="#000000" points="945.8071,-268.5 1532.5703,-268.5 "/>
 <text text-anchor="start" x="953.8071" y="-251.9" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
 <text text-anchor="start" x="953.8071" y="-235.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;STAKING_CONTRACT_ADDRESS_SLOT: bytes32</text>
@@ -37,7 +37,7 @@
 <title>6</title>
 <polygon fill="#f2f2f2" stroke="#000000" points="474.372,-859.5 474.372,-984.3 794.0054,-984.3 794.0054,-859.5 474.372,-859.5"/>
 <text text-anchor="middle" x="634.1887" y="-967.7" font-family="Times,serif" font-size="14.00" fill="#000000">&lt;&lt;Interface&gt;&gt;</text>
-<text text-anchor="middle" x="634.1887" y="-950.9" font-family="Times,serif" font-size="14.00" fill="#000000">IDispatcher</text>
+<text text-anchor="middle" x="634.1887" y="-950.9" font-family="Times,serif" font-size="14.00" fill="#000000">IFeeDispatcher</text>
 <polyline fill="none" stroke="#000000" points="474.372,-942.7 794.0054,-942.7 "/>
 <text text-anchor="middle" x="634.1887" y="-926.1" font-family="Times,serif" font-size="14.00" fill="#000000"> </text>
 <polyline fill="none" stroke="#000000" points="474.372,-917.9 794.0054,-917.9 "/>
@@ -99,7 +99,7 @@
 <g id="node2" class="node">
 <title>1</title>
 <polygon fill="#f2f2f2" stroke="#000000" points="340.8071,-.5 340.8071,-293.3 927.5703,-293.3 927.5703,-.5 340.8071,-.5"/>
-<text text-anchor="middle" x="634.1887" y="-276.7" font-family="Times,serif" font-size="14.00" fill="#000000">ExecutionLayerDispatcher</text>
+<text text-anchor="middle" x="634.1887" y="-276.7" font-family="Times,serif" font-size="14.00" fill="#000000">ExecutionLayerFeeDispatcher</text>
 <polyline fill="none" stroke="#000000" points="340.8071,-268.5 927.5703,-268.5 "/>
 <text text-anchor="start" x="348.8071" y="-251.9" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
 <text text-anchor="start" x="348.8071" y="-235.1" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;STAKING_CONTRACT_ADDRESS_SLOT: bytes32</text>
@@ -144,7 +144,7 @@
 <polyline fill="none" stroke="#000000" points="0,-234.9 322.3774,-234.9 "/>
 <text text-anchor="start" x="8" y="-218.3" font-family="Times,serif" font-size="14.00" fill="#000000">Internal:</text>
 <text text-anchor="start" x="8" y="-201.5" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;initialized: bool</text>
-<text text-anchor="start" x="8" y="-184.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;dispatcher: IDispatcher</text>
+<text text-anchor="start" x="8" y="-184.7" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;dispatcher: IFeeDispatcher</text>
 <text text-anchor="start" x="8" y="-167.9" font-family="Times,serif" font-size="14.00" fill="#000000"> &#160;&#160;publicKeyRoot: bytes32</text>
 <polyline fill="none" stroke="#000000" points="0,-159.7 322.3774,-159.7 "/>
 <text text-anchor="start" x="8" y="-143.1" font-family="Times,serif" font-size="14.00" fill="#000000">External:</text>
