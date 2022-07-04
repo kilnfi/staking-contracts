@@ -81,7 +81,10 @@ contract StakingContractTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
-        treasury = new Treasury(admin);
+        address[] memory recipients = new address[](1);
+        uint256[] memory percents = new uint256[](1);
+        percents[0] = 10_000;
+        treasury = new Treasury(admin, recipients, percents);
         elfr = new ExecutionLayerFeeRecipient(1);
         clfr = new ConsensusLayerFeeRecipient(1);
         stakingContract = new StakingContract();
@@ -818,7 +821,10 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
-        treasury = new Treasury(admin);
+        address[] memory recipients = new address[](1);
+        uint256[] memory percents = new uint256[](1);
+        percents[0] = 10_000;
+        treasury = new Treasury(admin, recipients, percents);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         stakingContract.initialize_1(
@@ -1275,7 +1281,10 @@ contract StakingContractDistributionTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
-        treasury = new Treasury(admin);
+        address[] memory recipients = new address[](1);
+        uint256[] memory percents = new uint256[](1);
+        percents[0] = 10_000;
+        treasury = new Treasury(admin, recipients, percents);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         stakingContract.initialize_1(
@@ -1385,7 +1394,10 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
-        treasury = new Treasury(admin);
+        address[] memory recipients = new address[](1);
+        uint256[] memory percents = new uint256[](1);
+        percents[0] = 10_000;
+        treasury = new Treasury(admin, recipients, percents);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         stakingContract.initialize_1(
@@ -1743,7 +1755,10 @@ contract StakingContractOneValidatorTest is DSTestPlus {
 
     function setUp() public {
         uf = new UserFactory();
-        treasury = new Treasury(admin);
+        address[] memory recipients = new address[](1);
+        uint256[] memory percents = new uint256[](1);
+        percents[0] = 10_000;
+        treasury = new Treasury(admin, recipients, percents);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         elfr = new ExecutionLayerFeeRecipient(1);

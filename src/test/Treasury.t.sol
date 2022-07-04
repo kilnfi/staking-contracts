@@ -25,30 +25,54 @@ contract TreasuryTest {
     uint256 constant BASIS_POINT = 10_000;
 
     function setUp() public {
-        treasury = new Treasury(admin);
-        noEthPlease = new ContractThatCannotReceiveEth();
-    }
-
-    function testSplitRewards() public {
-        vm.deal(address(treasury), 3 ether);
-
         address[] memory recipients = new address[](2);
         recipients[0] = bob;
         recipients[1] = alice;
         uint256[] memory percents = new uint256[](2);
         percents[0] = BASIS_POINT / 2;
         percents[1] = BASIS_POINT / 2;
+        treasury = new Treasury(admin, recipients, percents);
+        noEthPlease = new ContractThatCannotReceiveEth();
+    }
+
+    function testSplitRewards() public {
+        vm.deal(address(treasury), 3 ether);
 
         vm.startPrank(admin);
         assert(bob.balance == 0);
         assert(alice.balance == 0);
         assert(address(treasury).balance == 3 ether);
 
-        treasury.withdraw(recipients, percents);
+        treasury.withdraw(3 ether);
 
         assert(bob.balance == 1.5 ether);
         assert(alice.balance == 1.5 ether);
         assert(address(treasury).balance == 0);
+        vm.stopPrank();
+    }
+
+    function testSplitInvalidAmount() public {
+        vm.deal(address(treasury), 3 ether);
+
+        vm.startPrank(admin);
+        vm.expectRevert(abi.encodeWithSignature("InvalidAmount()"));
+        treasury.withdraw(3.1 ether);
+        vm.stopPrank();
+    }
+
+    function testSplitPartialRewards() public {
+        vm.deal(address(treasury), 3 ether);
+
+        vm.startPrank(admin);
+        assert(bob.balance == 0);
+        assert(alice.balance == 0);
+        assert(address(treasury).balance == 3 ether);
+
+        treasury.withdraw(2 ether);
+
+        assert(bob.balance == 1 ether);
+        assert(alice.balance == 1 ether);
+        assert(address(treasury).balance == 1 ether);
         vm.stopPrank();
     }
 
@@ -65,19 +89,12 @@ contract TreasuryTest {
         assert(address(treasury).balance == 3 ether);
         vm.stopPrank();
 
-        address[] memory recipients = new address[](2);
-        recipients[0] = bob;
-        recipients[1] = alice;
-        uint256[] memory percents = new uint256[](2);
-        percents[0] = BASIS_POINT / 2;
-        percents[1] = BASIS_POINT / 2;
-
         vm.startPrank(admin);
         assert(bob.balance == 0);
         assert(alice.balance == 0);
         assert(address(treasury).balance == 3 ether);
 
-        treasury.withdraw(recipients, percents);
+        treasury.withdraw(3 ether);
 
         assert(bob.balance == 1.5 ether);
         assert(alice.balance == 1.5 ether);
@@ -94,10 +111,11 @@ contract TreasuryTest {
         percents[0] = BASIS_POINT;
 
         vm.startPrank(admin);
+        treasury.setParameters(recipients, percents);
         assert(bob.balance == 0);
         assert(address(treasury).balance == 3 ether);
 
-        treasury.withdraw(recipients, percents);
+        treasury.withdraw(3 ether);
 
         assert(bob.balance == 3 ether);
         assert(address(treasury).balance == 0);
@@ -106,19 +124,13 @@ contract TreasuryTest {
 
     function testSplitUnauthorized() public {
         vm.deal(address(treasury), 3 ether);
-        address[] memory recipients = new address[](2);
-        recipients[0] = bob;
-        recipients[1] = alice;
-        uint256[] memory percents = new uint256[](2);
-        percents[0] = BASIS_POINT / 2;
-        percents[1] = BASIS_POINT / 2;
         vm.startPrank(bob);
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        treasury.withdraw(recipients, percents);
+        treasury.withdraw(1 ether);
         vm.stopPrank();
     }
 
-    function testSplitInvalidArrayLengths() public {
+    function testSetParametersInvalidArrayLengths() public {
         vm.deal(address(treasury), 3 ether);
         address[] memory recipients = new address[](1);
         recipients[0] = bob;
@@ -127,29 +139,29 @@ contract TreasuryTest {
         percents[1] = BASIS_POINT / 2;
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("InvalidArrayLengths()"));
-        treasury.withdraw(recipients, percents);
+        treasury.setParameters(recipients, percents);
         vm.stopPrank();
     }
 
-    function testSplitEmptyArray() public {
+    function testSetParametersEmptyArray() public {
         vm.deal(address(treasury), 3 ether);
         address[] memory recipients = new address[](0);
         uint256[] memory percents = new uint256[](0);
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("InvalidEmptyArray()"));
-        treasury.withdraw(recipients, percents);
+        treasury.setParameters(recipients, percents);
         vm.stopPrank();
     }
 
-    function testSplitInvalidPercents() public {
+    function testSetParametersInvalidPercents() public {
         vm.deal(address(treasury), 3 ether);
         address[] memory recipients = new address[](1);
         recipients[0] = bob;
         uint256[] memory percents = new uint256[](1);
         percents[0] = BASIS_POINT + 1;
         vm.startPrank(admin);
-        vm.expectRevert(abi.encodeWithSignature("InvalidPercentAmount()"));
-        treasury.withdraw(recipients, percents);
+        vm.expectRevert(abi.encodeWithSignature("InvalidPercents()"));
+        treasury.setParameters(recipients, percents);
         vm.stopPrank();
     }
 
@@ -160,10 +172,11 @@ contract TreasuryTest {
         uint256[] memory percents = new uint256[](1);
         percents[0] = BASIS_POINT;
         vm.startPrank(admin);
+        treasury.setParameters(recipients, percents);
         vm.expectRevert(
             abi.encodeWithSignature("TransferError(bytes)", abi.encodeWithSignature("Error(string)", "no eth allowed"))
         );
-        treasury.withdraw(recipients, percents);
+        treasury.withdraw(3 ether);
         vm.stopPrank();
     }
 }
