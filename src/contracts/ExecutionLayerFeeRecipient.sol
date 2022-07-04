@@ -69,15 +69,15 @@ contract ExecutionLayerFeeRecipient {
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
         address feeRecipient = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
         address treasury = stakingContract.getTreasury();
-        uint256 fee = (balance * stakingContract.getELFee()) / BASIS_POINTS;
+        uint256 globalFee = (balance * stakingContract.getELFee()) / BASIS_POINTS;
         uint256 treasuryFee = (balance * stakingContract.getTreasuryFee()) / BASIS_POINTS;
 
-        (bool status, bytes memory data) = withdrawer.call{value: balance - fee - treasuryFee}("");
+        (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee - treasuryFee}("");
         if (status == false) {
             revert WithdrawerReceiveError(data);
         }
-        if (fee > 0) {
-            (status, data) = feeRecipient.call{value: fee}("");
+        if (globalFee > 0) {
+            (status, data) = feeRecipient.call{value: globalFee}("");
             if (status == false) {
                 revert FeeRecipientReceiveError(data);
             }
@@ -88,7 +88,7 @@ contract ExecutionLayerFeeRecipient {
                 revert TreasuryReceiveError(data);
             }
         }
-        emit Withdrawal(withdrawer, feeRecipient, balance - fee - treasuryFee, fee, treasuryFee);
+        emit Withdrawal(withdrawer, feeRecipient, balance - globalFee - treasuryFee, globalFee, treasuryFee);
     }
 
     /// @notice Retrieve the staking contract address

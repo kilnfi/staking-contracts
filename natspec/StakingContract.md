@@ -542,6 +542,22 @@ Set operator staking limits
 | _operatorIndex | uint256 | Operator Index |
 | _limit | uint256 | New staking limit |
 
+### setTreasuryFee
+
+```solidity
+function setTreasuryFee(uint256 _treasuryFee) external nonpayable
+```
+
+Change the Treasury Global fee
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _treasuryFee | uint256 | Fee in Basis Point |
+
 ### setWithdrawer
 
 ```solidity

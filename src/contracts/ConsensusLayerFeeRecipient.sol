@@ -69,25 +69,25 @@ contract ConsensusLayerFeeRecipient {
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
         address feeRecipient = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
         address treasury = stakingContract.getTreasury();
-        uint256 fee;
+        uint256 globalFee;
         uint256 treasuryFee;
 
         if (balance >= 32 ether) {
             // withdrawing a healthy & exited validator
-            fee = ((balance - 32 ether) * stakingContract.getCLFee()) / BASIS_POINTS;
+            globalFee = ((balance - 32 ether) * stakingContract.getCLFee()) / BASIS_POINTS;
             treasuryFee = ((balance - 32 ether) * stakingContract.getTreasuryFee()) / BASIS_POINTS;
         } else if (balance <= 16 ether) {
             // withdrawing from what looks like skimming
-            fee = (balance * stakingContract.getCLFee()) / BASIS_POINTS;
+            globalFee = (balance * stakingContract.getCLFee()) / BASIS_POINTS;
             treasuryFee = (balance * stakingContract.getTreasuryFee()) / BASIS_POINTS;
         }
 
-        (bool status, bytes memory data) = withdrawer.call{value: balance - fee - treasuryFee}("");
+        (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee - treasuryFee}("");
         if (status == false) {
             revert WithdrawerReceiveError(data);
         }
-        if (fee > 0) {
-            (status, data) = feeRecipient.call{value: fee}("");
+        if (globalFee > 0) {
+            (status, data) = feeRecipient.call{value: globalFee}("");
             if (status == false) {
                 revert FeeRecipientReceiveError(data);
             }
@@ -98,7 +98,7 @@ contract ConsensusLayerFeeRecipient {
                 revert TreasuryReceiveError(data);
             }
         }
-        emit Withdrawal(withdrawer, feeRecipient, balance - fee - treasuryFee, fee, treasuryFee);
+        emit Withdrawal(withdrawer, feeRecipient, balance - globalFee - treasuryFee, globalFee, treasuryFee);
     }
 
     /// @notice Retrieve the staking contract address

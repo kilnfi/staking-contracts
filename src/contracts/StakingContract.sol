@@ -373,6 +373,15 @@ contract StakingContract {
         StakingContractStorageLib.setCLFee(_fee);
     }
 
+    /// @notice Change the Treasury Global fee
+    /// @param _treasuryFee Fee in Basis Point
+    function setTreasuryFee(uint256 _treasuryFee) external onlyAdmin {
+        if (_treasuryFee > BASIS_POINTS) {
+            revert InvalidFee();
+        }
+        StakingContractStorageLib.setTreasuryFee(_treasuryFee);
+    }
+
     /// @notice Add new validator public keys and signatures
     /// @dev Only callable by operator
     /// @param _operatorIndex Operator Index

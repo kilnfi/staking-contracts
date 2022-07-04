@@ -44,7 +44,7 @@ contract TreasuryTest {
         assert(alice.balance == 0);
         assert(address(treasury).balance == 3 ether);
 
-        treasury.split(recipients, percents);
+        treasury.withdraw(recipients, percents);
 
         assert(bob.balance == 1.5 ether);
         assert(alice.balance == 1.5 ether);
@@ -77,7 +77,7 @@ contract TreasuryTest {
         assert(alice.balance == 0);
         assert(address(treasury).balance == 3 ether);
 
-        treasury.split(recipients, percents);
+        treasury.withdraw(recipients, percents);
 
         assert(bob.balance == 1.5 ether);
         assert(alice.balance == 1.5 ether);
@@ -97,7 +97,7 @@ contract TreasuryTest {
         assert(bob.balance == 0);
         assert(address(treasury).balance == 3 ether);
 
-        treasury.split(recipients, percents);
+        treasury.withdraw(recipients, percents);
 
         assert(bob.balance == 3 ether);
         assert(address(treasury).balance == 0);
@@ -114,7 +114,7 @@ contract TreasuryTest {
         percents[1] = BASIS_POINT / 2;
         vm.startPrank(bob);
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        treasury.split(recipients, percents);
+        treasury.withdraw(recipients, percents);
         vm.stopPrank();
     }
 
@@ -127,7 +127,7 @@ contract TreasuryTest {
         percents[1] = BASIS_POINT / 2;
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("InvalidArrayLengths()"));
-        treasury.split(recipients, percents);
+        treasury.withdraw(recipients, percents);
         vm.stopPrank();
     }
 
@@ -137,7 +137,7 @@ contract TreasuryTest {
         uint256[] memory percents = new uint256[](0);
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("InvalidEmptyArray()"));
-        treasury.split(recipients, percents);
+        treasury.withdraw(recipients, percents);
         vm.stopPrank();
     }
 
@@ -149,7 +149,7 @@ contract TreasuryTest {
         percents[0] = BASIS_POINT + 1;
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("InvalidPercentAmount()"));
-        treasury.split(recipients, percents);
+        treasury.withdraw(recipients, percents);
         vm.stopPrank();
     }
 
@@ -163,7 +163,7 @@ contract TreasuryTest {
         vm.expectRevert(
             abi.encodeWithSignature("TransferError(bytes)", abi.encodeWithSignature("Error(string)", "no eth allowed"))
         );
-        treasury.split(recipients, percents);
+        treasury.withdraw(recipients, percents);
         vm.stopPrank();
     }
 }

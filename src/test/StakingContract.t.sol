@@ -2083,6 +2083,14 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(stakingContract.getCLFee() == 1000);
     }
 
+    function testEditTreasuryFee() public {
+        assert(stakingContract.getTreasuryFee() == 800);
+        vm.startPrank(admin);
+        stakingContract.setTreasuryFee(1000);
+        vm.stopPrank();
+        assert(stakingContract.getTreasuryFee() == 1000);
+    }
+
     function testFeeRecipients() public {
         bytes
             memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";

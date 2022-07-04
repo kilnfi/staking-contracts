@@ -20,11 +20,11 @@ contract Treasury {
         admin = _admin;
     }
 
-    /// @notice Splits the current balance based on the provided percents, expected in basis point.
+    /// @notice Withdraws the current balance based on the provided percents, expected in basis point.
     /// @notice If the sum is greater than 10_000, transfers will end up failing
     /// @param _recipients Array of recipients that receive the funds.
     /// @param _balancePercents Array of percent of the balance allocated to each recipient at the same index.
-    function split(address[] calldata _recipients, uint256[] calldata _balancePercents) external {
+    function withdraw(address[] calldata _recipients, uint256[] calldata _balancePercents) external {
         if (msg.sender != admin) {
             revert Unauthorized();
         }
