@@ -200,9 +200,9 @@ There are two types of fee recipients that can be deployed by the `StakingContra
 
 Each validator public key has two unique fee recipients. We are using the `CREATE2` instruction in order to perform a deterministic and state agnostic deployment for both of these fee recipients. What this means is that the address of these recipients can be computed before they are deployed by the `StakingContract` and they can also start receiving fees / withdrawals before they are deployed. Users can then ask for withdrawals and the fee recipients will be deployed only at this point, allowing the system to take a fee given to the node operator. Node operators can also trigger withdrawals in behalf of their users to actively collect fees when required.
 
-## [Execution Layer Fee Recipient](./natspec/ExecutionLayerFeeRecipient.md)
+## [Minimal Receiver](./natspec/MinimalReceiver.md)
 
-This Contract is deployed as the implementation for minimal proxy clones used to gather the fees from the Execution Layer. One clone will be deployed per public key at a deterministic address. It is required from node operators to compute this address and use it as the execution client `feeRecipient` for the blocks proposed by the validator identified by the public key.
+This Contract is deployed as the implementation for minimal proxy clones used to gather the fees from the Execution Layer or the Consensus Layer. One clone will be deployed per public key at a deterministic address. It is required from node operators to compute this address and use it as the execution client `feeRecipient` for the blocks proposed by the validator identified by the public key. This receiver will then forward its balancer to an upgradeable dispatcher, in charge of splitting the funds.
 
 ### Computing the Execution Layer Fee Recipient address for a specific public key
 
@@ -210,14 +210,10 @@ As the recipient address is deterministic, we can compute this address before pu
 
 To compute this address, call `function getELFeeRecipient(bytes calldata _publicKey) view` on the `StakingContract`.
 
-## [Consensus Layer Fee Recipient](./natspec/ConsensusLayerFeeRecipient.md)
-
-This Contract serves the same purpose as the Execution Layer Fee Recipient but for the Consensus Layer fees.
-It is required from node operators to compute this address and use it as the withdrawal crendetial for the given public key.
-
 ### Computing the Consensus Layer Fee Recipient address for a specific public key
 
 As the recipient address is deterministic, we can compute this address before publishing the key to the contract. 
 
 To compute this address, call `function getCLFeeRecipient(bytes calldata _publicKey) view` on the `StakingContract`.
+
 
