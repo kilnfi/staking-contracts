@@ -388,7 +388,7 @@ Retrieve withdrawer of public key root
 ### initialize_1
 
 ```solidity
-function initialize_1(address _admin, address _depositContract, address _elDispatcher, address _clDispatcher, address _minimalReceiverImplementation, uint256 _elFee, uint256 _clFee) external nonpayable
+function initialize_1(address _admin, address _depositContract, address _elDispatcher, address _clDispatcher, address _feeRecipientImplementation, uint256 _elFee, uint256 _clFee) external nonpayable
 ```
 
 
@@ -403,7 +403,7 @@ function initialize_1(address _admin, address _depositContract, address _elDispa
 | _depositContract | address | undefined |
 | _elDispatcher | address | undefined |
 | _clDispatcher | address | undefined |
-| _minimalReceiverImplementation | address | undefined |
+| _feeRecipientImplementation | address | undefined |
 | _elFee | uint256 | undefined |
 | _clFee | uint256 | undefined |
 
