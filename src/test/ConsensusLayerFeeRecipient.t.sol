@@ -14,16 +14,12 @@ contract StakingContractMock {
         return bob;
     }
 
-    function getELFee() external pure returns (uint256) {
-        return 200;
+    function getOperatorFee() external pure returns (uint256) {
+        return 2000;
     }
 
-    function getCLFee() external pure returns (uint256) {
-        return 200;
-    }
-
-    function getTreasuryFee() external pure returns (uint256) {
-        return 800;
+    function getGlobalFee() external pure returns (uint256) {
+        return 1000;
     }
 
     function getTreasury() external pure returns (address) {

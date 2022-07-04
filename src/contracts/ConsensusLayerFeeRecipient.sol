@@ -67,38 +67,37 @@ contract ConsensusLayerFeeRecipient {
         );
         bytes32 pubKeyRoot = VALIDATOR_PUBLIC_KEY_SLOT.getBytes32();
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(pubKeyRoot);
-        address feeRecipient = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
+        address operator = stakingContract.getOperatorFeeRecipient(pubKeyRoot);
         address treasury = stakingContract.getTreasury();
         uint256 globalFee;
-        uint256 treasuryFee;
 
         if (balance >= 32 ether) {
             // withdrawing a healthy & exited validator
-            globalFee = ((balance - 32 ether) * stakingContract.getCLFee()) / BASIS_POINTS;
-            treasuryFee = ((balance - 32 ether) * stakingContract.getTreasuryFee()) / BASIS_POINTS;
+            globalFee = ((balance - 32 ether) * stakingContract.getGlobalFee()) / BASIS_POINTS;
         } else if (balance <= 16 ether) {
             // withdrawing from what looks like skimming
-            globalFee = (balance * stakingContract.getCLFee()) / BASIS_POINTS;
-            treasuryFee = (balance * stakingContract.getTreasuryFee()) / BASIS_POINTS;
+            globalFee = (balance * stakingContract.getGlobalFee()) / BASIS_POINTS;
         }
 
-        (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee - treasuryFee}("");
+        uint256 operatorFee = (globalFee * stakingContract.getOperatorFee()) / BASIS_POINTS;
+
+        (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee}("");
         if (status == false) {
             revert WithdrawerReceiveError(data);
         }
         if (globalFee > 0) {
-            (status, data) = feeRecipient.call{value: globalFee}("");
+            (status, data) = treasury.call{value: globalFee - operatorFee}("");
             if (status == false) {
                 revert FeeRecipientReceiveError(data);
             }
         }
-        if (treasuryFee > 0) {
-            (status, data) = treasury.call{value: treasuryFee}("");
+        if (operatorFee > 0) {
+            (status, data) = operator.call{value: operatorFee}("");
             if (status == false) {
                 revert TreasuryReceiveError(data);
             }
         }
-        emit Withdrawal(withdrawer, feeRecipient, balance - globalFee - treasuryFee, globalFee, treasuryFee);
+        emit Withdrawal(withdrawer, operator, balance - globalFee, operatorFee, globalFee - operatorFee);
     }
 
     /// @notice Retrieve the staking contract address

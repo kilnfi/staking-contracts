@@ -125,31 +125,28 @@ contract StakingContract {
 
     /// @notice Initializes version 1 of Staking Contract
     /// @param _admin Address of the admin allowed to change the operator and admin
+    /// @param _treasury Address of the treasury
     /// @param _depositContract Address of the Deposit Contract
     /// @param _elFeeRecipientImplementation Address of the Execution Layer fee recipient implementation
     /// @param _clFeeRecipientImplementation Address of the Consensus Layer fee recipient implementation
-    /// @param _elFee Fee in bps to take on any Execution Layer fee withdrawal
-    /// @param _clFee Fee in bps to take on any Consensus Layer fee withdrawal
+    /// @param _operatorFee Fee taken for the operators
+    /// @param _globalFee Fee taken on the user revenues
     function initialize_1(
         address _admin,
         address _treasury,
         address _depositContract,
         address _elFeeRecipientImplementation,
         address _clFeeRecipientImplementation,
-        uint256 _elFee,
-        uint256 _clFee,
-        uint256 _treasuryFee
+        uint256 _globalFee,
+        uint256 _operatorFee
     ) external init(1) {
         StakingContractStorageLib.setAdmin(_admin);
         StakingContractStorageLib.setTreasury(_treasury);
-        StakingContractStorageLib.setTreasuryFee(_treasuryFee);
+        StakingContractStorageLib.setGlobalFee(_globalFee);
+        StakingContractStorageLib.setOperatorFee(_operatorFee);
         StakingContractStorageLib.setDepositContract(_depositContract);
-
         StakingContractStorageLib.setELFeeRecipientImplementation(_elFeeRecipientImplementation);
-        StakingContractStorageLib.setELFee(_elFee);
-
         StakingContractStorageLib.setCLFeeRecipientImplementation(_clFeeRecipientImplementation);
-        StakingContractStorageLib.setCLFee(_clFee);
     }
 
     /// @notice Retrieve system admin
@@ -162,19 +159,14 @@ contract StakingContract {
         return StakingContractStorageLib.getTreasury();
     }
 
-    /// @notice Retrieve treasury fee
-    function getTreasuryFee() external view returns (uint256) {
-        return StakingContractStorageLib.getTreasuryFee();
+    /// @notice Retrieve the global fee
+    function getGlobalFee() external view returns (uint256) {
+        return StakingContractStorageLib.getGlobalFee();
     }
 
-    /// @notice Retrieve the Execution Layer Fee taken by the node operator
-    function getELFee() external view returns (uint256) {
-        return StakingContractStorageLib.getELFee();
-    }
-
-    /// @notice Retrieve the Consensus Layer Fee taken by the node operator
-    function getCLFee() external view returns (uint256) {
-        return StakingContractStorageLib.getCLFee();
+    /// @notice Retrieve the operator fee
+    function getOperatorFee() external view returns (uint256) {
+        return StakingContractStorageLib.getOperatorFee();
     }
 
     /// @notice Compute the Execution Layer Fee recipient address for a given validator public key
@@ -355,31 +347,22 @@ contract StakingContract {
         operators.value[_operatorIndex].feeRecipient = _newFeeRecipient;
     }
 
-    /// @notice Change the Execution Layer Fee taken by the node operator
-    /// @param _fee Fee in Basis Point
-    function setELFee(uint256 _fee) external onlyAdmin {
-        if (_fee > BASIS_POINTS) {
+    /// @notice Change the Operator fee
+    /// @param _operatorFee Fee in Basis Point
+    function setOperatorFee(uint256 _operatorFee) external onlyAdmin {
+        if (_operatorFee > BASIS_POINTS) {
             revert InvalidFee();
         }
-        StakingContractStorageLib.setELFee(_fee);
+        StakingContractStorageLib.setOperatorFee(_operatorFee);
     }
 
-    /// @notice Change the Consensus Layer Fee taken by the node operator
-    /// @param _fee Fee in Basis Point
-    function setCLFee(uint256 _fee) external onlyAdmin {
-        if (_fee > BASIS_POINTS) {
+    /// @notice Change the Global fee
+    /// @param _globalFee Fee in Basis Point
+    function setGlobalFee(uint256 _globalFee) external onlyAdmin {
+        if (_globalFee > BASIS_POINTS) {
             revert InvalidFee();
         }
-        StakingContractStorageLib.setCLFee(_fee);
-    }
-
-    /// @notice Change the Treasury Global fee
-    /// @param _treasuryFee Fee in Basis Point
-    function setTreasuryFee(uint256 _treasuryFee) external onlyAdmin {
-        if (_treasuryFee > BASIS_POINTS) {
-            revert InvalidFee();
-        }
-        StakingContractStorageLib.setTreasuryFee(_treasuryFee);
+        StakingContractStorageLib.setGlobalFee(_globalFee);
     }
 
     /// @notice Add new validator public keys and signatures

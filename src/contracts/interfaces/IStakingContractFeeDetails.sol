@@ -8,9 +8,7 @@ interface IStakingContractFeeDetails {
 
     function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (address);
 
-    function getELFee() external view returns (uint256);
+    function getGlobalFee() external view returns (uint256);
 
-    function getTreasuryFee() external view returns (uint256);
-
-    function getCLFee() external view returns (uint256);
+    function getOperatorFee() external view returns (uint256);
 }
