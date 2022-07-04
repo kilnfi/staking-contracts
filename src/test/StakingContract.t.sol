@@ -9,7 +9,7 @@ import "./UserFactory.sol";
 import "../contracts/libs/BytesLib.sol";
 import "../contracts/ConsensusLayerDispatcher.sol";
 import "../contracts/ExecutionLayerDispatcher.sol";
-import "../contracts/MinimalReceiver.sol";
+import "../contracts/FeeRecipient.sol";
 import "../contracts/TUPProxy.sol";
 
 contract DepositContractMock is IDepositContract {
@@ -1684,13 +1684,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     address internal feeRecipientOne = address(44);
     ExecutionLayerDispatcher internal eld;
     ConsensusLayerDispatcher internal cld;
-    MinimalReceiver internal minimalReceiverImpl;
+    FeeRecipient internal feeRecipientImpl;
 
     function setUp() public {
         uf = new UserFactory();
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
-        minimalReceiverImpl = new MinimalReceiver();
+        feeRecipientImpl = new FeeRecipient();
 
         address eldImpl = address(new ExecutionLayerDispatcher(1));
         address cldImpl = address(new ConsensusLayerDispatcher(1));
@@ -1712,7 +1712,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
             address(depositContract),
             address(eld),
             address(cld),
-            address(minimalReceiverImpl),
+            address(feeRecipientImpl),
             500,
             500
         );

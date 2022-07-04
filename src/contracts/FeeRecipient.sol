@@ -3,7 +3,7 @@ pragma solidity >=0.8.10;
 
 import "./interfaces/IDispatcher.sol";
 
-contract MinimalReceiver {
+contract FeeRecipient {
     /// @notice Constructor replay prevention
     bool internal initialized;
     /// @notice Address where funds are sent to be dispatched

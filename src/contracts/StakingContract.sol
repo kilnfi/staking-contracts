@@ -6,7 +6,7 @@ import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
 
 import "./interfaces/IDepositContract.sol";
-import "./interfaces/IMinimalReceiver.sol";
+import "./interfaces/IFeeRecipient.sol";
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
@@ -130,7 +130,7 @@ contract StakingContract {
         address _depositContract,
         address _elDispatcher,
         address _clDispatcher,
-        address _minimalReceiverImplementation,
+        address _feeRecipientImplementation,
         uint256 _elFee,
         uint256 _clFee
     ) external init(1) {
@@ -143,7 +143,7 @@ contract StakingContract {
         StakingContractStorageLib.setCLDispatcher(_clDispatcher);
         StakingContractStorageLib.setCLFee(_clFee);
 
-        StakingContractStorageLib.setMinimalReceiverImplementation(_minimalReceiverImplementation);
+        StakingContractStorageLib.setFeeRecipientImplementation(_feeRecipientImplementation);
     }
 
     /// @notice Retrieve system admin
@@ -919,7 +919,7 @@ contract StakingContract {
     function _getDeterministicReceiver(bytes memory _publicKey, uint256 _prefix) internal view returns (address) {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
         bytes32 salt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
-        address implementation = StakingContractStorageLib.getMinimalReceiverImplementation();
+        address implementation = StakingContractStorageLib.getFeeRecipientImplementation();
         return Clones.predictDeterministicAddress(implementation, salt);
     }
 
@@ -934,12 +934,12 @@ contract StakingContract {
     ) internal {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
-        address implementation = StakingContractStorageLib.getMinimalReceiverImplementation();
-        address minimalReceiverAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
-        if (minimalReceiverAddress.code.length == 0) {
+        address implementation = StakingContractStorageLib.getFeeRecipientImplementation();
+        address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
+        if (feeRecipientAddress.code.length == 0) {
             Clones.cloneDeterministic(implementation, feeRecipientSalt);
-            IMinimalReceiver(minimalReceiverAddress).init(_dispatcher, publicKeyRoot);
+            IFeeRecipient(feeRecipientAddress).init(_dispatcher, publicKeyRoot);
         }
-        IMinimalReceiver(minimalReceiverAddress).withdraw();
+        IFeeRecipient(feeRecipientAddress).withdraw();
     }
 }

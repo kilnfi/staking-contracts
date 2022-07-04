@@ -2,7 +2,7 @@
 pragma solidity >=0.8.10;
 
 import "forge-std/Vm.sol";
-import "../contracts/MinimalReceiver.sol";
+import "../contracts/FeeRecipient.sol";
 
 contract DispatcherMock {
     address internal bob = address(123);
@@ -17,32 +17,32 @@ contract DispatcherMock {
     }
 }
 
-contract MinimalReceiverTest {
+contract FeeRecipientTest {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
-    MinimalReceiver internal minimalReceiver;
+    FeeRecipient internal feeRecipient;
     IDispatcher internal dispatcher;
 
     address internal bob = address(123);
     address internal alice = address(456);
 
     function setUp() external {
-        minimalReceiver = new MinimalReceiver();
+        feeRecipient = new FeeRecipient();
         dispatcher = IDispatcher(address(new DispatcherMock()));
     }
 
     function _init(bytes32 _publicKeyRoot) internal {
-        minimalReceiver.init(address(dispatcher), _publicKeyRoot);
+        feeRecipient.init(address(dispatcher), _publicKeyRoot);
     }
 
     function testGetPublicKeyRoot(bytes32 _publicKeyRoot) external {
         _init(_publicKeyRoot);
-        assert(minimalReceiver.getPublicKeyRoot() == _publicKeyRoot);
+        assert(feeRecipient.getPublicKeyRoot() == _publicKeyRoot);
     }
 
     function testGetWithdrawer(bytes32 _publicKeyRoot) external {
         _init(_publicKeyRoot);
         address receiver = uint256(_publicKeyRoot) % 2 == 0 ? bob : alice;
-        assert(minimalReceiver.getWithdrawer() == receiver);
+        assert(feeRecipient.getWithdrawer() == receiver);
     }
 
     function testTransferAndDispatch(uint256 _amount, bytes32 _publicKeyRoot) external {
@@ -50,11 +50,11 @@ contract MinimalReceiverTest {
         address receiver = uint256(_publicKeyRoot) % 2 == 0 ? bob : alice;
 
         vm.deal(address(this), _amount);
-        payable(address(minimalReceiver)).transfer(_amount);
+        payable(address(feeRecipient)).transfer(_amount);
 
         assert(receiver.balance == 0);
 
-        minimalReceiver.withdraw();
+        feeRecipient.withdraw();
 
         assert(receiver.balance == _amount);
     }
@@ -64,11 +64,11 @@ contract MinimalReceiverTest {
         address receiver = uint256(_publicKeyRoot) % 2 == 0 ? bob : alice;
 
         vm.deal(address(this), _amount);
-        assert(payable(address(minimalReceiver)).send(_amount) == true);
+        assert(payable(address(feeRecipient)).send(_amount) == true);
 
         assert(receiver.balance == 0);
 
-        minimalReceiver.withdraw();
+        feeRecipient.withdraw();
 
         assert(receiver.balance == _amount);
     }
@@ -78,12 +78,12 @@ contract MinimalReceiverTest {
         address receiver = uint256(_publicKeyRoot) % 2 == 0 ? bob : alice;
 
         vm.deal(address(this), _amount);
-        (bool status, ) = address(minimalReceiver).call{value: _amount}("");
+        (bool status, ) = address(feeRecipient).call{value: _amount}("");
         assert(status == true);
 
         assert(receiver.balance == 0);
 
-        minimalReceiver.withdraw();
+        feeRecipient.withdraw();
 
         assert(receiver.balance == _amount);
     }
@@ -93,12 +93,12 @@ contract MinimalReceiverTest {
         address receiver = uint256(_publicKeyRoot) % 2 == 0 ? bob : alice;
 
         vm.deal(address(this), _amount);
-        (bool status, ) = address(minimalReceiver).call{value: _amount}(abi.encodeWithSignature("pay()"));
+        (bool status, ) = address(feeRecipient).call{value: _amount}(abi.encodeWithSignature("pay()"));
         assert(status == true);
 
         assert(receiver.balance == 0);
 
-        minimalReceiver.withdraw();
+        feeRecipient.withdraw();
 
         assert(receiver.balance == _amount);
     }

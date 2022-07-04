@@ -269,14 +269,14 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant MINIMAL_RECEIVER_IMPLEMENTATION_SLOT =
-        keccak256("StakingContract.minimalReceiverImplementation");
+    bytes32 internal constant FEE_RECIPIENT_IMPLEMENTATION_SLOT =
+        keccak256("StakingContract.feeRecipientImplementation");
 
-    function getMinimalReceiverImplementation() internal view returns (address) {
-        return getAddress(MINIMAL_RECEIVER_IMPLEMENTATION_SLOT);
+    function getFeeRecipientImplementation() internal view returns (address) {
+        return getAddress(FEE_RECIPIENT_IMPLEMENTATION_SLOT);
     }
 
-    function setMinimalReceiverImplementation(address _newMinimalReceiverImplementation) internal {
-        setAddress(MINIMAL_RECEIVER_IMPLEMENTATION_SLOT, _newMinimalReceiverImplementation);
+    function setFeeRecipientImplementation(address _newFeeRecipientImplementation) internal {
+        setAddress(FEE_RECIPIENT_IMPLEMENTATION_SLOT, _newFeeRecipientImplementation);
     }
 }
