@@ -9,6 +9,7 @@ const func: DeployFunction = async function ({
 
 	const elfrDeployment = await deployments.get("ExecutionLayerFeeRecipient");
 	const clfrDeployment = await deployments.get("ConsensusLayerFeeRecipient");
+	const treasuryDeployment = await deployments.get("Treasury");
 
 	await deployments.deploy("StakingContract", {
 		from: deployer,
@@ -21,11 +22,13 @@ const func: DeployFunction = async function ({
 				  methodName: 'initialize_1',
 				  args: [
 			admin,
+			treasuryDeployment.address,
 			depositContract,
 			elfrDeployment.address,
 			clfrDeployment.address,
-			500,
-			500
+			200,
+			200,
+			800
 				  ]
 			  }
 		  }

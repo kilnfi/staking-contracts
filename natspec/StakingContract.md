@@ -187,23 +187,6 @@ Get the total available keys that are ready to be used for deposits
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### getCLFee
-
-```solidity
-function getCLFee() external view returns (uint256)
-```
-
-Retrieve the Consensus Layer Fee taken by the node operator
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### getCLFeeRecipient
 
 ```solidity
@@ -226,23 +209,6 @@ Compute the Consensus Layer Fee recipient address for a given validator public k
 |---|---|---|
 | _0 | address | undefined |
 
-### getELFee
-
-```solidity
-function getELFee() external view returns (uint256)
-```
-
-Retrieve the Execution Layer Fee taken by the node operator
-
-
-
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
-
 ### getELFeeRecipient
 
 ```solidity
@@ -264,6 +230,23 @@ Compute the Execution Layer Fee recipient address for a given validator public k
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+### getGlobalFee
+
+```solidity
+function getGlobalFee() external view returns (uint256)
+```
+
+Retrieve the global fee
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### getOperator
 
@@ -293,6 +276,23 @@ Retrieve operator details
 | available | uint256 | undefined |
 | deactivated | bool | undefined |
 
+### getOperatorFee
+
+```solidity
+function getOperatorFee() external view returns (uint256)
+```
+
+Retrieve the operator fee
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### getOperatorFeeRecipient
 
 ```solidity
@@ -308,6 +308,23 @@ Retrieve the Execution &amp; Consensus Layer Fee operator recipient for a given 
 | Name | Type | Description |
 |---|---|---|
 | pubKeyRoot | bytes32 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### getTreasury
+
+```solidity
+function getTreasury() external view returns (address)
+```
+
+Retrieve system treasury
+
+
+
 
 #### Returns
 
@@ -388,7 +405,7 @@ Retrieve withdrawer of public key root
 ### initialize_1
 
 ```solidity
-function initialize_1(address _admin, address _depositContract, address _elDispatcher, address _clDispatcher, address _feeRecipientImplementation, uint256 _elFee, uint256 _clFee) external nonpayable
+function initialize_1(address _admin, address _treasury, address _depositContract, address _elDispatcher, address _clDispatcher, address _feeRecipientImplementation, uint256 _globalFee, uint256 _operatorFee) external nonpayable
 ```
 
 
@@ -400,12 +417,13 @@ function initialize_1(address _admin, address _depositContract, address _elDispa
 | Name | Type | Description |
 |---|---|---|
 | _admin | address | undefined |
+| _treasury | address | undefined |
 | _depositContract | address | undefined |
 | _elDispatcher | address | undefined |
 | _clDispatcher | address | undefined |
 | _feeRecipientImplementation | address | undefined |
-| _elFee | uint256 | undefined |
-| _clFee | uint256 | undefined |
+| _globalFee | uint256 | undefined |
+| _operatorFee | uint256 | undefined |
 
 ### removeValidators
 
@@ -440,13 +458,13 @@ Set new admin
 |---|---|---|
 | _newAdmin | address | New Administrator address |
 
-### setCLFee
+### setGlobalFee
 
 ```solidity
-function setCLFee(uint256 _fee) external nonpayable
+function setGlobalFee(uint256 _globalFee) external nonpayable
 ```
 
-Change the Consensus Layer Fee taken by the node operator
+Change the Global fee
 
 
 
@@ -454,23 +472,7 @@ Change the Consensus Layer Fee taken by the node operator
 
 | Name | Type | Description |
 |---|---|---|
-| _fee | uint256 | Fee in Basis Point |
-
-### setELFee
-
-```solidity
-function setELFee(uint256 _fee) external nonpayable
-```
-
-Change the Execution Layer Fee taken by the node operator
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _fee | uint256 | Fee in Basis Point |
+| _globalFee | uint256 | Fee in Basis Point |
 
 ### setOperatorAddresses
 
@@ -489,6 +491,22 @@ Set new operator addresses (operations and reward management)
 | _operatorIndex | uint256 | Index of the operator to update |
 | _operatorAddress | address | New operator address for operations management |
 | _feeRecipientAddress | address | New operator address for reward management |
+
+### setOperatorFee
+
+```solidity
+function setOperatorFee(uint256 _operatorFee) external nonpayable
+```
+
+Change the Operator fee
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorFee | uint256 | Fee in Basis Point |
 
 ### setOperatorLimit
 
@@ -579,7 +597,7 @@ Withdraw the Execution Layer Fee for a given validator public key
 ### Deposit
 
 ```solidity
-event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes32 publicKeyRoot)
+event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey)
 ```
 
 
@@ -593,7 +611,40 @@ event Deposit(address indexed caller, address indexed withdrawer, bytes publicKe
 | caller `indexed` | address | undefined |
 | withdrawer `indexed` | address | undefined |
 | publicKey  | bytes | undefined |
-| publicKeyRoot  | bytes32 | undefined |
+
+### ValidatorKeyRemoved
+
+```solidity
+event ValidatorKeyRemoved(uint256 indexed operatorIndex, bytes publicKey)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| operatorIndex `indexed` | uint256 | undefined |
+| publicKey  | bytes | undefined |
+
+### ValidatorKeysAdded
+
+```solidity
+event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| operatorIndex `indexed` | uint256 | undefined |
+| publicKeys  | bytes | undefined |
 
 
 

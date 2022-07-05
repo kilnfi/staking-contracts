@@ -10,10 +10,10 @@
 
 ## Methods
 
-### getCLFee
+### getGlobalFee
 
 ```solidity
-function getCLFee() external view returns (uint256)
+function getGlobalFee() external view returns (uint256)
 ```
 
 
@@ -27,10 +27,10 @@ function getCLFee() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
-### getELFee
+### getOperatorFee
 
 ```solidity
-function getELFee() external view returns (uint256)
+function getOperatorFee() external view returns (uint256)
 ```
 
 
@@ -59,6 +59,23 @@ function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (addr
 | Name | Type | Description |
 |---|---|---|
 | pubKeyRoot | bytes32 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
+### getTreasury
+
+```solidity
+function getTreasury() external view returns (address)
+```
+
+
+
+
+
 
 #### Returns
 

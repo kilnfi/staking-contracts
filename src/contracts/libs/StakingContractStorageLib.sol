@@ -70,6 +70,20 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
+    bytes32 internal constant TREASURY_SLOT = keccak256("StakingContract.treasury");
+
+    function getTreasury() internal view returns (address) {
+        return getAddress(TREASURY_SLOT);
+    }
+
+    function setTreasury(address _newTreasury) internal {
+        setAddress(TREASURY_SLOT, _newTreasury);
+    }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
     bytes32 internal constant DEPOSIT_CONTRACT_SLOT = keccak256("StakingContract.depositContract");
 
     function getDepositContract() internal view returns (address) {
@@ -213,28 +227,28 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant EL_FEE_SLOT = keccak256("StakingContract.executionLayerFee");
+    bytes32 internal constant GLOBAL_FEE_SLOT = keccak256("StakingContract.globalFee");
 
-    function getELFee() internal view returns (uint256) {
-        return getUint256(EL_FEE_SLOT);
+    function getGlobalFee() internal view returns (uint256) {
+        return getUint256(GLOBAL_FEE_SLOT);
     }
 
-    function setELFee(uint256 _newElFee) internal {
-        setUint256(EL_FEE_SLOT, _newElFee);
+    function setGlobalFee(uint256 _newTreasuryFee) internal {
+        setUint256(GLOBAL_FEE_SLOT, _newTreasuryFee);
     }
 
     /* ========================================
     ===========================================
     =========================================*/
 
-    bytes32 internal constant CL_FEE_SLOT = keccak256("StakingContract.consensusLayerFee");
+    bytes32 internal constant OPERATOR_FEE_SLOT = keccak256("StakingContract.operatorFee");
 
-    function getCLFee() internal view returns (uint256) {
-        return getUint256(CL_FEE_SLOT);
+    function getOperatorFee() internal view returns (uint256) {
+        return getUint256(OPERATOR_FEE_SLOT);
     }
 
-    function setCLFee(uint256 _newClFee) internal {
-        setUint256(CL_FEE_SLOT, _newClFee);
+    function setOperatorFee(uint256 _newOperatorFee) internal {
+        setUint256(OPERATOR_FEE_SLOT, _newOperatorFee);
     }
 
     /* ========================================

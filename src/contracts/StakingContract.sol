@@ -1,13 +1,11 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "./libs/StakingContractStorageLib.sol";
 import "./libs/UintLib.sol";
 import "./libs/BytesLib.sol";
-
-import "./interfaces/IDepositContract.sol";
 import "./interfaces/IFeeRecipient.sol";
-
+import "./interfaces/IDepositContract.sol";
+import "./libs/StakingContractStorageLib.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 /// @title Ethereum Staking Contract
@@ -129,22 +127,21 @@ contract StakingContract {
 
     function initialize_1(
         address _admin,
+        address _treasury,
         address _depositContract,
         address _elDispatcher,
         address _clDispatcher,
         address _feeRecipientImplementation,
-        uint256 _elFee,
-        uint256 _clFee
+        uint256 _globalFee,
+        uint256 _operatorFee
     ) external init(1) {
         StakingContractStorageLib.setAdmin(_admin);
-        StakingContractStorageLib.setDepositContract(_depositContract);
-
+        StakingContractStorageLib.setTreasury(_treasury);
+        StakingContractStorageLib.setGlobalFee(_globalFee);
+        StakingContractStorageLib.setOperatorFee(_operatorFee);
         StakingContractStorageLib.setELDispatcher(_elDispatcher);
-        StakingContractStorageLib.setELFee(_elFee);
-
         StakingContractStorageLib.setCLDispatcher(_clDispatcher);
-        StakingContractStorageLib.setCLFee(_clFee);
-
+        StakingContractStorageLib.setDepositContract(_depositContract);
         StakingContractStorageLib.setFeeRecipientImplementation(_feeRecipientImplementation);
     }
 
@@ -153,14 +150,19 @@ contract StakingContract {
         return StakingContractStorageLib.getAdmin();
     }
 
-    /// @notice Retrieve the Execution Layer Fee taken by the node operator
-    function getELFee() external view returns (uint256) {
-        return StakingContractStorageLib.getELFee();
+    /// @notice Retrieve system treasury
+    function getTreasury() external view returns (address) {
+        return StakingContractStorageLib.getTreasury();
     }
 
-    /// @notice Retrieve the Consensus Layer Fee taken by the node operator
-    function getCLFee() external view returns (uint256) {
-        return StakingContractStorageLib.getCLFee();
+    /// @notice Retrieve the global fee
+    function getGlobalFee() external view returns (uint256) {
+        return StakingContractStorageLib.getGlobalFee();
+    }
+
+    /// @notice Retrieve the operator fee
+    function getOperatorFee() external view returns (uint256) {
+        return StakingContractStorageLib.getOperatorFee();
     }
 
     /// @notice Compute the Execution Layer Fee recipient address for a given validator public key
@@ -341,22 +343,22 @@ contract StakingContract {
         operators.value[_operatorIndex].feeRecipient = _newFeeRecipient;
     }
 
-    /// @notice Change the Execution Layer Fee taken by the node operator
-    /// @param _fee Fee in Basis Point
-    function setELFee(uint256 _fee) external onlyAdmin {
-        if (_fee > BASIS_POINTS) {
+    /// @notice Change the Operator fee
+    /// @param _operatorFee Fee in Basis Point
+    function setOperatorFee(uint256 _operatorFee) external onlyAdmin {
+        if (_operatorFee > BASIS_POINTS) {
             revert InvalidFee();
         }
-        StakingContractStorageLib.setELFee(_fee);
+        StakingContractStorageLib.setOperatorFee(_operatorFee);
     }
 
-    /// @notice Change the Consensus Layer Fee taken by the node operator
-    /// @param _fee Fee in Basis Point
-    function setCLFee(uint256 _fee) external onlyAdmin {
-        if (_fee > BASIS_POINTS) {
+    /// @notice Change the Global fee
+    /// @param _globalFee Fee in Basis Point
+    function setGlobalFee(uint256 _globalFee) external onlyAdmin {
+        if (_globalFee > BASIS_POINTS) {
             revert InvalidFee();
         }
-        StakingContractStorageLib.setCLFee(_fee);
+        StakingContractStorageLib.setGlobalFee(_globalFee);
     }
 
     /// @notice Add new validator public keys and signatures

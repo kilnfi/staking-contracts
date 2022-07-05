@@ -11,8 +11,15 @@ import "./interfaces/IFeeDispatcher.sol";
 contract ExecutionLayerFeeDispatcher is IFeeDispatcher {
     using FeeRecipientStorageLib for bytes32;
 
-    event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 fee);
+    event Withdrawal(
+        address indexed withdrawer,
+        address indexed feeRecipient,
+        uint256 rewards,
+        uint256 nodeOperatorFee,
+        uint256 treasuryFee
+    );
 
+    error TreasuryReceiveError(bytes errorData);
     error FeeRecipientReceiveError(bytes errorData);
     error WithdrawerReceiveError(bytes errorData);
     error ZeroBalanceWithdrawal();
@@ -57,20 +64,28 @@ contract ExecutionLayerFeeDispatcher is IFeeDispatcher {
             STAKING_CONTRACT_ADDRESS_SLOT.getAddress()
         );
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);
-        uint256 feeBps = stakingContract.getELFee();
-        address feeRecipient = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);
-        uint256 fee = (balance * feeBps) / BASIS_POINTS;
-        (bool status, bytes memory data) = withdrawer.call{value: balance - fee}("");
+        address operator = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);
+        address treasury = stakingContract.getTreasury();
+        uint256 globalFee = (balance * stakingContract.getGlobalFee()) / BASIS_POINTS;
+        uint256 operatorFee = (globalFee * stakingContract.getOperatorFee()) / BASIS_POINTS;
+
+        (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee}("");
         if (status == false) {
             revert WithdrawerReceiveError(data);
         }
-        if (fee > 0) {
-            (status, data) = feeRecipient.call{value: fee}("");
+        if (globalFee > 0) {
+            (status, data) = treasury.call{value: globalFee - operatorFee}("");
             if (status == false) {
                 revert FeeRecipientReceiveError(data);
             }
         }
-        emit Withdrawal(withdrawer, feeRecipient, balance - fee, fee);
+        if (operatorFee > 0) {
+            (status, data) = operator.call{value: operatorFee}("");
+            if (status == false) {
+                revert TreasuryReceiveError(data);
+            }
+        }
+        emit Withdrawal(withdrawer, operator, balance - globalFee, operatorFee, globalFee - operatorFee);
     }
 
     /// @notice Retrieve the staking contract address
