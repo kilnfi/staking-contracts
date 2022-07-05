@@ -112,6 +112,12 @@ contract StakingContract {
         _deposit(_withdrawer);
     }
 
+    /// @notice Explicit deposit method using msg.sender
+    /// @dev A multiple of 32 ETH should be sent
+    function deposit() external payable {
+        _deposit(msg.sender);
+    }
+
     /// @notice Implicit deposit method
     /// @dev A multiple of 32 ETH should be sent
     /// @dev The withdrawer is set to the message sender address

@@ -1121,6 +1121,156 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
         vm.stopPrank();
     }
 
+    function testExplicitDepositOneValidatorMsgSender(uint256 _userSalt) public {
+        address user = uf._new(_userSalt);
+        vm.deal(user, 32 ether);
+        vm.roll(99999);
+        uint256 operatorIndex = 1;
+
+        vm.startPrank(user);
+        stakingContract.deposit{value: 32 ether}();
+        vm.stopPrank();
+
+        assertEq(user.balance, 0);
+
+        (, , uint256 limit, uint256 keys, uint256 funded, uint256 available, bool deactivated) = stakingContract
+            .getOperator(operatorIndex);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 1);
+        assertEq(available, 9);
+        assert(deactivated == false);
+    }
+
+    function testExplicitDepositThreeValidatorsMsgSender(uint256 _userSalt) public {
+        address user = uf._new(_userSalt);
+        vm.deal(user, 32 * 3 ether);
+
+        vm.startPrank(user);
+        stakingContract.deposit{value: 32 * 3 ether}();
+        vm.stopPrank();
+
+        assertEq(user.balance, 0);
+        uint256 sum;
+
+        (
+            address operatorAddress,
+            address feeRecipientAddress,
+            uint256 limit,
+            uint256 keys,
+            uint256 funded,
+            uint256 available,
+            bool deactivated
+        ) = stakingContract.getOperator(0);
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipientAddress, feeRecipientOne);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assert(deactivated == false);
+        sum += funded;
+
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
+        assertEq(operatorAddress, operatorTwo);
+        assertEq(feeRecipientAddress, feeRecipientTwo);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assert(deactivated == false);
+        sum += funded;
+
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(2);
+        assertEq(operatorAddress, operatorThree);
+        assertEq(feeRecipientAddress, feeRecipientThree);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assert(deactivated == false);
+        sum += funded;
+
+        assert(sum == 3);
+    }
+
+    function testExplicitDepositAllValidatorsMsgSender(uint256 _userSalt) public {
+        address user = uf._new(_userSalt);
+        vm.deal(user, 32 * 30 ether);
+
+        vm.startPrank(user);
+        stakingContract.deposit{value: 32 * 30 ether}();
+        vm.stopPrank();
+
+        assertEq(user.balance, 0);
+
+        (
+            address operatorAddress,
+            address feeRecipientAddress,
+            uint256 limit,
+            uint256 keys,
+            uint256 funded,
+            uint256 available,
+            bool deactivated
+        ) = stakingContract.getOperator(0);
+        assertEq(operatorAddress, operatorOne);
+        assertEq(feeRecipientAddress, feeRecipientOne);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 10);
+        assertEq(available, 0);
+        assert(deactivated == false);
+
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(1);
+        assertEq(operatorAddress, operatorTwo);
+        assertEq(feeRecipientAddress, feeRecipientTwo);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 10);
+        assertEq(available, 0);
+        assert(deactivated == false);
+
+        (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
+            .getOperator(2);
+        assertEq(operatorAddress, operatorThree);
+        assertEq(feeRecipientAddress, feeRecipientThree);
+        assertEq(limit, 10);
+        assertEq(keys, 10);
+        assertEq(funded, 10);
+        assertEq(available, 0);
+        assert(deactivated == false);
+    }
+
+    function testExplicitDepositNotEnoughMsgSender(uint256 _userSalt) public {
+        address user = uf._new(_userSalt);
+        vm.deal(user, 32 * 31 ether);
+
+        vm.startPrank(user);
+        vm.expectRevert(abi.encodeWithSignature("NotEnoughValidators()"));
+        stakingContract.deposit{value: 32 * 31 ether}();
+        vm.stopPrank();
+    }
+
+    function testExplicitDepositNotEnoughAfterFilledMsgSender(uint256 _userSalt) public {
+        address user = uf._new(_userSalt);
+        vm.deal(user, 32 * 31 ether);
+
+        vm.startPrank(user);
+        stakingContract.deposit{value: 32 * 30 ether}();
+        vm.stopPrank();
+        vm.startPrank(user);
+        vm.expectRevert(abi.encodeWithSignature("NotEnoughValidators()"));
+        stakingContract.deposit{value: 32 ether}();
+        vm.stopPrank();
+    }
+
+    function testExplicitDepositInvalidAmountMsgSender(uint256 _userSalt) public {
+        address user = uf._new(_userSalt);
+        vm.deal(user, 31.9 ether);
+
+        vm.startPrank(user);
+        vm.expectRevert(abi.encodeWithSignature("InvalidDepositValue()"));
+        stakingContract.deposit{value: 31.9 ether}();
+        vm.stopPrank();
+    }
+
     function testImplicitDepositOneValidator(uint256 _userSalt) public {
         address user = uf._new(_userSalt);
         vm.deal(user, 32 ether);
