@@ -59,6 +59,12 @@ const hhuc: HardhatUserConfig = {
       goerli: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
       ropsten: "0x6f22fFbC56eFF051aECF839396DD1eD9aD6BBA9D",
     },
+    ledger: {
+      default: 5,
+    },
+    kiln: {
+      default: 6,
+    }
   },
 };
 
