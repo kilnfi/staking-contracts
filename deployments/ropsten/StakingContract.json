@@ -1,5 +1,5 @@
 {
-  "address": "0x89Ae1aB29CfdE43D743C1F03b100d9c2399e4A4F",
+  "address": "0x7d450AA22166792E38abc3DFCF3F9d30d14fb489",
   "abi": [
     {
       "inputs": [],
@@ -283,15 +283,47 @@
           "internalType": "bytes",
           "name": "publicKey",
           "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "publicKeyRoot",
-          "type": "bytes32"
         }
       ],
       "name": "Deposit",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "operatorIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "publicKey",
+          "type": "bytes"
+        }
+      ],
+      "name": "ValidatorKeyRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "operatorIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "publicKeys",
+          "type": "bytes"
+        }
+      ],
+      "name": "ValidatorKeysAdded",
       "type": "event"
     },
     {
@@ -422,6 +454,13 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "deposit",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -461,19 +500,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getCLFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "bytes",
@@ -493,19 +519,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getELFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "bytes",
@@ -519,6 +532,19 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getGlobalFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -574,6 +600,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "getOperatorFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes32",
@@ -582,6 +621,19 @@
         }
       ],
       "name": "getOperatorFeeRecipient",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTreasury",
       "outputs": [
         {
           "internalType": "address",
@@ -678,27 +730,37 @@
         },
         {
           "internalType": "address",
+          "name": "_treasury",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
           "name": "_depositContract",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "_elFeeRecipientImplementation",
+          "name": "_elDispatcher",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "_clFeeRecipientImplementation",
+          "name": "_clDispatcher",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_feeRecipientImplementation",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "_elFee",
+          "name": "_globalFee",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "_clFee",
+          "name": "_operatorFee",
           "type": "uint256"
         }
       ],
@@ -742,24 +804,11 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_fee",
+          "name": "_globalFee",
           "type": "uint256"
         }
       ],
-      "name": "setCLFee",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_fee",
-          "type": "uint256"
-        }
-      ],
-      "name": "setELFee",
+      "name": "setGlobalFee",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -783,6 +832,19 @@
         }
       ],
       "name": "setOperatorAddresses",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_operatorFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "setOperatorFee",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -884,52 +946,52 @@
       "type": "constructor"
     }
   ],
-  "transactionHash": "0x7902940707ad224e30251fd44757280a002d22b4c24f62e5e554e6eb0ccf4555",
+  "transactionHash": "0xe8868482f377c7ed6d444c400de394b248e749c11141b1eb1af01059531e42e2",
   "receipt": {
     "to": null,
-    "from": "0xF3fa8f43D0E2a3A1f313e85799b73a903dB507D3",
-    "contractAddress": "0x89Ae1aB29CfdE43D743C1F03b100d9c2399e4A4F",
-    "transactionIndex": 8,
-    "gasUsed": "844699",
-    "logsBloom": "0x00000000000000000000000000000000400000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002040000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000010000000000000008000000000000000000000000000004000000800000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    "blockHash": "0xcb01fe82556cd2da6ef7de2f706662331d89c272086fa9b15b41337bf3d23d3d",
-    "transactionHash": "0x7902940707ad224e30251fd44757280a002d22b4c24f62e5e554e6eb0ccf4555",
+    "from": "0x92D7d6DADe15fcF369534cEb8CD1A27f97185ab3",
+    "contractAddress": "0x7d450AA22166792E38abc3DFCF3F9d30d14fb489",
+    "transactionIndex": 5,
+    "gasUsed": "890184",
+    "logsBloom": "0x00000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000800000000000001000000000000000000000000000000000000000000000000000000000000000000000800002000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000400000000000000000000001000000000000000000000004000000000000000000000000000000000000002",
+    "blockHash": "0xdb1915cb5b03c0c75372f2f88b3f2183d91ca88121a8370154e86f8209eec09e",
+    "transactionHash": "0xe8868482f377c7ed6d444c400de394b248e749c11141b1eb1af01059531e42e2",
     "logs": [
       {
-        "transactionIndex": 8,
-        "blockNumber": 12482222,
-        "transactionHash": "0x7902940707ad224e30251fd44757280a002d22b4c24f62e5e554e6eb0ccf4555",
-        "address": "0x89Ae1aB29CfdE43D743C1F03b100d9c2399e4A4F",
+        "transactionIndex": 5,
+        "blockNumber": 12552043,
+        "transactionHash": "0xe8868482f377c7ed6d444c400de394b248e749c11141b1eb1af01059531e42e2",
+        "address": "0x7d450AA22166792E38abc3DFCF3F9d30d14fb489",
         "topics": [
           "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b",
-          "0x000000000000000000000000a89d7724c273856a9ca017871816859218d9f1e5"
+          "0x000000000000000000000000f9b40cd3f2c303893ac558fffb2898f66d51d388"
         ],
         "data": "0x",
-        "logIndex": 15,
-        "blockHash": "0xcb01fe82556cd2da6ef7de2f706662331d89c272086fa9b15b41337bf3d23d3d"
+        "logIndex": 7,
+        "blockHash": "0xdb1915cb5b03c0c75372f2f88b3f2183d91ca88121a8370154e86f8209eec09e"
       },
       {
-        "transactionIndex": 8,
-        "blockNumber": 12482222,
-        "transactionHash": "0x7902940707ad224e30251fd44757280a002d22b4c24f62e5e554e6eb0ccf4555",
-        "address": "0x89Ae1aB29CfdE43D743C1F03b100d9c2399e4A4F",
+        "transactionIndex": 5,
+        "blockNumber": 12552043,
+        "transactionHash": "0xe8868482f377c7ed6d444c400de394b248e749c11141b1eb1af01059531e42e2",
+        "address": "0x7d450AA22166792E38abc3DFCF3F9d30d14fb489",
         "topics": [
           "0x7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f"
         ],
         "data": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d53992e36090ca80c14197c09475fe09909caeb1",
-        "logIndex": 16,
-        "blockHash": "0xcb01fe82556cd2da6ef7de2f706662331d89c272086fa9b15b41337bf3d23d3d"
+        "logIndex": 8,
+        "blockHash": "0xdb1915cb5b03c0c75372f2f88b3f2183d91ca88121a8370154e86f8209eec09e"
       }
     ],
-    "blockNumber": 12482222,
-    "cumulativeGasUsed": "1553358",
+    "blockNumber": 12552043,
+    "cumulativeGasUsed": "1375109",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0xa89D7724c273856A9CA017871816859218D9f1E5",
+    "0xf9B40cD3F2c303893ac558Fffb2898f66d51d388",
     "0xD53992E36090ca80C14197C09475fe09909CaeB1",
-    "0x74d099e60000000000000000000000008039f91ce95f9de56ab607a20fd27830ab3a58130000000000000000000000006f22ffbc56eff051aecf839396dd1ed9ad6bba9d000000000000000000000000347434c389ac576964efe19ac158059c7b7c881e000000000000000000000000001b7684338e0db5a50959c2559d9ae1b6195b4200000000000000000000000000000000000000000000000000000000000001f400000000000000000000000000000000000000000000000000000000000001f4"
+    "0x08b3a0730000000000000000000000008039f91ce95f9de56ab607a20fd27830ab3a581300000000000000000000000065d24827c10008c4f7af7c244b755ddc98e5b4ca0000000000000000000000006f22ffbc56eff051aecf839396dd1ed9ad6bba9d000000000000000000000000a1776939861df1dd43b96072b6629cc697ab754c000000000000000000000000f97f445f63c85aad51352ab9a6ff72df4cc398720000000000000000000000003cfa26c09c47cc772b177ba6347fcf79d81f032a00000000000000000000000000000000000000000000000000000000000003e800000000000000000000000000000000000000000000000000000000000007d0"
   ],
   "numDeployments": 1,
   "solcInputHash": "8fad9248104c7377e7ee874218595b1c",
@@ -940,14 +1002,16 @@
     "methodName": "initialize_1",
     "args": [
       "0x8039f91Ce95F9DE56ab607a20fD27830Ab3A5813",
+      "0x65D24827C10008C4F7aF7c244b755ddC98E5B4cA",
       "0x6f22fFbC56eFF051aECF839396DD1eD9aD6BBA9D",
-      "0x347434c389ac576964efe19AC158059C7B7c881E",
-      "0x001b7684338E0db5a50959C2559d9Ae1B6195B42",
-      500,
-      500
+      "0xA1776939861dF1dd43b96072b6629CC697Ab754c",
+      "0xF97f445f63C85AAd51352aB9A6Ff72DF4Cc39872",
+      "0x3cFA26C09c47CC772b177bA6347fcf79D81F032A",
+      1000,
+      2000
     ]
   },
-  "implementation": "0xa89D7724c273856A9CA017871816859218D9f1E5",
+  "implementation": "0xf9B40cD3F2c303893ac558Fffb2898f66d51d388",
   "devdoc": {
     "author": "SkillZ",
     "kind": "dev",

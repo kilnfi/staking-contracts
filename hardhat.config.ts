@@ -61,9 +61,13 @@ const hhuc: HardhatUserConfig = {
     },
     ledger: {
       default: 5,
+      goerli: "0xd13E4bF0d8b793e00977aC7Cf19800faC7A97fc8",
+      ropsten: "0xd13E4bF0d8b793e00977aC7Cf19800faC7A97fc8",
     },
     kiln: {
       default: 6,
+      goerli: "0x5137B5540730d44326fBb237184425A9FB311DdF",
+      ropsten: "0x5137B5540730d44326fBb237184425A9FB311DdF",
     }
   },
 };
