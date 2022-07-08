@@ -1,6 +1,17 @@
 # Staking Contracts changelog
 
-## v0.1.0 (June 21th 2021)
+## v0.2.0 (July 8th 2022)
+
+### :dizzy: Features
+
+- Add new `deposit()` method that works like the `receive()` fallback
+- Add new `Treasury` contract and rework fee dispatching
+- 
+### Bug Fixes
+
+- Ensure fee recipients work by preventing `DELEGATECALL` -> `DELEGATECALL`, introduces new unupgradeable `FeeRecipient` and `ExecutionLayerFeeDispatcher` + `ConsensusLayerFeeDispatcher` upgradeable contracts
+
+## v0.1.0 (June 21th 2022)
 
 ### :dizzy: Features
 

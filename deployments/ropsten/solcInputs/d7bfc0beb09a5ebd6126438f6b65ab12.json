@@ -1,0 +1,37 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "src/contracts/Treasury.sol": {
+      "content": "//SPDX-License-Identifier: BUSL-1.1\npragma solidity >=0.8.10;\n\n/// @title Minimal Permissioned Treasury\n/// @author Kiln\n/// @notice You can use this contract to store funds and split them on a permissioned call\ncontract Treasury {\n    error InvalidCall();\n    error InvalidArrayLengths();\n    error InvalidEmptyArray();\n    error Unauthorized();\n    error TransferError(bytes err);\n    error InvalidAmount();\n    error Locked();\n    error InvalidPercents();\n\n    uint256 constant BASIS_POINT = 10_000;\n\n    address public admin;\n    address[] public beneficiaries;\n    uint256[] public percents;\n    uint256 internal locked = 1;\n\n    constructor(\n        address _admin,\n        address[] memory _beneficiaries,\n        uint256[] memory _percents\n    ) {\n        if (_beneficiaries.length != _percents.length) {\n            revert InvalidArrayLengths();\n        }\n\n        if (_beneficiaries.length == 0) {\n            revert InvalidEmptyArray();\n        }\n\n        _checkPercents(_percents);\n\n        admin = _admin;\n        beneficiaries = _beneficiaries;\n        percents = _percents;\n    }\n\n    modifier onlyAdmin() {\n        if (msg.sender != admin) {\n            revert Unauthorized();\n        }\n        _;\n    }\n\n    modifier lock() {\n        if (locked == 2) {\n            revert Locked();\n        }\n        locked = 2;\n        _;\n        locked = 1;\n    }\n\n    /// @notice Sets the splitting parameters for the withdrawal\n    /// @param _beneficiaries The list of beneficiaries to withdraw the funds to\n    /// @param _percents The list of percents to use for the splitting\n    function setBeneficiaries(address[] memory _beneficiaries, uint256[] memory _percents) external onlyAdmin {\n        if (_beneficiaries.length != _percents.length) {\n            revert InvalidArrayLengths();\n        }\n\n        if (_beneficiaries.length == 0) {\n            revert InvalidEmptyArray();\n        }\n\n        _checkPercents(_percents);\n\n        beneficiaries = _beneficiaries;\n        percents = _percents;\n    }\n\n    /// @notice Withdraws the current balance based on the provided percents, expected in basis point.\n    /// @notice If the sum is greater than 10_000, transfers will end up failing\n    /// @param _amount Amount to split between beneficiaries\n    function withdraw(uint256 _amount) external onlyAdmin lock {\n        if (_amount > address(this).balance) {\n            revert InvalidAmount();\n        }\n\n        for (uint256 idx = 0; idx < beneficiaries.length; ++idx) {\n            uint256 amountToTransfer = (_amount * percents[idx]) / BASIS_POINT;\n            (bool status, bytes memory data) = beneficiaries[idx].call{value: amountToTransfer}(\"\");\n            if (!status) {\n                revert TransferError(data);\n            }\n        }\n    }\n\n    /// @notice Empty receiver\n    receive() external payable {}\n\n    /// @notice Fallback prevention\n    fallback() external payable {\n        revert InvalidCall();\n    }\n\n    /// @notice Checks that the sum of percents is equal to 10_000 (100 %)\n    /// @param _percents List of percents\n    function _checkPercents(uint256[] memory _percents) internal pure {\n        uint256 sum;\n        for (uint256 idx = 0; idx < _percents.length; ) {\n            sum += _percents[idx];\n            unchecked {\n                ++idx;\n            }\n        }\n        if (sum != BASIS_POINT) {\n            revert InvalidPercents();\n        }\n    }\n}\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates",
+          "devdoc",
+          "userdoc"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}

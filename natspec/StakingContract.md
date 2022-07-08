@@ -140,6 +140,17 @@ Deactivates an operator and changes the fee recipient address and the staking li
 ### deposit
 
 ```solidity
+function deposit() external payable
+```
+
+Explicit deposit method using msg.sender
+
+*A multiple of 32 ETH should be sent*
+
+
+### deposit
+
+```solidity
 function deposit(address _withdrawer) external payable
 ```
 
