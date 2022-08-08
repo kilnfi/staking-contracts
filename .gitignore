@@ -6,3 +6,4 @@ artifacts
 forge-cache
 .DS_Store
 .env
+.idea/
