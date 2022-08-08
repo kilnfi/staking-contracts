@@ -813,6 +813,61 @@ contract StakingContractTest is DSTestPlus {
     }
 }
 
+contract StakingContractOperatorTest is DSTestPlus {
+    Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+
+    Treasury internal treasury;
+    StakingContract internal stakingContract;
+    DepositContractMock internal depositContract;
+    UserFactory internal uf;
+
+    address internal admin = address(1);
+
+    bytes32 salt = bytes32(0);
+
+    function setUp() public {
+        uf = new UserFactory();
+        address[] memory recipients = new address[](1);
+        uint256[] memory percents = new uint256[](1);
+        percents[0] = 10_000;
+        treasury = new Treasury(admin, recipients, percents);
+        stakingContract = new StakingContract();
+        depositContract = new DepositContractMock();
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(0),
+            address(0),
+            address(0),
+            1000,
+            2000
+        );
+    }
+
+    function testAddOperatorLimitReached(uint256 _operatorSalt) public {
+        uint256 operatorIndex = 0;
+        address newOperator;
+        address newOperatorFeeRecipient;
+
+        vm.startPrank(admin);
+        // We register as much operator as possible.
+        for (uint256 i = 0; i < 256; i++) {
+            newOperator = uf._new(_operatorSalt);
+            newOperatorFeeRecipient = uf._new(_operatorSalt);
+
+            operatorIndex = stakingContract.addOperator(newOperator, newOperator);
+            assertEq(i, operatorIndex);
+        }
+
+        newOperator = uf._new(_operatorSalt);
+        newOperatorFeeRecipient = uf._new(_operatorSalt);
+        vm.expectRevert(abi.encodeWithSignature("MaximumOperatorCountAlreadyReached()"));
+        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
+        vm.stopPrank();
+    }
+}
+
 contract StakingContractThreeValidatorsTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
