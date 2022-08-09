@@ -1509,7 +1509,8 @@ contract StakingContractDistributionTest is DSTestPlus {
         }
 
         for (uint256 i; i < depositCount; ) {
-            vm.roll(i);
+            // +1 To prevent underflow.
+            vm.roll(i + 1);
             uint256 availableKeys = stakingContract.getAvailableValidatorCount();
             salt = keccak256(abi.encode(salt));
             uint256 newDeposits = (uint8(salt[0]) % 31) + 1;
