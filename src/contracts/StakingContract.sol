@@ -801,7 +801,7 @@ contract StakingContract {
                     betaIndex = int8(index);
                 }
             }
-            index = (index + skip) % prime;
+            index = uint8((uint256(index) + skip) % prime);
             if (index == base && betaIndex == -1) {
                 betaIndex = alphaIndex;
             }
