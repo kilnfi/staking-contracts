@@ -147,9 +147,19 @@ contract StakingContractTest is DSTestPlus {
     function testSetAdmin(uint256 _adminSalt) public {
         address newAdmin = uf._new(_adminSalt);
         assertEq(stakingContract.getAdmin(), admin);
+
+        // Start ownership transfer process.
         vm.startPrank(admin);
         stakingContract.setAdmin(newAdmin);
         vm.stopPrank();
+        // At this point, the old admin is still in charge.
+        assertEq(stakingContract.getAdmin(), admin);
+
+        // New admin accepts transfer.
+        vm.startPrank(newAdmin);
+        stakingContract.acceptAdmin();
+        vm.stopPrank();
+
         assertEq(stakingContract.getAdmin(), newAdmin);
     }
 
@@ -171,6 +181,21 @@ contract StakingContractTest is DSTestPlus {
         address newAdmin = uf._new(_adminSalt);
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
         stakingContract.setAdmin(newAdmin);
+    }
+
+    function testAcceptNewAdminUnauthorized(uint256 _adminSalt) public {
+        address newAdmin = uf._new(_adminSalt);
+
+        vm.startPrank(admin);
+        stakingContract.setAdmin(newAdmin);
+        vm.stopPrank();
+
+        address randomUser = uf._new(_adminSalt);
+        // A random user tries to accept new admin's role.
+        vm.prank(randomUser);
+        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+        stakingContract.acceptAdmin();
+        vm.stopPrank();
     }
 
     function testGetOperator() public {
