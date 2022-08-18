@@ -39,7 +39,6 @@ contract StakingContract {
     error DuplicateValidatorKey(bytes);
     error FundedValidatorDeletionAttempt();
     error OperatorLimitTooHigh(uint256 limit, uint256 keyCount);
-    error NotImplemented();
 
     struct ValidatorAllocationCache {
         bool used;
@@ -491,8 +490,7 @@ contract StakingContract {
     /// @dev This method is public on purpose
     /// @param _publicKey Validator to withdraw Consensus Layer Fees from
     function withdrawCLFee(bytes calldata _publicKey) external {
-        revert NotImplemented();
-        // _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
+        _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
     }
 
     /// @notice Withdraw both Consensus and Execution Layer Fee for a given validator public key

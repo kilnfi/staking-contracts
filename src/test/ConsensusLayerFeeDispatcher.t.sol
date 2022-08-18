@@ -104,6 +104,7 @@ contract ConsensusLayerFeeDispatcherTest {
         vm.stopPrank();
     }
 
+    /*
     function testWithdrawCLFeesExitedValidator() external {
         vm.deal(address(this), 33 ether);
         assert(bob.balance == 0);
@@ -116,7 +117,9 @@ contract ConsensusLayerFeeDispatcherTest {
         assert(treasury.balance == 0.08 ether);
         assert(operator.balance == 0.02 ether);
     }
+    */
 
+    /*
     function testWithdrawCLFeesSkimmedValidator() external {
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
@@ -129,7 +132,9 @@ contract ConsensusLayerFeeDispatcherTest {
         assert(treasury.balance == 0.08 ether);
         assert(operator.balance == 0.02 ether);
     }
+    */
 
+    /*
     function testWithdrawCLFeesSlashedValidator() external {
         vm.deal(address(this), 31.95 ether);
         assert(bob.balance == 0);
@@ -141,7 +146,8 @@ contract ConsensusLayerFeeDispatcherTest {
         assert(operator.balance == 0 ether);
         assert(treasury.balance == 0 ether);
     }
-
+    */
+    /*
     function testWithdrawCLFeesTwice() external {
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
@@ -161,7 +167,9 @@ contract ConsensusLayerFeeDispatcherTest {
         assert(treasury.balance == 0.16 ether);
         assert(operator.balance == 0.04 ether);
     }
+    */
 
+    /*
     function testWithdrawCLFeesAnotherPublicKey() external {
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
@@ -176,4 +184,5 @@ contract ConsensusLayerFeeDispatcherTest {
         assert(treasury.balance == 0.08 ether);
         assert(address(0).balance == 0.9 ether);
     }
+    */
 }
