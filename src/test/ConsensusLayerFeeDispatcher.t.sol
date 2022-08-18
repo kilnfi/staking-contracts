@@ -185,4 +185,13 @@ contract ConsensusLayerFeeDispatcherTest {
         assert(address(0).balance == 0.9 ether);
     }
     */
+
+    function testRevertNotImplemented() external {
+        vm.deal(address(this), 1 ether);
+        assert(bob.balance == 0);
+        assert(treasury.balance == 0);
+        assert(operator.balance == 0);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
+        cld.dispatch{value: 1 ether}(bytes32(0));
+    }
 }
