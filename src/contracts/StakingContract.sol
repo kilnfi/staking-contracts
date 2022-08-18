@@ -280,6 +280,11 @@ contract StakingContract {
         StakingContractStorageLib.setAdmin(newAdmin);
     }
 
+    /// @notice Get the new admin's address previously set for an ownership transfer
+    function getNewAdmin() external view returns (address) {
+        return StakingContractStorageLib.getNewAdmin();
+    }
+
     /// @notice Add new operator
     /// @dev Only callable by admin
     /// @param _operatorAddress Operator address allowed to add / remove validators
