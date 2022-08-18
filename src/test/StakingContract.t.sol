@@ -154,6 +154,7 @@ contract StakingContractTest is DSTestPlus {
         vm.stopPrank();
         // At this point, the old admin is still in charge.
         assertEq(stakingContract.getAdmin(), admin);
+        assertEq(stakingContract.getNewAdmin(), newAdmin);
 
         // New admin accepts transfer.
         vm.startPrank(newAdmin);
