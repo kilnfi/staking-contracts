@@ -269,6 +269,8 @@ contract StakingContract {
         StakingContractStorageLib.setNewAdmin(_newAdmin);
     }
 
+    /// @notice New admin must accept its role by calling this method
+    /// @dev Only callable by new admin
     function acceptAdmin() external {
         address newAdmin = StakingContractStorageLib.getNewAdmin();
 
