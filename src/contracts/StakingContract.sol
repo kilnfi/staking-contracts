@@ -277,7 +277,7 @@ contract StakingContract {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         StakingContractStorageLib.OperatorInfo memory newOperator;
 
-        if (operators.value.length == 256) {
+        if (operators.value.length == 251) {
             revert MaximumOperatorCountAlreadyReached();
         }
         newOperator.operator = _operatorAddress;
