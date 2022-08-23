@@ -150,15 +150,15 @@ contract StakingContractTest is DSTestPlus {
 
         // Start ownership transfer process.
         vm.startPrank(admin);
-        stakingContract.setAdmin(newAdmin);
+        stakingContract.transferOwnership(newAdmin);
         vm.stopPrank();
         // At this point, the old admin is still in charge.
         assertEq(stakingContract.getAdmin(), admin);
-        assertEq(stakingContract.getNewAdmin(), newAdmin);
+        assertEq(stakingContract.getPendingAdmin(), newAdmin);
 
         // New admin accepts transfer.
         vm.startPrank(newAdmin);
-        stakingContract.acceptAdmin();
+        stakingContract.acceptOwnership();
         vm.stopPrank();
 
         assertEq(stakingContract.getAdmin(), newAdmin);
@@ -178,24 +178,24 @@ contract StakingContractTest is DSTestPlus {
         );
     }
 
-    function testSetAdminUnauthorized(uint256 _adminSalt) public {
+    function testTransferOwnershipUnauthorized(uint256 _adminSalt) public {
         address newAdmin = uf._new(_adminSalt);
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        stakingContract.setAdmin(newAdmin);
+        stakingContract.transferOwnership(newAdmin);
     }
 
-    function testAcceptNewAdminUnauthorized(uint256 _adminSalt) public {
+    function testAcceptOwnershipUnauthorized(uint256 _adminSalt) public {
         address newAdmin = uf._new(_adminSalt);
 
         vm.startPrank(admin);
-        stakingContract.setAdmin(newAdmin);
+        stakingContract.transferOwnership(newAdmin);
         vm.stopPrank();
 
         address randomUser = uf._new(_adminSalt);
         // A random user tries to accept new admin's role.
         vm.prank(randomUser);
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        stakingContract.acceptAdmin();
+        stakingContract.acceptOwnership();
         vm.stopPrank();
     }
 

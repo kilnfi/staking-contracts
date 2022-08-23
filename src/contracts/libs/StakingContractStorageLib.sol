@@ -57,7 +57,7 @@ library StakingContractStorageLib {
     =========================================*/
 
     bytes32 internal constant ADMIN_SLOT = keccak256("StakingContract.admin");
-    bytes32 internal constant NEW_ADMIN_SLOT = keccak256("StakingContract.newAdmin");
+    bytes32 internal constant PENDING_ADMIN_SLOT = keccak256("StakingContract.pendingAdmin");
 
     function getAdmin() internal view returns (address) {
         return getAddress(ADMIN_SLOT);
@@ -67,12 +67,12 @@ library StakingContractStorageLib {
         setAddress(ADMIN_SLOT, _newAdmin);
     }
 
-    function getNewAdmin() internal view returns (address) {
-        return getAddress(NEW_ADMIN_SLOT);
+    function getPendingAdmin() internal view returns (address) {
+        return getAddress(PENDING_ADMIN_SLOT);
     }
 
-    function setNewAdmin(address _newAdmin) internal {
-        setAddress(NEW_ADMIN_SLOT, _newAdmin);
+    function setPendingAdmin(address _newPendingAdmin) internal {
+        setAddress(PENDING_ADMIN_SLOT, _newPendingAdmin);
     }
 
     /* ========================================
