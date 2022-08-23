@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.10;
 
-library FeeRecipientStorageLib {
+library DispatchersStorageLib {
     function getUint256(bytes32 position) internal view returns (uint256 data) {
         assembly {
             data := sload(position)
@@ -21,18 +21,6 @@ library FeeRecipientStorageLib {
     }
 
     function setAddress(bytes32 position, address data) internal {
-        assembly {
-            sstore(position, data)
-        }
-    }
-
-    function getBytes32(bytes32 position) internal view returns (bytes32 data) {
-        assembly {
-            data := sload(position)
-        }
-    }
-
-    function setBytes32(bytes32 position, bytes32 data) internal {
         assembly {
             sstore(position, data)
         }

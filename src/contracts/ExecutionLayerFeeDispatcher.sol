@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.10;
 
-import "./libs/FeeRecipientStorageLib.sol";
+import "./libs/DispatchersStorageLib.sol";
 import "./interfaces/IStakingContractFeeDetails.sol";
 import "./interfaces/IFeeDispatcher.sol";
 
@@ -9,7 +9,7 @@ import "./interfaces/IFeeDispatcher.sol";
 /// @author Kiln
 /// @notice This contract can be used to receive fees from a validator and split them with a node operator
 contract ExecutionLayerFeeDispatcher is IFeeDispatcher {
-    using FeeRecipientStorageLib for bytes32;
+    using DispatchersStorageLib for bytes32;
 
     event Withdrawal(
         address indexed withdrawer,
