@@ -919,6 +919,7 @@ contract StakingContractOperatorTest is DSTestPlus {
     }
 
     function testAddOperatorLimitReached(uint128 _operatorSalt) public {
+        vm.roll(uint256(_operatorSalt) + 1);
         uint256 operatorIndex = 0;
         address newOperator;
         address newOperatorFeeRecipient;
