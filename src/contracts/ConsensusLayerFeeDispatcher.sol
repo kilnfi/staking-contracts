@@ -25,6 +25,7 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
     error ZeroBalanceWithdrawal();
     error AlreadyInitialized();
     error InvalidCall();
+    error NotImplemented();
 
     bytes32 internal constant STAKING_CONTRACT_ADDRESS_SLOT =
         keccak256("ConsensusLayerFeeRecipient.stakingContractAddress");
@@ -56,6 +57,8 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
 
     /// @notice Performs a withdrawal on this contract's balance
     function dispatch(bytes32 _publicKeyRoot) external payable {
+        revert NotImplemented();
+        /*
         uint256 balance = address(this).balance; // this has taken into account msg.value
         if (balance == 0) {
             revert ZeroBalanceWithdrawal();
@@ -95,6 +98,7 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
             }
         }
         emit Withdrawal(withdrawer, operator, balance - globalFee, operatorFee, globalFee - operatorFee);
+        */
     }
 
     /// @notice Retrieve the staking contract address

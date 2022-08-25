@@ -2387,12 +2387,15 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(address(treasury).balance == 0 ether);
         assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 33 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.90 ether);
         assert(operatorOne.balance == 0);
         assert(address(treasury).balance == 0.08 ether);
         assert(feeRecipientOne.balance == 0.02 ether);
+        */
     }
 
     function testWithdrawCLFeesEditedOperatorFee() public {
@@ -2413,12 +2416,15 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
         vm.deal(address(clfrBob), 33 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.9 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.05 ether);
         assert(address(treasury).balance == 0.05 ether);
+        */
     }
 
     function testWithdrawCLFeesSkimmedValidator() public {
@@ -2436,12 +2442,15 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
         vm.deal(address(clfrBob), 1 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 0.90 ether);
         assert(feeRecipientOne.balance == 0.02 ether);
         assert(operatorOne.balance == 0);
         assert(address(treasury).balance == 0.08 ether);
+        */
     }
 
     function testWithdrawCLFeesSlashedValidator() public {
@@ -2457,10 +2466,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         vm.deal(address(clfrBob), 31.95 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 31.95 ether);
         assert(operatorOne.balance == 0);
+        */
     }
 
     function testWithdrawCLFeesAlreadyDeployed() public {
@@ -2477,7 +2489,9 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 33 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.90 ether);
         assert(address(treasury).balance == 0.08 ether);
@@ -2489,6 +2503,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(address(treasury).balance == 0.16 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.04 ether);
+        */
     }
 
     function testWithdrawCLFeesEmptyWithdrawal() public {
@@ -2499,7 +2514,8 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         stakingContract.deposit{value: 32 ether}(bob);
         assert(stakingContract.getWithdrawer(publicKey) == bob);
         vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
+        // vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawCLFee(publicKey);
     }
 
@@ -2525,12 +2541,15 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
 
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdraw(publicKey);
 
+        /*
         assert(bob.balance == 33.8 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.04 ether);
         assert(address(treasury).balance == 0.16 ether);
+        */
     }
 }
 
@@ -3023,12 +3042,15 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         assert(address(treasury).balance == 0 ether);
         assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 33 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.90 ether);
         assert(operatorOne.balance == 0);
         assert(address(treasury).balance == 0.08 ether);
         assert(feeRecipientOne.balance == 0.02 ether);
+        */
     }
 
     function testWithdrawCLFeesEditedOperatorFee() public {
@@ -3049,12 +3071,15 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
         vm.deal(address(clfrBob), 33 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.9 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.05 ether);
         assert(address(treasury).balance == 0.05 ether);
+        */
     }
 
     function testWithdrawCLFeesSkimmedValidator() public {
@@ -3072,12 +3097,15 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
         vm.deal(address(clfrBob), 1 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 0.90 ether);
         assert(feeRecipientOne.balance == 0.02 ether);
         assert(operatorOne.balance == 0);
         assert(address(treasury).balance == 0.08 ether);
+        */
     }
 
     function testWithdrawCLFeesSlashedValidator() public {
@@ -3093,10 +3121,13 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         vm.deal(address(clfrBob), 31.95 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 31.95 ether);
         assert(operatorOne.balance == 0);
+        */
     }
 
     function testWithdrawCLFeesAlreadyDeployed() public {
@@ -3113,7 +3144,9 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
         vm.deal(address(clfrBob), 33 ether);
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdrawCLFee(publicKey);
+        /*
         assert(clfrBob.code.length != 0);
         assert(bob.balance == 32.90 ether);
         assert(address(treasury).balance == 0.08 ether);
@@ -3125,6 +3158,7 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         assert(address(treasury).balance == 0.16 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.04 ether);
+        */
     }
 
     function testWithdrawCLFeesEmptyWithdrawal() public {
@@ -3135,7 +3169,8 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         stakingContract.deposit{value: 32 ether}(bob);
         assert(stakingContract.getWithdrawer(publicKey) == bob);
         vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
+        // vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawCLFee(publicKey);
     }
 
@@ -3161,11 +3196,14 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
 
+        vm.expectRevert(abi.encodeWithSignature("NotImplemented()"));
         stakingContract.withdraw(publicKey);
 
+        /*
         assert(bob.balance == 33.8 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.04 ether);
         assert(address(treasury).balance == 0.16 ether);
+        */
     }
 }
