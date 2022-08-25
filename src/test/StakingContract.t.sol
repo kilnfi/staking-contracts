@@ -868,6 +868,25 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.setWithdrawer(pk, anotherUser);
         vm.stopPrank();
     }
+
+    function testSetTreasury(uint256 _treasurySalt) public {
+        address newTreasury = uf._new(_treasurySalt);
+        vm.startPrank(admin);
+        stakingContract.setTreasury(newTreasury);
+        vm.stopPrank();
+
+        address gotTreasury = stakingContract.getTreasury();
+        assertEq(newTreasury, gotTreasury);
+    }
+
+    function testSetTreasuryUnauthorized(uint256 _userSalt) public {
+        address user = uf._new(_userSalt);
+
+        vm.startPrank(user);
+        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+        stakingContract.setTreasury(user);
+        vm.stopPrank();
+    }
 }
 
 contract StakingContractInitializationTest is DSTestPlus {

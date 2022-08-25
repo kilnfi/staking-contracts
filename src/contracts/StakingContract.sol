@@ -164,6 +164,13 @@ contract StakingContract {
         return StakingContractStorageLib.getAdmin();
     }
 
+    /// @notice Set new treasury
+    /// @dev Only callable by admin
+    /// @param _newTreasury New Treasury address
+    function setTreasury(address _newTreasury) external onlyAdmin {
+        return StakingContractStorageLib.setTreasury(_newTreasury);
+    }
+
     /// @notice Retrieve system treasury
     function getTreasury() external view returns (address) {
         return StakingContractStorageLib.getTreasury();
