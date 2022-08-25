@@ -26,7 +26,6 @@ contract StakingContract {
     error InvalidCall();
     error Unauthorized();
     error InvalidFee();
-    error NotEnoughKeys();
     error DepositFailure();
     error InvalidArgument();
     error UnsortedIndexes();
