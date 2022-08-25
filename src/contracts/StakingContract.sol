@@ -349,6 +349,9 @@ contract StakingContract {
     /// @param _limit New staking limit
     function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        if (operators.value[_operatorIndex].deactivated) {
+            revert Deactivated();
+        }
         uint256 publicKeyCount = operators.value[_operatorIndex].publicKeys.length;
         if (publicKeyCount < _limit) {
             revert OperatorLimitTooHigh(_limit, publicKeyCount);
