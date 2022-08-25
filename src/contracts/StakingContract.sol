@@ -144,8 +144,16 @@ contract StakingContract {
     ) external init(1) {
         StakingContractStorageLib.setAdmin(_admin);
         StakingContractStorageLib.setTreasury(_treasury);
+
+        if (_globalFee > BASIS_POINTS) {
+            revert InvalidFee();
+        }
         StakingContractStorageLib.setGlobalFee(_globalFee);
+        if (_operatorFee > BASIS_POINTS) {
+            revert InvalidFee();
+        }
         StakingContractStorageLib.setOperatorFee(_operatorFee);
+
         StakingContractStorageLib.setELDispatcher(_elDispatcher);
         StakingContractStorageLib.setCLDispatcher(_clDispatcher);
         StakingContractStorageLib.setDepositContract(_depositContract);
@@ -793,7 +801,7 @@ contract StakingContract {
                     betaIndex = int8(index);
                 }
             }
-            index = (index + skip) % prime;
+            index = uint8((uint256(index) + skip) % prime);
             if (index == base && betaIndex == -1) {
                 betaIndex = alphaIndex;
             }

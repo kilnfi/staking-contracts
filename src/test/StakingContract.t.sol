@@ -839,6 +839,53 @@ contract StakingContractTest is DSTestPlus {
     }
 }
 
+contract StakingContractInitializationTest is DSTestPlus {
+    Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+
+    Treasury internal treasury;
+    StakingContract internal stakingContract;
+    DepositContractMock internal depositContract;
+
+    address internal admin = address(1);
+
+    bytes32 salt = bytes32(0);
+
+    function setUp() public {
+        address[] memory recipients = new address[](1);
+        uint256[] memory percents = new uint256[](1);
+        percents[0] = 10_000;
+        treasury = new Treasury(admin, recipients, percents);
+        stakingContract = new StakingContract();
+        depositContract = new DepositContractMock();
+    }
+
+    function testFeeValidation() public {
+        vm.expectRevert(abi.encodeWithSignature("InvalidFee()"));
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(0),
+            address(0),
+            address(0),
+            10001,
+            2000
+        );
+
+        vm.expectRevert(abi.encodeWithSignature("InvalidFee()"));
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(0),
+            address(0),
+            address(0),
+            10000,
+            10001
+        );
+    }
+}
+
 contract StakingContractOperatorTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
@@ -872,6 +919,7 @@ contract StakingContractOperatorTest is DSTestPlus {
     }
 
     function testAddOperatorLimitReached(uint128 _operatorSalt) public {
+        vm.roll(uint256(_operatorSalt) + 1);
         uint256 operatorIndex = 0;
         address newOperator;
         address newOperatorFeeRecipient;
@@ -880,11 +928,11 @@ contract StakingContractOperatorTest is DSTestPlus {
         address operatorZero;
         // We register as much operator as possible.
         for (uint256 i = 0; i < 251; i++) {
-            newOperator = uf._new(_operatorSalt + (i * 2));
+            newOperator = uf._new(uint256(_operatorSalt) + (i * 2));
             if (i == 0) {
                 operatorZero = newOperator;
             }
-            newOperatorFeeRecipient = uf._new(_operatorSalt + (i * 2) + 1);
+            newOperatorFeeRecipient = uf._new(uint256(_operatorSalt) + (i * 2) + 1);
 
             operatorIndex = stakingContract.addOperator(newOperator, newOperator);
             assertEq(i, operatorIndex);
