@@ -788,7 +788,7 @@ contract StakingContract {
     ) internal {
         uint256 operatorCount = _operators.value.length;
         uint8 optimusPrime = _getClosestPrimeAbove(uint8(operatorCount));
-        bytes32 blockHash = blockhash(block.number); // weak random number as it's not a security issue
+        bytes32 blockHash = blockhash(block.number - 1); // weak random number as it's not a security issue
 
         ValidatorAllocationCache[] memory vd = new ValidatorAllocationCache[](operatorCount);
 
