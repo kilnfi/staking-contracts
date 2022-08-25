@@ -265,8 +265,24 @@ contract StakingContract {
     /// @notice Set new admin
     /// @dev Only callable by admin
     /// @param _newAdmin New Administrator address
-    function setAdmin(address _newAdmin) external onlyAdmin {
-        StakingContractStorageLib.setAdmin(_newAdmin);
+    function transferOwnership(address _newAdmin) external onlyAdmin {
+        StakingContractStorageLib.setPendingAdmin(_newAdmin);
+    }
+
+    /// @notice New admin must accept its role by calling this method
+    /// @dev Only callable by new admin
+    function acceptOwnership() external {
+        address newAdmin = StakingContractStorageLib.getPendingAdmin();
+
+        if (msg.sender != newAdmin) {
+            revert Unauthorized();
+        }
+        StakingContractStorageLib.setAdmin(newAdmin);
+    }
+
+    /// @notice Get the new admin's address previously set for an ownership transfer
+    function getPendingAdmin() external view returns (address) {
+        return StakingContractStorageLib.getPendingAdmin();
     }
 
     /// @notice Add new operator
