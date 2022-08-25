@@ -39,6 +39,7 @@ contract StakingContract {
     error DuplicateValidatorKey(bytes);
     error FundedValidatorDeletionAttempt();
     error OperatorLimitTooHigh(uint256 limit, uint256 keyCount);
+    error MaximumOperatorCountAlreadyReached();
 
     struct ValidatorAllocationCache {
         bool used;
@@ -275,6 +276,10 @@ contract StakingContract {
     function addOperator(address _operatorAddress, address _feeRecipientAddress) external onlyAdmin returns (uint256) {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         StakingContractStorageLib.OperatorInfo memory newOperator;
+
+        if (operators.value.length == 251) {
+            revert MaximumOperatorCountAlreadyReached();
+        }
         newOperator.operator = _operatorAddress;
         newOperator.feeRecipient = _feeRecipientAddress;
         operators.value.push(newOperator);
