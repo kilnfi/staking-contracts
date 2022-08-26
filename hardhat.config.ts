@@ -26,6 +26,12 @@ const hhuc: HardhatUserConfig = {
         mnemonic: process.env.MNEMONIC || "",
       },
     },
+    goerli_live: {
+      url: process.env.RPC_URL || "",
+      accounts: {
+        mnemonic: process.env.MNEMONIC || "",
+      },
+    },
   },
   dodoc: {
     include: [
@@ -43,18 +49,22 @@ const hhuc: HardhatUserConfig = {
     proxyAdmin: {
       default: 1,
       goerli_vault: "0x3B9B2C07eff60aC828117C997E04c61890Ad2Ed7",
+      goerli_live: "0x3B9B2C07eff60aC828117C997E04c61890Ad2Ed7",
     },
     admin: {
       default: 2,
       goerli_vault: "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
+      goerli_live: "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
     },
     depositContract: {
       default: 4,
       goerli_vault: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
+      goerli_live: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
     },
     treasury: {
       default: 5,
-      goerli_vault: "0x73cC0AFEaAc1E6f2C08A7D4484bB5628062558CB"
+      goerli_vault: "0x73cC0AFEaAc1E6f2C08A7D4484bB5628062558CB",
+      goerli_live: "0x5137B5540730d44326fBb237184425A9FB311DdF",
     }
   },
 };
