@@ -1,0 +1,23 @@
+{
+    "name": "goerli_vault",
+    "chainId": "5",
+    "contracts": {
+        "ConsensusLayerFeeDispatcher": "0xfa6A8b8F29aa1903A63CfF1aEE9515a8E6027d14",
+        "ConsensusLayerFeeDispatcher_Implementation": "0xb724aAbf291581DeDa9811Ae5d7d9Ca4cABF4a08",
+        "ConsensusLayerFeeDispatcher_Proxy": "0xfa6A8b8F29aa1903A63CfF1aEE9515a8E6027d14",
+        "ExecutionLayerFeeDispatcher": "0x1F9646A0A3F94c861d9913c8056A2237Eff5506D",
+        "ExecutionLayerFeeDispatcher_Implementation": "0x36E0f10D32F39264861281f657D5872944A27790",
+        "ExecutionLayerFeeDispatcher_Proxy": "0x1F9646A0A3F94c861d9913c8056A2237Eff5506D",
+        "FeeRecipient": "0x71490D6c1038cDcb88bAC2Ad769567421EA323e5",
+        "StakingContract": "0xc811C609fCF25acCDA6FdC93fBFA406297642220",
+        "StakingContract_Implementation": "0x63B29ef7259730f6B9c9a50076E06B3067696b3b",
+        "StakingContract_Proxy": "0xc811C609fCF25acCDA6FdC93fBFA406297642220"
+    },
+    "namedAccounts": {
+        "deployer": "0x92D7d6DADe15fcF369534cEb8CD1A27f97185ab3",
+        "proxyAdmin": "0x3B9B2C07eff60aC828117C997E04c61890Ad2Ed7",
+        "admin": "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
+        "depositContract": "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b",
+        "treasury": "0x73cC0AFEaAc1E6f2C08A7D4484bB5628062558CB"
+    }
+}

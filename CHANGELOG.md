@@ -1,12 +1,30 @@
 # Staking Contracts changelog
 
+## v0.2.1 (August 26th 2022)
+
+### :dizzy: Features
+
+- Add new deployment digest generator (`deployment.*.json`)
+- [Add `treasury` setter](https://github.com/kilnfi/staking-contracts/pull/48)
+  
+### Bug Fixes
+
+- [Fix audit finding `HAL-01 - REWARDS WITHDRAWAL WITHOUT FEES CHARGING IS POSSIBLE`](https://github.com/kilnfi/staking-contracts/pull/55)
+- [Fix audit finding `HAL-02 - OPERATORS FAVORING DUE TO INCORRECT USE OF BLOCKHASH`](https://github.com/kilnfi/staking-contracts/pull/53)
+- [Fix audit finding `HAL-03 - ADDING VAST NUMBER OF OPERATORS CAN DOS DEPOSIT FUNCTIONALITY`](https://github.com/kilnfi/staking-contracts/pull/50)
+- [Fix audit finding `HAL-04 - LACK OF TRANSFER-OWNERSHIP PATTERN`](https://github.com/kilnfi/staking-contracts/pull/54)
+- [Fix audit finding `HAL-05 - STAKINGCONTRACT LACKS FEES VALIDATION IN INITIALIZE FUNCTION`](https://github.com/kilnfi/staking-contracts/pull/52)
+- [Fix audit finding `HAL-06 - UNUSED ERROR AND FUNCTIONS DECLARED`](https://github.com/kilnfi/staking-contracts/pull/56)
+- [Fix audit finding `HAL-08 - LIMIT INCREASE FOR DEACTIVATED OPERATOR IS POSSIBLE`](https://github.com/kilnfi/staking-contracts/pull/49)
+- [Remove unused `deposit(address)` method](https://github.com/kilnfi/staking-contracts/pull/57)
+
 ## v0.2.0 (July 8th 2022)
 
 ### :dizzy: Features
 
 - Add new `deposit()` method that works like the `receive()` fallback
 - Add new `Treasury` contract and rework fee dispatching
-- 
+
 ### Bug Fixes
 
 - Ensure fee recipients work by preventing `DELEGATECALL` -> `DELEGATECALL`, introduces new unupgradeable `FeeRecipient` and `ExecutionLayerFeeDispatcher` + `ConsensusLayerFeeDispatcher` upgradeable contracts
