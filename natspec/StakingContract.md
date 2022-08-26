@@ -61,6 +61,17 @@ function SIGNATURE_LENGTH() external view returns (uint256)
 |---|---|---|
 | _0 | uint256 | undefined |
 
+### acceptOwnership
+
+```solidity
+function acceptOwnership() external nonpayable
+```
+
+New admin must accept its role by calling this method
+
+*Only callable by new admin*
+
+
 ### activateOperator
 
 ```solidity
@@ -147,22 +158,6 @@ Explicit deposit method using msg.sender
 
 *A multiple of 32 ETH should be sent*
 
-
-### deposit
-
-```solidity
-function deposit(address _withdrawer) external payable
-```
-
-Explicit deposit method
-
-*A multiple of 32 ETH should be sent*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _withdrawer | address | The withdrawer address |
 
 ### getAdmin
 
@@ -326,6 +321,23 @@ Retrieve the Execution &amp; Consensus Layer Fee operator recipient for a given 
 |---|---|---|
 | _0 | address | undefined |
 
+### getPendingAdmin
+
+```solidity
+function getPendingAdmin() external view returns (address)
+```
+
+Get the new admin&#39;s address previously set for an ownership transfer
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | undefined |
+
 ### getTreasury
 
 ```solidity
@@ -453,22 +465,6 @@ Remove unfunded validators
 | _operatorIndex | uint256 | Operator Index |
 | _indexes | uint256[] | List of indexes to delete, in decreasing order |
 
-### setAdmin
-
-```solidity
-function setAdmin(address _newAdmin) external nonpayable
-```
-
-Set new admin
-
-*Only callable by admin*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _newAdmin | address | New Administrator address |
-
 ### setGlobalFee
 
 ```solidity
@@ -536,6 +532,22 @@ Set operator staking limits
 | _operatorIndex | uint256 | Operator Index |
 | _limit | uint256 | New staking limit |
 
+### setTreasury
+
+```solidity
+function setTreasury(address _newTreasury) external nonpayable
+```
+
+Set new treasury
+
+*Only callable by admin*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _newTreasury | address | New Treasury address |
+
 ### setWithdrawer
 
 ```solidity
@@ -552,6 +564,22 @@ Set withdrawer for public key
 |---|---|---|
 | _publicKey | bytes | Public key to change withdrawer |
 | _newWithdrawer | address | New withdrawer address |
+
+### transferOwnership
+
+```solidity
+function transferOwnership(address _newAdmin) external nonpayable
+```
+
+Set new admin
+
+*Only callable by admin*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _newAdmin | address | New Administrator address |
 
 ### withdraw
 
@@ -798,10 +826,10 @@ error InvalidValidatorCount()
 
 
 
-### NoOperators
+### MaximumOperatorCountAlreadyReached
 
 ```solidity
-error NoOperators()
+error MaximumOperatorCountAlreadyReached()
 ```
 
 
@@ -809,10 +837,10 @@ error NoOperators()
 
 
 
-### NotEnoughKeys
+### NoOperators
 
 ```solidity
-error NotEnoughKeys()
+error NoOperators()
 ```
 
 
