@@ -56,7 +56,7 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
     }
 
     /// @notice Performs a withdrawal on this contract's balance
-    function dispatch(bytes32 _publicKeyRoot) external payable {
+    function dispatch(bytes32) external payable {
         revert NotImplemented();
         /*
         uint256 balance = address(this).balance; // this has taken into account msg.value
