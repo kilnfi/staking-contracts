@@ -21,11 +21,12 @@ contract StakingContract {
     uint256 public constant DEPOSIT_SIZE = 32 ether;
     uint256 internal constant BASIS_POINTS = 10_000;
 
+    error Forbidden();
+    error InvalidFee();
     error Deactivated();
     error NoOperators();
     error InvalidCall();
     error Unauthorized();
-    error InvalidFee();
     error DepositFailure();
     error InvalidArgument();
     error UnsortedIndexes();
@@ -150,6 +151,12 @@ contract StakingContract {
         StakingContractStorageLib.setCLDispatcher(_clDispatcher);
         StakingContractStorageLib.setDepositContract(_depositContract);
         StakingContractStorageLib.setFeeRecipientImplementation(_feeRecipientImplementation);
+    }
+
+    /// @notice Changes the behavior of the withdrawer customization logic
+    /// @param _enabled True to allow users to customize the withdrawer
+    function setWithdrawerCustomizationEnabled(bool _enabled) external onlyAdmin {
+        StakingContractStorageLib.setWithdrawerCustomizationEnabled(_enabled);
     }
 
     /// @notice Retrieve system admin
@@ -330,6 +337,9 @@ contract StakingContract {
     /// @param _publicKey Public key to change withdrawer
     /// @param _newWithdrawer New withdrawer address
     function setWithdrawer(bytes calldata _publicKey, address _newWithdrawer) external {
+        if (!StakingContractStorageLib.getWithdrawerCustomizationEnabled()) {
+            revert Forbidden();
+        }
         bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
         StakingContractStorageLib.WithdrawersSlot storage withdrawers = StakingContractStorageLib.getWithdrawers();
 

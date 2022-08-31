@@ -839,11 +839,36 @@ contract StakingContractTest is DSTestPlus {
 
         assertEq(stakingContract.getWithdrawer(pk), user);
 
+        vm.startPrank(admin);
+        stakingContract.setWithdrawerCustomizationEnabled(true);
+        vm.stopPrank();
+
         vm.startPrank(user);
         stakingContract.setWithdrawer(pk, anotherUser);
         vm.stopPrank();
+    }
 
-        assertEq(stakingContract.getWithdrawer(pk), anotherUser);
+    function testSetWithdrawerForbidden(uint256 _userSalt, uint256 _anotherUserSalt) public {
+        address user = uf._new(_userSalt);
+        address anotherUser = uf._new(_anotherUserSalt);
+        vm.deal(user, 32 * 3 ether);
+
+        vm.startPrank(user);
+        (bool _success, ) = address(stakingContract).call{value: 32 * 3 ether}("");
+        assert(_success == true);
+        vm.stopPrank();
+
+        assertEq(user.balance, 0);
+
+        bytes
+            memory pk = hex"24046f7be8644e2b872363d5a4d58836deeb2deab6996a7e57f8c7583872786d1b81e378c4188ec3094236a31e31bd83";
+
+        assertEq(stakingContract.getWithdrawer(pk), user);
+
+        vm.startPrank(user);
+        vm.expectRevert(abi.encodeWithSignature("Forbidden()"));
+        stakingContract.setWithdrawer(pk, anotherUser);
+        vm.stopPrank();
     }
 
     function testSetWithdrawerUnauthorized(uint256 _userSalt, uint256 _anotherUserSalt) public {
@@ -857,6 +882,10 @@ contract StakingContractTest is DSTestPlus {
         vm.stopPrank();
 
         assertEq(user.balance, 0);
+
+        vm.startPrank(admin);
+        stakingContract.setWithdrawerCustomizationEnabled(true);
+        vm.stopPrank();
 
         bytes
             memory pk = hex"24046f7be8644e2b872363d5a4d58836deeb2deab6996a7e57f8c7583872786d1b81e378c4188ec3094236a31e31bd83";
@@ -2481,7 +2510,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
-        assert(bob.balance == 0.90 ether);
+        assert(bob.balance == 0.9 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.02 ether);
         assert(address(treasury).balance == 0.08 ether);
@@ -2529,13 +2558,13 @@ contract StakingContractOneValidatorTest is DSTestPlus {
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
-        assert(bob.balance == 0.90 ether);
+        assert(bob.balance == 0.9 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.02 ether);
         assert(address(treasury).balance == 0.08 ether);
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
-        assert(bob.balance == 1.80 ether);
+        assert(bob.balance == 1.8 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.04 ether);
         assert(address(treasury).balance == 0.16 ether);
@@ -3129,7 +3158,7 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
-        assert(bob.balance == 0.90 ether);
+        assert(bob.balance == 0.9 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.02 ether);
         assert(address(treasury).balance == 0.08 ether);
@@ -3177,13 +3206,13 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
         assert(elfrBob.code.length != 0);
-        assert(bob.balance == 0.90 ether);
+        assert(bob.balance == 0.9 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.02 ether);
         assert(address(treasury).balance == 0.08 ether);
         vm.deal(address(elfrBob), 1 ether);
         stakingContract.withdrawELFee(publicKey);
-        assert(bob.balance == 1.80 ether);
+        assert(bob.balance == 1.8 ether);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.04 ether);
         assert(address(treasury).balance == 0.16 ether);
