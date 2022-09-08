@@ -62,6 +62,7 @@ contract StakingContract {
     event ChangedOperatorAddresses(uint256 operatorIndex, address operatorAddress, address feeRecipientAddress);
     event DeactivatedOperator(uint256 _operatorIndex);
     event ActivatedOperator(uint256 _operatorIndex);
+    event SetWithdrawerCustomizationStatus(bool _status);
 
     /// @notice Ensures an initialisation call has been called only once per _version value
     /// @param _version The current initialisation value
@@ -167,6 +168,7 @@ contract StakingContract {
     /// @param _enabled True to allow users to customize the withdrawer
     function setWithdrawerCustomizationEnabled(bool _enabled) external onlyAdmin {
         StakingContractStorageLib.setWithdrawerCustomizationEnabled(_enabled);
+        emit SetWithdrawerCustomizationStatus(_enabled);
     }
 
     /// @notice Retrieve system admin

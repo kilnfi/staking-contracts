@@ -838,6 +838,8 @@ contract StakingContractTest is DSTestPlus {
         vm.stopPrank();
     }
 
+    event SetWithdrawerCustomizationStatus(bool _status);
+
     function testSetWithdrawer(uint256 _userSalt, uint256 _anotherUserSalt) public {
         address user = uf._new(_userSalt);
         address anotherUser = uf._new(_anotherUserSalt);
@@ -856,6 +858,8 @@ contract StakingContractTest is DSTestPlus {
         assertEq(stakingContract.getWithdrawer(pk), user);
 
         vm.startPrank(admin);
+        vm.expectEmit(true, true, true, true);
+        emit SetWithdrawerCustomizationStatus(true);
         stakingContract.setWithdrawerCustomizationEnabled(true);
         vm.stopPrank();
 
