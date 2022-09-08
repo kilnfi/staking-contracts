@@ -88,7 +88,7 @@ Initialize the contract by storing the staking contract and the public key in st
 ### Withdrawal
 
 ```solidity
-event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint256 rewards, uint256 nodeOperatorFee, uint256 treasuryFee)
+event Withdrawal(address indexed withdrawer, address indexed feeRecipient, bytes32 pubKeyRoot, uint256 rewards, uint256 nodeOperatorFee, uint256 treasuryFee)
 ```
 
 
@@ -101,6 +101,7 @@ event Withdrawal(address indexed withdrawer, address indexed feeRecipient, uint2
 |---|---|---|
 | withdrawer `indexed` | address | undefined |
 | feeRecipient `indexed` | address | undefined |
+| pubKeyRoot  | bytes32 | undefined |
 | rewards  | uint256 | undefined |
 | nodeOperatorFee  | uint256 | undefined |
 | treasuryFee  | uint256 | undefined |
