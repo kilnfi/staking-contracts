@@ -49,9 +49,19 @@ contract StakingContract {
         uint32 available;
     }
 
-    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey);
-    event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys);
+    event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes signature);
+    event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys, bytes signatures);
     event ValidatorKeyRemoved(uint256 indexed operatorIndex, bytes publicKey);
+    event ChangedWithdrawer(bytes publicKey, address newWithdrawer);
+    event ChangedOperatorLimit(uint256 operatorIndex, uint256 limit);
+    event ChangedTreasury(address newTreasury);
+    event ChangedGlobalFee(uint256 newGlobalFee);
+    event ChangedOperatorFee(uint256 newOperatorFee);
+    event ChangedAdmin(address newAdmin);
+    event NewOperator(address operatorAddress, address feeRecipientAddress, uint256 index);
+    event ChangedOperatorAddresses(uint256 operatorIndex, address operatorAddress, address feeRecipientAddress);
+    event DeactivatedOperator(uint256 _operatorIndex);
+    event ActivatedOperator(uint256 _operatorIndex);
 
     /// @notice Ensures an initialisation call has been called only once per _version value
     /// @param _version The current initialisation value
@@ -168,7 +178,8 @@ contract StakingContract {
     /// @dev Only callable by admin
     /// @param _newTreasury New Treasury address
     function setTreasury(address _newTreasury) external onlyAdmin {
-        return StakingContractStorageLib.setTreasury(_newTreasury);
+        emit ChangedTreasury(_newTreasury);
+        StakingContractStorageLib.setTreasury(_newTreasury);
     }
 
     /// @notice Retrieve system treasury
@@ -292,6 +303,7 @@ contract StakingContract {
             revert Unauthorized();
         }
         StakingContractStorageLib.setAdmin(newAdmin);
+        emit ChangedAdmin(newAdmin);
     }
 
     /// @notice Get the new admin's address previously set for an ownership transfer
@@ -313,7 +325,9 @@ contract StakingContract {
         newOperator.operator = _operatorAddress;
         newOperator.feeRecipient = _feeRecipientAddress;
         operators.value.push(newOperator);
-        return operators.value.length - 1;
+        uint256 operatorIndex = operators.value.length - 1;
+        emit NewOperator(_operatorAddress, _feeRecipientAddress, operatorIndex);
+        return operatorIndex;
     }
 
     /// @notice Set new operator addresses (operations and reward management)
@@ -330,6 +344,7 @@ contract StakingContract {
 
         operators.value[_operatorIndex].operator = _operatorAddress;
         operators.value[_operatorIndex].feeRecipient = _feeRecipientAddress;
+        emit ChangedOperatorAddresses(_operatorIndex, _operatorAddress, _feeRecipientAddress);
     }
 
     /// @notice Set withdrawer for public key
@@ -346,6 +361,8 @@ contract StakingContract {
         if (withdrawers.value[pubkeyRoot] != msg.sender) {
             revert Unauthorized();
         }
+
+        emit ChangedWithdrawer(_publicKey, _newWithdrawer);
 
         withdrawers.value[pubkeyRoot] = _newWithdrawer;
     }
@@ -368,6 +385,7 @@ contract StakingContract {
         }
         operators.value[_operatorIndex].limit = _limit;
         _updateAvailableValidatorCount(_operatorIndex);
+        emit ChangedOperatorLimit(_operatorIndex, _limit);
     }
 
     /// @notice Deactivates an operator and changes the fee recipient address and the staking limit
@@ -376,8 +394,11 @@ contract StakingContract {
     function deactivateOperator(uint256 _operatorIndex, address _temporaryFeeRecipient) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         operators.value[_operatorIndex].limit = 0;
+        emit ChangedOperatorLimit(_operatorIndex, 0);
         operators.value[_operatorIndex].deactivated = true;
+        emit DeactivatedOperator(_operatorIndex);
         operators.value[_operatorIndex].feeRecipient = _temporaryFeeRecipient;
+        emit ChangedOperatorAddresses(_operatorIndex, operators.value[_operatorIndex].operator, _temporaryFeeRecipient);
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
@@ -387,7 +408,9 @@ contract StakingContract {
     function activateOperator(uint256 _operatorIndex, address _newFeeRecipient) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         operators.value[_operatorIndex].deactivated = false;
+        emit ActivatedOperator(_operatorIndex);
         operators.value[_operatorIndex].feeRecipient = _newFeeRecipient;
+        emit ChangedOperatorAddresses(_operatorIndex, operators.value[_operatorIndex].operator, _newFeeRecipient);
     }
 
     /// @notice Change the Operator fee
@@ -397,6 +420,7 @@ contract StakingContract {
             revert InvalidFee();
         }
         StakingContractStorageLib.setOperatorFee(_operatorFee);
+        emit ChangedOperatorFee(_operatorFee);
     }
 
     /// @notice Change the Global fee
@@ -406,6 +430,7 @@ contract StakingContract {
             revert InvalidFee();
         }
         StakingContractStorageLib.setGlobalFee(_globalFee);
+        emit ChangedGlobalFee(_globalFee);
     }
 
     /// @notice Add new validator public keys and signatures
@@ -459,7 +484,7 @@ contract StakingContract {
             }
         }
 
-        emit ValidatorKeysAdded(_operatorIndex, _publicKeys);
+        emit ValidatorKeysAdded(_operatorIndex, _publicKeys, _signatures);
 
         _updateAvailableValidatorCount(_operatorIndex);
     }
@@ -513,6 +538,7 @@ contract StakingContract {
 
         if (_indexes[_indexes.length - 1] < operators.value[_operatorIndex].limit) {
             operators.value[_operatorIndex].limit = _indexes[_indexes.length - 1];
+            emit ChangedOperatorLimit(_operatorIndex, _indexes[_indexes.length - 1]);
         }
 
         _updateAvailableValidatorCount(_operatorIndex);
@@ -621,7 +647,7 @@ contract StakingContract {
             _depositValidator(publicKey, signature, withdrawalCredentials);
             bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
             StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = _withdrawer;
-            emit Deposit(msg.sender, _withdrawer, publicKey);
+            emit Deposit(msg.sender, _withdrawer, publicKey, signature);
             unchecked {
                 ++i;
             }

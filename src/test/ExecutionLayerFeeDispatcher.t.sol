@@ -40,6 +40,7 @@ contract ExecutionLayerFeeDispatcherTest {
     event Withdrawal(
         address indexed withdrawer,
         address indexed feeRecipient,
+        bytes32 pubKeyRoot,
         uint256 rewards,
         uint256 nodeOperatorFee,
         uint256 treasuryFee
@@ -110,7 +111,7 @@ contract ExecutionLayerFeeDispatcherTest {
         assert(treasury.balance == 0);
         assert(operator.balance == 0);
         vm.expectEmit(true, true, true, true);
-        emit Withdrawal(bob, operator, 0.9 ether, 0.02 ether, 0.08 ether);
+        emit Withdrawal(bob, operator, bytes32(0), 0.9 ether, 0.02 ether, 0.08 ether);
         eld.dispatch{value: 1 ether}(bytes32(0));
         assert(bob.balance == 0.9 ether);
         assert(treasury.balance == 0.08 ether);
@@ -123,14 +124,14 @@ contract ExecutionLayerFeeDispatcherTest {
         assert(treasury.balance == 0);
         assert(operator.balance == 0);
         vm.expectEmit(true, true, true, true);
-        emit Withdrawal(bob, operator, 0.9 ether, 0.02 ether, 0.08 ether);
+        emit Withdrawal(bob, operator, bytes32(0), 0.9 ether, 0.02 ether, 0.08 ether);
         eld.dispatch{value: 1 ether}(bytes32(0));
         assert(bob.balance == 0.9 ether);
         assert(treasury.balance == 0.08 ether);
         assert(operator.balance == 0.02 ether);
         vm.deal(address(this), 1 ether);
         vm.expectEmit(true, true, true, true);
-        emit Withdrawal(bob, operator, 0.9 ether, 0.02 ether, 0.08 ether);
+        emit Withdrawal(bob, operator, bytes32(0), 0.9 ether, 0.02 ether, 0.08 ether);
         eld.dispatch{value: 1 ether}(bytes32(0));
         assert(bob.balance == 1.8 ether);
         assert(treasury.balance == 0.16 ether);
@@ -144,7 +145,14 @@ contract ExecutionLayerFeeDispatcherTest {
         assert(treasury.balance == 0);
         assert(address(0).balance == 0);
         vm.expectEmit(true, true, true, true);
-        emit Withdrawal(address(0), operator, 0.9 ether, 0.02 ether, 0.08 ether);
+        emit Withdrawal(
+            address(0),
+            operator,
+            bytes32(keccak256(bytes("another public key"))),
+            0.9 ether,
+            0.02 ether,
+            0.08 ether
+        );
         eld.dispatch{value: 1 ether}(bytes32(keccak256(bytes("another public key"))));
         assert(bob.balance == 0);
         assert(operator.balance == 0.02 ether);

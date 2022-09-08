@@ -14,6 +14,7 @@ contract ExecutionLayerFeeDispatcher is IFeeDispatcher {
     event Withdrawal(
         address indexed withdrawer,
         address indexed feeRecipient,
+        bytes32 pubKeyRoot,
         uint256 rewards,
         uint256 nodeOperatorFee,
         uint256 treasuryFee
@@ -85,7 +86,14 @@ contract ExecutionLayerFeeDispatcher is IFeeDispatcher {
                 revert TreasuryReceiveError(data);
             }
         }
-        emit Withdrawal(withdrawer, operator, balance - globalFee, operatorFee, globalFee - operatorFee);
+        emit Withdrawal(
+            withdrawer,
+            operator,
+            _publicKeyRoot,
+            balance - globalFee,
+            operatorFee,
+            globalFee - operatorFee
+        );
     }
 
     /// @notice Retrieve the staking contract address
