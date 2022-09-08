@@ -26,6 +26,18 @@ library StakingContractStorageLib {
         }
     }
 
+    function getBool(bytes32 position) internal view returns (bool data) {
+        assembly {
+            data := sload(position)
+        }
+    }
+
+    function setBool(bytes32 position, bool data) internal {
+        assembly {
+            sstore(position, data)
+        }
+    }
+
     /* ========================================
     ===========================================
     =========================================*/
@@ -289,5 +301,20 @@ library StakingContractStorageLib {
 
     function setFeeRecipientImplementation(address _newFeeRecipientImplementation) internal {
         setAddress(FEE_RECIPIENT_IMPLEMENTATION_SLOT, _newFeeRecipientImplementation);
+    }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant WITHDRAWER_CUSTOMIZATION_ENABLED_SLOT =
+        keccak256("StakingContract.withdrawerCustomizationEnabled");
+
+    function getWithdrawerCustomizationEnabled() internal view returns (bool) {
+        return getBool(WITHDRAWER_CUSTOMIZATION_ENABLED_SLOT);
+    }
+
+    function setWithdrawerCustomizationEnabled(bool _enabled) internal {
+        setBool(WITHDRAWER_CUSTOMIZATION_ENABLED_SLOT, _enabled);
     }
 }
