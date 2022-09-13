@@ -1,5 +1,11 @@
 # Staking Contracts changelog
 
+## v0.2.2 (September 13th 2022)
+
+### :dizzy: Features
+
+- [feat: add missing events](https://github.com/kilnfi/staking-contracts/pull/61)
+
 ## v0.2.1 (August 26th 2022)
 
 ### :dizzy: Features
