@@ -40,6 +40,7 @@ contract ConsensusLayerFeeDispatcherTest {
     event Withdrawal(
         address indexed withdrawer,
         address indexed feeRecipient,
+        bytes32 pubKeyRoot,
         uint256 rewards,
         uint256 nodeOperatorFee,
         uint256 treasuryFee

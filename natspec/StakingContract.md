@@ -565,6 +565,22 @@ Set withdrawer for public key
 | _publicKey | bytes | Public key to change withdrawer |
 | _newWithdrawer | address | New withdrawer address |
 
+### setWithdrawerCustomizationEnabled
+
+```solidity
+function setWithdrawerCustomizationEnabled(bool _enabled) external nonpayable
+```
+
+Changes the behavior of the withdrawer customization logic
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _enabled | bool | True to allow users to customize the withdrawer |
+
 ### transferOwnership
 
 ```solidity
@@ -633,10 +649,158 @@ Withdraw the Execution Layer Fee for a given validator public key
 
 ## Events
 
+### ActivatedOperator
+
+```solidity
+event ActivatedOperator(uint256 _operatorIndex)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex  | uint256 | undefined |
+
+### ChangedAdmin
+
+```solidity
+event ChangedAdmin(address newAdmin)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newAdmin  | address | undefined |
+
+### ChangedGlobalFee
+
+```solidity
+event ChangedGlobalFee(uint256 newGlobalFee)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newGlobalFee  | uint256 | undefined |
+
+### ChangedOperatorAddresses
+
+```solidity
+event ChangedOperatorAddresses(uint256 operatorIndex, address operatorAddress, address feeRecipientAddress)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| operatorIndex  | uint256 | undefined |
+| operatorAddress  | address | undefined |
+| feeRecipientAddress  | address | undefined |
+
+### ChangedOperatorFee
+
+```solidity
+event ChangedOperatorFee(uint256 newOperatorFee)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newOperatorFee  | uint256 | undefined |
+
+### ChangedOperatorLimit
+
+```solidity
+event ChangedOperatorLimit(uint256 operatorIndex, uint256 limit)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| operatorIndex  | uint256 | undefined |
+| limit  | uint256 | undefined |
+
+### ChangedTreasury
+
+```solidity
+event ChangedTreasury(address newTreasury)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| newTreasury  | address | undefined |
+
+### ChangedWithdrawer
+
+```solidity
+event ChangedWithdrawer(bytes publicKey, address newWithdrawer)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| publicKey  | bytes | undefined |
+| newWithdrawer  | address | undefined |
+
+### DeactivatedOperator
+
+```solidity
+event DeactivatedOperator(uint256 _operatorIndex)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _operatorIndex  | uint256 | undefined |
+
 ### Deposit
 
 ```solidity
-event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey)
+event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes signature)
 ```
 
 
@@ -650,6 +814,41 @@ event Deposit(address indexed caller, address indexed withdrawer, bytes publicKe
 | caller `indexed` | address | undefined |
 | withdrawer `indexed` | address | undefined |
 | publicKey  | bytes | undefined |
+| signature  | bytes | undefined |
+
+### NewOperator
+
+```solidity
+event NewOperator(address operatorAddress, address feeRecipientAddress, uint256 index)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| operatorAddress  | address | undefined |
+| feeRecipientAddress  | address | undefined |
+| index  | uint256 | undefined |
+
+### SetWithdrawerCustomizationStatus
+
+```solidity
+event SetWithdrawerCustomizationStatus(bool _status)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _status  | bool | undefined |
 
 ### ValidatorKeyRemoved
 
@@ -671,7 +870,7 @@ event ValidatorKeyRemoved(uint256 indexed operatorIndex, bytes publicKey)
 ### ValidatorKeysAdded
 
 ```solidity
-event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys)
+event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys, bytes signatures)
 ```
 
 
@@ -684,6 +883,7 @@ event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys)
 |---|---|---|
 | operatorIndex `indexed` | uint256 | undefined |
 | publicKeys  | bytes | undefined |
+| signatures  | bytes | undefined |
 
 
 
@@ -737,6 +937,17 @@ error DuplicateValidatorKey(bytes)
 | Name | Type | Description |
 |---|---|---|
 | _0 | bytes | undefined |
+
+### Forbidden
+
+```solidity
+error Forbidden()
+```
+
+
+
+
+
 
 ### FundedValidatorDeletionAttempt
 
