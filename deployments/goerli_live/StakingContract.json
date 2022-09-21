@@ -1,5 +1,5 @@
 {
-  "address": "0xFABFf6e6f6ed3e602b2257008eA3ce1EC3539AF9",
+  "address": "0xe8Ff2a04837aac535199eEcB5ecE52b2735b3543",
   "abi": [
     {
       "inputs": [],
@@ -184,6 +184,11 @@
     },
     {
       "inputs": [],
+      "name": "Forbidden",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "FundedValidatorDeletionAttempt",
       "type": "error"
     },
@@ -267,6 +272,147 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_operatorIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "ActivatedOperator",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "ChangedAdmin",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newGlobalFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "ChangedGlobalFee",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "operatorIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "operatorAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "feeRecipientAddress",
+          "type": "address"
+        }
+      ],
+      "name": "ChangedOperatorAddresses",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newOperatorFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "ChangedOperatorFee",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "operatorIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "limit",
+          "type": "uint256"
+        }
+      ],
+      "name": "ChangedOperatorLimit",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newTreasury",
+          "type": "address"
+        }
+      ],
+      "name": "ChangedTreasury",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "publicKey",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newWithdrawer",
+          "type": "address"
+        }
+      ],
+      "name": "ChangedWithdrawer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_operatorIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "DeactivatedOperator",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "internalType": "address",
           "name": "caller",
@@ -283,9 +429,53 @@
           "internalType": "bytes",
           "name": "publicKey",
           "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "signature",
+          "type": "bytes"
         }
       ],
       "name": "Deposit",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "operatorAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "feeRecipientAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "NewOperator",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "_status",
+          "type": "bool"
+        }
+      ],
+      "name": "SetWithdrawerCustomizationStatus",
       "type": "event"
     },
     {
@@ -320,6 +510,12 @@
           "indexed": false,
           "internalType": "bytes",
           "name": "publicKeys",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "signatures",
           "type": "bytes"
         }
       ],
@@ -895,6 +1091,19 @@
     {
       "inputs": [
         {
+          "internalType": "bool",
+          "name": "_enabled",
+          "type": "bool"
+        }
+      ],
+      "name": "setWithdrawerCustomizationEnabled",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "_newAdmin",
           "type": "address"
@@ -966,52 +1175,52 @@
       "type": "constructor"
     }
   ],
-  "transactionHash": "0x68f55b5e08089000625fef7b009a4f752aaae649c0a380397841227a96c5f718",
+  "transactionHash": "0x4fe4f74d8e46b177403b71e8119c8d90f598d30b9ec690945d71e44eb5ac96f1",
   "receipt": {
     "to": null,
-    "from": "0x92D7d6DADe15fcF369534cEb8CD1A27f97185ab3",
-    "contractAddress": "0xFABFf6e6f6ed3e602b2257008eA3ce1EC3539AF9",
-    "transactionIndex": 33,
+    "from": "0xB58ef7246fA10aC1F1de5F36F86ec0328310a0Ca",
+    "contractAddress": "0xe8Ff2a04837aac535199eEcB5ecE52b2735b3543",
+    "transactionIndex": 16,
     "gasUsed": "890236",
-    "logsBloom": "0x00000000000000000000000000000000400000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000010000000000000000080400000000020000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    "blockHash": "0x7ef4cd037726387dd9593e2c2745150e96a5a5424b68f1dc96c6a6e2b05ac2d7",
-    "transactionHash": "0x68f55b5e08089000625fef7b009a4f752aaae649c0a380397841227a96c5f718",
+    "logsBloom": "0x00000000000000000000000000000000400000080000000000000000000000000000000000000000000000000000000000040040000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000008000000000001000000000000000000000800000000000000000000000000001000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xc7a4c9cc122115baefe04a46acea0372c92e09afb32e3bda3b3810361dd69fef",
+    "transactionHash": "0x4fe4f74d8e46b177403b71e8119c8d90f598d30b9ec690945d71e44eb5ac96f1",
     "logs": [
       {
-        "transactionIndex": 33,
-        "blockNumber": 7476027,
-        "transactionHash": "0x68f55b5e08089000625fef7b009a4f752aaae649c0a380397841227a96c5f718",
-        "address": "0xFABFf6e6f6ed3e602b2257008eA3ce1EC3539AF9",
+        "transactionIndex": 16,
+        "blockNumber": 7633620,
+        "transactionHash": "0x4fe4f74d8e46b177403b71e8119c8d90f598d30b9ec690945d71e44eb5ac96f1",
+        "address": "0xe8Ff2a04837aac535199eEcB5ecE52b2735b3543",
         "topics": [
           "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b",
-          "0x000000000000000000000000e8129e75a5324d7c95aa36dd4babf4fed825f5c3"
+          "0x0000000000000000000000007f14a8048de0c3baae292177aa8b8fe55b32e704"
         ],
         "data": "0x",
-        "logIndex": 99,
-        "blockHash": "0x7ef4cd037726387dd9593e2c2745150e96a5a5424b68f1dc96c6a6e2b05ac2d7"
+        "logIndex": 20,
+        "blockHash": "0xc7a4c9cc122115baefe04a46acea0372c92e09afb32e3bda3b3810361dd69fef"
       },
       {
-        "transactionIndex": 33,
-        "blockNumber": 7476027,
-        "transactionHash": "0x68f55b5e08089000625fef7b009a4f752aaae649c0a380397841227a96c5f718",
-        "address": "0xFABFf6e6f6ed3e602b2257008eA3ce1EC3539AF9",
+        "transactionIndex": 16,
+        "blockNumber": 7633620,
+        "transactionHash": "0x4fe4f74d8e46b177403b71e8119c8d90f598d30b9ec690945d71e44eb5ac96f1",
+        "address": "0xe8Ff2a04837aac535199eEcB5ecE52b2735b3543",
         "topics": [
           "0x7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f"
         ],
         "data": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000003b9b2c07eff60ac828117c997e04c61890ad2ed7",
-        "logIndex": 100,
-        "blockHash": "0x7ef4cd037726387dd9593e2c2745150e96a5a5424b68f1dc96c6a6e2b05ac2d7"
+        "logIndex": 21,
+        "blockHash": "0xc7a4c9cc122115baefe04a46acea0372c92e09afb32e3bda3b3810361dd69fef"
       }
     ],
-    "blockNumber": 7476027,
-    "cumulativeGasUsed": "10422347",
+    "blockNumber": 7633620,
+    "cumulativeGasUsed": "5292552",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0xe8129e75a5324D7C95Aa36Dd4BaBF4fed825f5c3",
+    "0x7f14a8048De0c3BaAe292177Aa8b8fe55b32E704",
     "0x3B9B2C07eff60aC828117C997E04c61890Ad2Ed7",
-    "0x08b3a073000000000000000000000000c4b8469165d0a0e0939500bdece7c0cd3415a9fb0000000000000000000000005137b5540730d44326fbb237184425a9fb311ddf000000000000000000000000ff50ed3d0ec03ac01d4c79aad74928bff48a7b2b000000000000000000000000800e3f26134488f6d28dda1af6870dbf70790aa30000000000000000000000008daa332f78e9261969cdab643f057608dbe711210000000000000000000000008909bee5b1cb83c42e7ff192e9da34074104a4bb00000000000000000000000000000000000000000000000000000000000003e800000000000000000000000000000000000000000000000000000000000007d0"
+    "0x08b3a073000000000000000000000000c4b8469165d0a0e0939500bdece7c0cd3415a9fb0000000000000000000000005137b5540730d44326fbb237184425a9fb311ddf000000000000000000000000ff50ed3d0ec03ac01d4c79aad74928bff48a7b2b000000000000000000000000639d818639b85a1892bfbb40bd724b4ddea43c0c00000000000000000000000050dba42662fd69f5fd9236540aad9f99f7f6b3b20000000000000000000000001acd717adf8a3a1e4c23c6510cfbe76834e3f1bf00000000000000000000000000000000000000000000000000000000000003e800000000000000000000000000000000000000000000000000000000000007d0"
   ],
   "numDeployments": 1,
   "solcInputHash": "8fad9248104c7377e7ee874218595b1c",
@@ -1024,14 +1233,14 @@
       "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
       "0x5137B5540730d44326fBb237184425A9FB311DdF",
       "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b",
-      "0x800E3F26134488f6d28DDA1Af6870dbF70790aa3",
-      "0x8DAA332F78e9261969cdAB643F057608Dbe71121",
-      "0x8909BEE5B1CB83c42e7ff192e9dA34074104a4bb",
+      "0x639d818639B85a1892Bfbb40Bd724b4Ddea43C0C",
+      "0x50Dba42662FD69f5Fd9236540aaD9f99f7F6b3b2",
+      "0x1AcD717aDF8A3A1e4c23C6510cfbE76834E3f1bf",
       1000,
       2000
     ]
   },
-  "implementation": "0xe8129e75a5324D7C95Aa36Dd4BaBF4fed825f5c3",
+  "implementation": "0x7f14a8048De0c3BaAe292177Aa8b8fe55b32E704",
   "devdoc": {
     "author": "SkillZ",
     "kind": "dev",
