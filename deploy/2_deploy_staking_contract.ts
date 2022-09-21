@@ -71,8 +71,8 @@ const func: DeployFunction = async function ({
 			elfdDeployment.address,
 			clfdDeployment.address,
 			feeRecipientDeployment.address,
-			1000,
-			2000
+			700,
+			0	
 				  ]
 			  }
 		  }
