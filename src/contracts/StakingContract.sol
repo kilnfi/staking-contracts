@@ -102,7 +102,7 @@ contract StakingContract {
 
     /// @notice Ensures that the caller is the operator fee recipient
     modifier onlyOperatorFeeRecipient(uint256 _operatorIndex) {
-        StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
+        StakingContractStorageLib.OperatorInfo storage operatorInfo = StakingContractStorageLib.getOperators().value[
             _operatorIndex
         ];
 
@@ -251,7 +251,7 @@ contract StakingContract {
         if (_operatorIndex < operators.value.length) {
             StakingContractStorageLib.ValidatorsFundingInfo memory _operatorInfo = StakingContractStorageLib
                 .getValidatorsFundingInfo(_operatorIndex);
-            StakingContractStorageLib.OperatorInfo memory _operator = operators.value[_operatorIndex];
+            StakingContractStorageLib.OperatorInfo storage _operator = operators.value[_operatorIndex];
 
             (operatorAddress, feeRecipientAddress, limit, keys, deactivated) = (
                 _operator.operator,
@@ -577,7 +577,7 @@ contract StakingContract {
     /// ██ ██   ████    ██    ███████ ██   ██ ██   ████ ██   ██ ███████
 
     function _onlyActiveOperator(uint256 _operatorIndex) internal view {
-        StakingContractStorageLib.OperatorInfo memory operatorInfo = StakingContractStorageLib.getOperators().value[
+        StakingContractStorageLib.OperatorInfo storage operatorInfo = StakingContractStorageLib.getOperators().value[
             _operatorIndex
         ];
 

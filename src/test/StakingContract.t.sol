@@ -72,6 +72,41 @@ contract StakingContractTest is DSTestPlus {
     event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKey, bytes signatures);
     event ValidatorKeyRemoved(uint256 indexed operatorIndex, bytes publicKey);
 
+    string internal checkpointLabel;
+    uint256 internal checkpointGasLeft = 1; // Start the slot warm.
+    uint256 internal lastMeasure;
+
+    function startMeasure(string memory label) internal virtual {
+        checkpointLabel = label;
+
+        checkpointGasLeft = gasleft();
+    }
+
+    function stopMeasure() internal virtual {
+        uint256 checkpointGasLeft2 = gasleft();
+
+        // Subtract 100 to account for the warm SLOAD in startMeasuringGas.
+        uint256 gasDelta = checkpointGasLeft - checkpointGasLeft2 - 100;
+
+        lastMeasure = gasDelta;
+    }
+
+
+    function testLoopedDeposit() external {
+        for (uint256 idx = 0; idx < 250; ++idx) {
+            vm.startPrank(operatorOne);
+            bytes memory pubkey = genBytes(25 * 48);
+            bytes memory sigs = genBytes(25 * 96);
+            startMeasure("");
+            stakingContract.addValidators(0, 25, pubkey, sigs);
+            stopMeasure();
+            uint256 gasCost = lastMeasure;
+            if (gasCost > 6000000) {
+                revert("GAS INCREASING");
+            }
+            vm.stopPrank();
+        }
+    }
     function genBytes(uint256 len) internal returns (bytes memory) {
         bytes memory res = "";
         while (res.length < len) {
