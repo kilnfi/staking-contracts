@@ -2,11 +2,21 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 import { getContractAddress } from "ethers/lib/utils";
 
+const getFeeBps = (network: string): number => {
+	switch (network) {
+		case 'goerli_vault': return 700
+		case 'goerli_live': return 700
+		case 'mainnet_vault': return 700
+		case 'mainnet_live': return 800
+		default: return 700
+	}
+}
 
 const func: DeployFunction = async function ({
 	deployments,
 	getNamedAccounts,
 	ethers,
+	network
   }: HardhatRuntimeEnvironment) {
 	const { deployer, proxyAdmin, admin, depositContract, treasury } = await getNamedAccounts();
 
@@ -71,7 +81,7 @@ const func: DeployFunction = async function ({
 			elfdDeployment.address,
 			clfdDeployment.address,
 			feeRecipientDeployment.address,
-			700,
+			getFeeBps(network.name),
 			0	
 				  ]
 			  }
