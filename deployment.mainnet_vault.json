@@ -10,11 +10,12 @@
         "ExecutionLayerFeeDispatcher_Proxy": "0xdC10D11E7EF200d4cE5121940Eed51aBb0360a73",
         "FeeRecipient": "0xD1423C8DBd92Cf0b6087150818Cd9e3898f85287",
         "StakingContract": "0x746d8A8FCAB7f829Fa500504f60D89C5CC1EA973",
+        "StakingContract_1.1_Implementation": "0x4533C388c1371c31Ff27cc56Ca8c6fE7FDAf97ae",
         "StakingContract_Implementation": "0xa635F2c1b8c4a54e653F93FCeca5E9983A6A5D5D",
         "StakingContract_Proxy": "0x746d8A8FCAB7f829Fa500504f60D89C5CC1EA973"
     },
     "namedAccounts": {
-        "deployer": "0xdBbC280923D0D20A1DD5d0a496D5A633A9D966dA",
+        "deployer": "0x81F5f7bf0AFE2aFb9D7d6a21F4FeA1FB888E79CF",
         "proxyAdmin": "0x3c69D70ea8487a7E64127a6Eae194ada4C144318",
         "admin": "0xD3269B4daBd8AA336155F741C534CBAC87526A8E",
         "depositContract": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
