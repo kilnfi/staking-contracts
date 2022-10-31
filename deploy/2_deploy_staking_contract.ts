@@ -1,6 +1,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 import { getContractAddress } from "ethers/lib/utils";
+import { isDeployed } from '../ts_utils/index';
 
 const getFeeBps = (network: string): number => {
 	switch (network) {
@@ -94,5 +95,16 @@ const func: DeployFunction = async function ({
 	  }
 
 };
+
+func.skip = async function ({ deployments }: HardhatRuntimeEnvironment): Promise<boolean> {
+	const shouldSkip = 
+		await isDeployed("ConsensusLayerFeeDispatcher_Proxy", deployments) &&
+		await isDeployed("ExecutionLayerFeeDispatcher_Proxy", deployments) &&
+		await isDeployed("StakingContract_Proxy", deployments);
+	if (shouldSkip) {
+	  console.log("Skipped");
+	}
+	return shouldSkip;
+  };
 
 export default func;
