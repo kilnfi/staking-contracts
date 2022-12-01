@@ -91,7 +91,6 @@ contract StakingContractTest is DSTestPlus {
         lastMeasure = gasDelta;
     }
 
-
     function testLoopedDeposit() external {
         for (uint256 idx = 0; idx < 250; ++idx) {
             vm.startPrank(operatorOne);
@@ -107,6 +106,7 @@ contract StakingContractTest is DSTestPlus {
             vm.stopPrank();
         }
     }
+
     function genBytes(uint256 len) internal returns (bytes memory) {
         bytes memory res = "";
         while (res.length < len) {
