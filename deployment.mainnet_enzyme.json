@@ -1,0 +1,23 @@
+{
+    "name": "mainnet_enzyme",
+    "chainId": "1",
+    "contracts": {
+        "ConsensusLayerFeeDispatcher": "0x1c4Ad85fF36D76172Eb8015a3B36858197bb1320",
+        "ConsensusLayerFeeDispatcher_Implementation": "0xb34247b68cda0C99946aCE516751d6D64924d9Ef",
+        "ConsensusLayerFeeDispatcher_Proxy": "0x1c4Ad85fF36D76172Eb8015a3B36858197bb1320",
+        "ExecutionLayerFeeDispatcher": "0x5db5856C0f760df5BA45E7FF58EFeF2100C7D27B",
+        "ExecutionLayerFeeDispatcher_Implementation": "0x812F1D3EAfFB39968D458B2dEc7812B379d45561",
+        "ExecutionLayerFeeDispatcher_Proxy": "0x5db5856C0f760df5BA45E7FF58EFeF2100C7D27B",
+        "FeeRecipient": "0xc7aB80841256AFD48a1e6e9b29F8Bc304A9Ed8f2",
+        "StakingContract": "0x0816DF553a89c4bFF7eBfD778A9706a989Dd3Ce3",
+        "StakingContract_Implementation": "0xc4F9BBCede27cd40291a6a551c05254FFa4982ca",
+        "StakingContract_Proxy": "0x0816DF553a89c4bFF7eBfD778A9706a989Dd3Ce3"
+    },
+    "namedAccounts": {
+        "deployer": "0x81F5f7bf0AFE2aFb9D7d6a21F4FeA1FB888E79CF",
+        "proxyAdmin": "0xb270FE91e8E4b80452fBF1b4704208792A350f53",
+        "admin": "0x45DAD754897ef0b2780349AD7c7000c72717b24E",
+        "depositContract": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+        "treasury": "0x1ad1fc9964c551f456238Dd88D6a38344B5319D7"
+    }
+}

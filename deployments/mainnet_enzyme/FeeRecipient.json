@@ -1,0 +1,169 @@
+{
+  "address": "0xc7aB80841256AFD48a1e6e9b29F8Bc304A9Ed8f2",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "AlreadyInitialized",
+      "type": "error"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "inputs": [],
+      "name": "getPublicKeyRoot",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getWithdrawer",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_dispatcher",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_publicKeyRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "init",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "transactionHash": "0xf4fd43dba3de73b60fff835d777c7fdbfc14eb3719714b42b4ee57c7626c21f3",
+  "receipt": {
+    "to": null,
+    "from": "0x81F5f7bf0AFE2aFb9D7d6a21F4FeA1FB888E79CF",
+    "contractAddress": "0xc7aB80841256AFD48a1e6e9b29F8Bc304A9Ed8f2",
+    "transactionIndex": 85,
+    "gasUsed": "198883",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x52d8fee05bc723be580ddd6566d3788b71efe317f7f8e57176793030ec7fbe21",
+    "transactionHash": "0xf4fd43dba3de73b60fff835d777c7fdbfc14eb3719714b42b4ee57c7626c21f3",
+    "logs": [],
+    "blockNumber": 16090811,
+    "cumulativeGasUsed": "6448030",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "7c01cac1856570acc6f28ecd3fd2c735",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.13+commit.abaa5c0e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"AlreadyInitialized\",\"type\":\"error\"},{\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"inputs\":[],\"name\":\"getPublicKeyRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getWithdrawer\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_dispatcher\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"_publicKeyRoot\",\"type\":\"bytes32\"}],\"name\":\"init\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"init(address,bytes32)\":{\"params\":{\"_dispatcher\":\"Address that will handle the fee dispatching\",\"_publicKeyRoot\":\"Public Key root assigned to this receiver\"}},\"withdraw()\":{\"details\":\"Can be called by any wallet as recipients are not parameters\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getPublicKeyRoot()\":{\"notice\":\"Retrieve the assigned public key root\"},\"getWithdrawer()\":{\"notice\":\"retrieve the assigned withdrawer\"},\"init(address,bytes32)\":{\"notice\":\"Initializes the receiver\"},\"withdraw()\":{\"notice\":\"Triggers a withdrawal by sending its funds + its public key root to the dispatcher\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/contracts/FeeRecipient.sol\":\"FeeRecipient\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"src/contracts/FeeRecipient.sol\":{\"content\":\"//SPDX-License-Identifier: BUSL-1.1\\npragma solidity >=0.8.10;\\n\\nimport \\\"./interfaces/IFeeDispatcher.sol\\\";\\n\\ncontract FeeRecipient {\\n    /// @notice Constructor replay prevention\\n    bool internal initialized;\\n    /// @notice Address where funds are sent to be dispatched\\n    IFeeDispatcher internal dispatcher;\\n    /// @notice Public Key root assigned to this receiver\\n    bytes32 internal publicKeyRoot;\\n\\n    error AlreadyInitialized();\\n\\n    /// @notice Initializes the receiver\\n    /// @param _dispatcher Address that will handle the fee dispatching\\n    /// @param _publicKeyRoot Public Key root assigned to this receiver\\n    function init(address _dispatcher, bytes32 _publicKeyRoot) external {\\n        if (initialized) {\\n            revert AlreadyInitialized();\\n        }\\n        initialized = true;\\n        dispatcher = IFeeDispatcher(_dispatcher);\\n        publicKeyRoot = _publicKeyRoot;\\n    }\\n\\n    /// @notice Empty calldata fallback\\n    receive() external payable {}\\n\\n    /// @notice Non-empty calldata fallback\\n    fallback() external payable {}\\n\\n    /// @notice Triggers a withdrawal by sending its funds + its public key root to the dispatcher\\n    /// @dev Can be called by any wallet as recipients are not parameters\\n    function withdraw() external {\\n        dispatcher.dispatch{value: address(this).balance}(publicKeyRoot);\\n    }\\n\\n    /// @notice Retrieve the assigned public key root\\n    function getPublicKeyRoot() external view returns (bytes32) {\\n        return publicKeyRoot;\\n    }\\n\\n    /// @notice retrieve the assigned withdrawer\\n    function getWithdrawer() external view returns (address) {\\n        return dispatcher.getWithdrawer(publicKeyRoot);\\n    }\\n}\\n\",\"keccak256\":\"0xf788bf2e0e2112b0322904479f0704ac8fb23601f760326fec7f564ec0101090\",\"license\":\"BUSL-1.1\"},\"src/contracts/interfaces/IFeeDispatcher.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity >=0.8.10;\\n\\ninterface IFeeDispatcher {\\n    function dispatch(bytes32 _publicKeyRoot) external payable;\\n\\n    function getWithdrawer(bytes32 _publicKeyRoot) external view returns (address);\\n}\\n\",\"keccak256\":\"0x75efa5a697b32235188a62f730b7ab2a2fc5c422a93010aa0b18e93ea1bade45\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506102a3806100206000396000f3fe6080604052600436106100405760003560e01c80632cc0b254146100495780633ccfd60b146100695780637d38d21f1461007e5780637f763702146100b057005b3661004757005b005b34801561005557600080fd5b5061004761006436600461021d565b6100ce565b34801561007557600080fd5b50610047610120565b34801561008a57600080fd5b5061009361018a565b6040516001600160a01b0390911681526020015b60405180910390f35b3480156100bc57600080fd5b506001546040519081526020016100a7565b60005460ff16156100f15760405162dc149f60e41b815260040160405180910390fd5b600080546001600160a01b03909316610100026001600160a81b03199093169290921760019081179092559055565b600054600154604051630ce1206560e41b815260048101919091526101009091046001600160a01b03169063ce1206509047906024016000604051808303818588803b15801561016f57600080fd5b505af1158015610183573d6000803e3d6000fd5b5050505050565b600080546001546040516313ef480b60e11b815260048101919091526101009091046001600160a01b0316906327de901690602401602060405180830381865afa1580156101dc573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102009190610249565b905090565b6001600160a01b038116811461021a57600080fd5b50565b6000806040838503121561023057600080fd5b823561023b81610205565b946020939093013593505050565b60006020828403121561025b57600080fd5b815161026681610205565b939250505056fea26469706673582212208eb3032a325d9c07889449598ba3999e3438d216376d0fb3031dbfbf383d522964736f6c634300080d0033",
+  "deployedBytecode": "0x6080604052600436106100405760003560e01c80632cc0b254146100495780633ccfd60b146100695780637d38d21f1461007e5780637f763702146100b057005b3661004757005b005b34801561005557600080fd5b5061004761006436600461021d565b6100ce565b34801561007557600080fd5b50610047610120565b34801561008a57600080fd5b5061009361018a565b6040516001600160a01b0390911681526020015b60405180910390f35b3480156100bc57600080fd5b506001546040519081526020016100a7565b60005460ff16156100f15760405162dc149f60e41b815260040160405180910390fd5b600080546001600160a01b03909316610100026001600160a81b03199093169290921760019081179092559055565b600054600154604051630ce1206560e41b815260048101919091526101009091046001600160a01b03169063ce1206509047906024016000604051808303818588803b15801561016f57600080fd5b505af1158015610183573d6000803e3d6000fd5b5050505050565b600080546001546040516313ef480b60e11b815260048101919091526101009091046001600160a01b0316906327de901690602401602060405180830381865afa1580156101dc573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102009190610249565b905090565b6001600160a01b038116811461021a57600080fd5b50565b6000806040838503121561023057600080fd5b823561023b81610205565b946020939093013593505050565b60006020828403121561025b57600080fd5b815161026681610205565b939250505056fea26469706673582212208eb3032a325d9c07889449598ba3999e3438d216376d0fb3031dbfbf383d522964736f6c634300080d0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "init(address,bytes32)": {
+        "params": {
+          "_dispatcher": "Address that will handle the fee dispatching",
+          "_publicKeyRoot": "Public Key root assigned to this receiver"
+        }
+      },
+      "withdraw()": {
+        "details": "Can be called by any wallet as recipients are not parameters"
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "getPublicKeyRoot()": {
+        "notice": "Retrieve the assigned public key root"
+      },
+      "getWithdrawer()": {
+        "notice": "retrieve the assigned withdrawer"
+      },
+      "init(address,bytes32)": {
+        "notice": "Initializes the receiver"
+      },
+      "withdraw()": {
+        "notice": "Triggers a withdrawal by sending its funds + its public key root to the dispatcher"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 496,
+        "contract": "src/contracts/FeeRecipient.sol:FeeRecipient",
+        "label": "initialized",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 500,
+        "contract": "src/contracts/FeeRecipient.sol:FeeRecipient",
+        "label": "dispatcher",
+        "offset": 1,
+        "slot": "0",
+        "type": "t_contract(IFeeDispatcher)598"
+      },
+      {
+        "astId": 503,
+        "contract": "src/contracts/FeeRecipient.sol:FeeRecipient",
+        "label": "publicKeyRoot",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_bytes32"
+      }
+    ],
+    "types": {
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_contract(IFeeDispatcher)598": {
+        "encoding": "inplace",
+        "label": "contract IFeeDispatcher",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}
