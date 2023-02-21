@@ -2,6 +2,7 @@
 pragma solidity >=0.8.10;
 
 import "forge-std/Vm.sol";
+import "forge-std/Test.sol";
 import "./UserFactory.sol";
 import "../contracts/Treasury.sol";
 import "../contracts/StakingContract.sol";
@@ -2834,9 +2835,7 @@ contract StakingContractOneValidatorTest is DSTestPlus {
     }
 }
 
-contract StakingContractBehindProxyTest is DSTestPlus {
-    Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
-
+contract StakingContractBehindProxyTest is Test {
     Treasury internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
@@ -2850,6 +2849,8 @@ contract StakingContractBehindProxyTest is DSTestPlus {
     ExecutionLayerFeeDispatcher internal eld;
     ConsensusLayerFeeDispatcher internal cld;
     FeeRecipient internal feeRecipientImpl;
+
+    event ExitRequest(address caller, bytes pubkey);
 
     function setUp() public {
         uf = new UserFactory();
@@ -3481,5 +3482,73 @@ contract StakingContractBehindProxyTest is DSTestPlus {
         assert(feeRecipientOne.balance == 0.04 ether);
         assert(address(treasury).balance == 0.16 ether);
         */
+    }
+
+    function testRequestValidatorsExits_OneValidator() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        vm.expectEmit(true, true, true, true);
+        emit ExitRequest(bob, publicKey);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+    }
+
+    function testRequestValidatorsExits_TwoValidators() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        bytes
+            memory publicKey2 = hex"b0ce3fa164aae897adca509ed44429e7b1f91b7c46ddbe199cee848e09b1ccbb9736b78b68aacff1011b7266fe11e060";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey2) == bob);
+        vm.stopPrank();
+
+        bytes memory publicKeys = BytesLib.concat(publicKey, publicKey2);
+
+        vm.expectEmit(true, true, true, true);
+        emit ExitRequest(bob, publicKey);
+        vm.expectEmit(true, true, true, true);
+        emit ExitRequest(bob, publicKey2);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKeys);
+    }
+
+    function testRequestValidatorsExits_WrongWithdrawer() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+        vm.prank(address(1337));
+        stakingContract.requestValidatorsExit(publicKey);
+    }
+
+    function testRequestValidatorsExits_WrongPublicKeys() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        vm.expectRevert(abi.encodeWithSignature("InvalidPublicKeys()"));
+        vm.prank(bob);
+        bytes
+            memory corruptedPublicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd43607";
+        stakingContract.requestValidatorsExit(corruptedPublicKey);
     }
 }
