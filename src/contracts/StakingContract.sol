@@ -63,6 +63,7 @@ contract StakingContract {
     event DeactivatedOperator(uint256 _operatorIndex);
     event ActivatedOperator(uint256 _operatorIndex);
     event SetWithdrawerCustomizationStatus(bool _status);
+    event ExitRequest(address caller, bytes pubkey);
 
     /// @notice Ensures an initialisation call has been called only once per _version value
     /// @param _version The current initialisation value
@@ -568,6 +569,22 @@ contract StakingContract {
     function withdraw(bytes calldata _publicKey) external {
         _deployAndWithdraw(_publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
         _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
+    }
+
+    function requestValidatorsExit(bytes calldata _publicKeys) external {
+        if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
+            revert InvalidPublicKeys();
+        }
+        uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
+        bytes[] memory keys = new bytes[](keyCount);
+        for (uint256 i = 0; i < keyCount; i++) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+            address withdrawer = _getWithdrawer(_getPubKeyRoot(publicKey));
+            if (msg.sender != withdrawer) {
+                revert Unauthorized();
+            }
+            emit ExitRequest(withdrawer, publicKey);
+        }
     }
 
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
