@@ -23,5 +23,4 @@
     "docs": "hardhat compile && sol2uml ./src/contracts -o ./docs/components.svg",
     "hh": "hardhat"
   }
-
 }
