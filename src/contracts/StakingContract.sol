@@ -547,6 +547,52 @@ contract StakingContract {
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
+    /// @notice Withdraw the Execution Layer Fee for given validators public keys
+    /// @dev Funds are sent to the withdrawer account
+    /// @dev This method is public on purpose
+    /// @param _publicKeys Validators to withdraw Execution Layer Fees from
+    function batchWithdrawELFee(bytes calldata _publicKeys) external {
+        if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
+            revert InvalidPublicKeys();
+        }
+        uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
+        for (uint256 i = 0; i < keyCount; i++) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+            _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
+        }
+    }
+
+    /// @notice Withdraw the Consensus Layer Fee for given validators public keys
+    /// @dev Funds are sent to the withdrawer account
+    /// @dev This method is public on purpose
+    /// @param _publicKeys Validators to withdraw Consensus Layer Fees from
+    function batchWithdrawCLFee(bytes calldata _publicKeys) external {
+        if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
+            revert InvalidPublicKeys();
+        }
+        uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
+        for (uint256 i = 0; i < keyCount; i++) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+            _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
+        }
+    }
+
+    /// @notice Withdraw both Consensus and Execution Layer Fees for given validators public keys
+    /// @dev Funds are sent to the withdrawer account
+    /// @dev This method is public on purpose
+    /// @param _publicKeys Validators to withdraw fees from
+    function batchWithdraw(bytes calldata _publicKeys) external {
+        if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
+            revert InvalidPublicKeys();
+        }
+        uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
+        for (uint256 i = 0; i < keyCount; i++) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+            _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
+            _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
+        }
+    }
+
     /// @notice Withdraw the Execution Layer Fee for a given validator public key
     /// @dev Funds are sent to the withdrawer account
     /// @dev This method is public on purpose
@@ -1029,7 +1075,7 @@ contract StakingContract {
     /// @param _prefix Prefix used to generate multiple receivers per public key
     /// @param _dispatcher Address of the dispatcher contract
     function _deployAndWithdraw(
-        bytes calldata _publicKey,
+        bytes memory _publicKey,
         uint256 _prefix,
         address _dispatcher
     ) internal {
