@@ -581,6 +581,7 @@ contract StakingContract {
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
+            _setLastWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
             }
@@ -648,6 +649,33 @@ contract StakingContract {
         _deployAndWithdraw(_publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
         _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
         _setLastWithdrawal(_getPubKeyRoot(_publicKey), block.timestamp);
+    }
+
+    /// @notice Utility to set timestamp for a list of validator for migration purposes
+    /// @dev Reverts if migration is done or if lists are of unequal length
+    /// @param _publicKeys Validator public keys
+    /// @param timestamps Timestamps to set
+    function adminSetTimestamp(bytes calldata _publicKeys, uint64[] calldata timestamps) external onlyAdmin {
+        if (StakingContractStorageLib.getMigrationDone()) {
+            revert Forbidden();
+        }
+        if (
+            _publicKeys.length % PUBLIC_KEY_LENGTH != 0 || _publicKeys.length / PUBLIC_KEY_LENGTH != timestamps.length
+        ) {
+            revert InvalidArgument();
+        }
+        for (uint256 i; i < _publicKeys.length / PUBLIC_KEY_LENGTH; ) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+            _setLastWithdrawal(_getPubKeyRoot(publicKey), timestamps[i]);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    /// @notice Utility to end migration
+    function endMigration() external onlyAdmin {
+        StakingContractStorageLib.migrationDone();
     }
 
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
