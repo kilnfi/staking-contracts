@@ -789,7 +789,6 @@ contract StakingContract {
         );
 
         uint256 depositAmount = DEPOSIT_SIZE / 1000000000 wei;
-        assert(depositAmount * 1000000000 wei == DEPOSIT_SIZE);
 
         bytes32 depositDataRoot = sha256(
             abi.encodePacked(

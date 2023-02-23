@@ -56,7 +56,7 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         uint256 treasuryFee
     );
 
-    uint256 internal immutable ONE_ETH_REWARD_TIME = (10 * 2629800 / 16) * 12;
+    uint256 internal immutable ONE_ETH_REWARD_TIME = ((10 * 2629800) / 16) * 12;
 
     IStakingContractFeeDetails internal stakingContract;
     ConsensusLayerFeeDispatcher internal cld;
@@ -115,9 +115,9 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         require(status == false);
         vm.stopPrank();
     }
-    
+
     function testWithdrawCLFeesExitedValidator() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME ); 
+        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
         vm.deal(address(this), 33 ether);
         assert(bob.balance == 0);
         assert(treasury.balance == 0);
@@ -125,15 +125,14 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         vm.expectEmit(true, true, true, false); // Exact ammounts not checked in the event
         emit Withdrawal(bob, operator, bytes32(0), 32.9 ether, 0.02 ether, 0.08 ether);
         cld.dispatch{value: 33 ether}(bytes32(0));
-    
-        assertApproxEqAbs(bob.balance, 32.9 ether, 10 ** 6);
-        assertApproxEqAbs(treasury.balance, 0.08 ether, 10 ** 5);
-        assertApproxEqAbs(operator.balance, 0.02 ether, 10 ** 5);
 
+        assertApproxEqAbs(bob.balance, 32.9 ether, 10**6);
+        assertApproxEqAbs(treasury.balance, 0.08 ether, 10**5);
+        assertApproxEqAbs(operator.balance, 0.02 ether, 10**5);
     }
-    
+
     function testWithdrawCLFeesSkimmedValidator() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2 ); //to avoid rounding errors in the event
+        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2); //to avoid rounding errors in the event
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
         assert(treasury.balance == 0);
@@ -145,23 +144,23 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         assert(treasury.balance == 0.08 ether);
         assert(operator.balance == 0.02 ether);
     }
-    
+
     function testWithdrawCLFeesSlashedValidator() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME );
+        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
         vm.deal(address(this), 31.95 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);
-        vm.expectEmit(true, true, true, false); // ETH values in the event aren't checked 
-        emit Withdrawal(bob, operator, bytes32(0), 0 ether, 0 ether, 0 ether); 
+        vm.expectEmit(true, true, true, false); // ETH values in the event aren't checked
+        emit Withdrawal(bob, operator, bytes32(0), 0 ether, 0 ether, 0 ether);
         cld.dispatch{value: 31.95 ether}(bytes32(0));
-   
-        assertApproxEqAbs(bob.balance, 31.85 ether, 10 ** 6);
-        assertApproxEqAbs(treasury.balance, 0.08 ether, 10 ** 5);
-        assertApproxEqAbs(operator.balance, 0.02 ether, 10 ** 5);
+
+        assertApproxEqAbs(bob.balance, 31.85 ether, 10**6);
+        assertApproxEqAbs(treasury.balance, 0.08 ether, 10**5);
+        assertApproxEqAbs(operator.balance, 0.02 ether, 10**5);
     }
-    
+
     function testWithdrawCLFeesTwice() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2 ); //to avoid rounding errors in the event
+        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2); //to avoid rounding errors in the event
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
         assert(treasury.balance == 0);
@@ -169,28 +168,35 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         vm.expectEmit(true, true, true, true);
         emit Withdrawal(bob, operator, bytes32(0), 0.9 ether, 0.02 ether, 0.08 ether);
         cld.dispatch{value: 1 ether}(bytes32(0));
-        assertApproxEqAbs(bob.balance, 0.9 ether, 10 ** 6);
-        assertApproxEqAbs(treasury.balance, 0.08 ether, 10 ** 6);
-        assertApproxEqAbs(operator.balance, 0.02 ether, 10 ** 6);
+        assertApproxEqAbs(bob.balance, 0.9 ether, 10**6);
+        assertApproxEqAbs(treasury.balance, 0.08 ether, 10**6);
+        assertApproxEqAbs(operator.balance, 0.02 ether, 10**6);
         vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
         vm.deal(address(this), 1 ether);
         vm.expectEmit(true, true, true, true);
         emit Withdrawal(bob, operator, bytes32(0), 0.9 ether, 0.02 ether, 0.08 ether);
         cld.dispatch{value: 1 ether}(bytes32(0));
-        assertApproxEqAbs(bob.balance, 1.80 ether, 10 ** 6);
-        assertApproxEqAbs(treasury.balance, 0.16 ether, 10 ** 6);
-        assertApproxEqAbs(operator.balance, 0.04 ether, 10 ** 6);
+        assertApproxEqAbs(bob.balance, 1.80 ether, 10**6);
+        assertApproxEqAbs(treasury.balance, 0.16 ether, 10**6);
+        assertApproxEqAbs(operator.balance, 0.04 ether, 10**6);
     }
-    
+
     function testWithdrawCLFeesAnotherPublicKey() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2 ); //to avoid rounding errors in the event
+        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2); //to avoid rounding errors in the event
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);
         assert(treasury.balance == 0);
         assert(address(0).balance == 0);
         vm.expectEmit(true, true, true, true);
-        emit Withdrawal(address(0), operator, keccak256(bytes("another public key")), 0.9 ether, 0.02 ether, 0.08 ether);
+        emit Withdrawal(
+            address(0),
+            operator,
+            keccak256(bytes("another public key")),
+            0.9 ether,
+            0.02 ether,
+            0.08 ether
+        );
         cld.dispatch{value: 1 ether}(keccak256(bytes("another public key")));
         assert(bob.balance == 0);
         assert(operator.balance == 0.02 ether);
