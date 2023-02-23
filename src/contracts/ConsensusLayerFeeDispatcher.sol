@@ -67,16 +67,17 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
         if (balance == 0) {
             revert ZeroBalanceWithdrawal();
         }
-        
+
         uint256 lastWithdrawal = stakingContract.getLastWithdrawFromPublicKeyRoot(_publicKeyRoot);
-        uint256 maxClSinceWithdrawal = ((block.timestamp - lastWithdrawal) / SLOT_DURATION_SEC) * stakingContract.getMaxClPerBlock();
+        uint256 maxClSinceWithdrawal = ((block.timestamp - lastWithdrawal) / SLOT_DURATION_SEC) *
+            stakingContract.getMaxClPerBlock();
 
         uint256 nonExemptBalance = maxClSinceWithdrawal < balance ? maxClSinceWithdrawal : balance;
 
         uint256 globalFee = (nonExemptBalance * stakingContract.getGlobalFee()) / BASIS_POINTS;
-        
+
         uint256 operatorFee = (globalFee * stakingContract.getOperatorFee()) / BASIS_POINTS;
-        
+
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);
         (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee}("");
         if (status == false) {
@@ -95,7 +96,14 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
                 revert FeeRecipientReceiveError(data);
             }
         }
-        emit Withdrawal(withdrawer, operator, _publicKeyRoot, balance - globalFee, operatorFee, globalFee - operatorFee);
+        emit Withdrawal(
+            withdrawer,
+            operator,
+            _publicKeyRoot,
+            balance - globalFee,
+            operatorFee,
+            globalFee - operatorFee
+        );
     }
 
     /// @notice Retrieve the staking contract address
