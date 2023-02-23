@@ -26,7 +26,7 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
     error ZeroBalanceWithdrawal();
     error AlreadyInitialized();
     error InvalidCall();
-    error NotImplemented();
+    error ValidatorNotMigrated();
 
     bytes32 internal constant STAKING_CONTRACT_ADDRESS_SLOT =
         keccak256("ConsensusLayerFeeRecipient.stakingContractAddress");
@@ -69,8 +69,11 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
         }
 
         uint256 lastWithdrawal = stakingContract.getLastWithdrawFromPublicKeyRoot(_publicKeyRoot);
-        uint256 maxClSinceWithdrawal = ((block.timestamp - lastWithdrawal) * stakingContract.getMaxClPerBlock()) /
-            SLOT_DURATION_SEC;
+        if (lastWithdrawal == 0) {
+            revert ValidatorNotMigrated();
+        }
+        uint256 maxClSinceWithdrawal = ((block.timestamp - lastWithdrawal) / SLOT_DURATION_SEC) *
+            stakingContract.getMaxClPerBlock();
 
         uint256 nonExemptBalance = maxClSinceWithdrawal < balance ? maxClSinceWithdrawal : balance;
 
