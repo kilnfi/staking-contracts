@@ -31,6 +31,7 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
     bytes32 internal constant STAKING_CONTRACT_ADDRESS_SLOT =
         keccak256("ConsensusLayerFeeRecipient.stakingContractAddress");
     uint256 internal constant BASIS_POINTS = 10_000;
+    uint256 internal constant SLOT_DURATION_SEC = 12;
     bytes32 internal constant VERSION_SLOT = keccak256("ConsensusLayerFeeRecipient.version");
 
     /// @notice Ensures an initialisation call has been called only once per _version value
@@ -57,49 +58,44 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
     }
 
     /// @notice Performs a withdrawal on this contract's balance
-    function dispatch(bytes32) external payable {
-        revert NotImplemented();
-        /*
+    function dispatch(bytes32 _publicKeyRoot) external payable {
+        IStakingContractFeeDetails stakingContract = IStakingContractFeeDetails(
+            STAKING_CONTRACT_ADDRESS_SLOT.getAddress()
+        );
+
         uint256 balance = address(this).balance; // this has taken into account msg.value
         if (balance == 0) {
             revert ZeroBalanceWithdrawal();
         }
-        IStakingContractFeeDetails stakingContract = IStakingContractFeeDetails(
-            STAKING_CONTRACT_ADDRESS_SLOT.getAddress()
-        );
-        address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);
-        address operator = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);
-        address treasury = stakingContract.getTreasury();
-        uint256 globalFee;
+        
+        uint256 lastWithdrawal = stakingContract.getLastWithdrawFromPublicKeyRoot(_publicKeyRoot);
+        uint256 maxClSinceWithdrawal = ((block.timestamp - lastWithdrawal) / SLOT_DURATION_SEC) * stakingContract.getMaxClPerBlock();
 
-        if (balance >= 32 ether) {
-            // withdrawing a healthy & exited validator
-            globalFee = ((balance - 32 ether) * stakingContract.getGlobalFee()) / BASIS_POINTS;
-        } else if (balance <= 16 ether) {
-            // withdrawing from what looks like skimming
-            globalFee = (balance * stakingContract.getGlobalFee()) / BASIS_POINTS;
-        }
+        uint256 nonExemptBalance = maxClSinceWithdrawal < balance ? maxClSinceWithdrawal : balance;
 
+        uint256 globalFee = (nonExemptBalance * stakingContract.getGlobalFee()) / BASIS_POINTS;
+        
         uint256 operatorFee = (globalFee * stakingContract.getOperatorFee()) / BASIS_POINTS;
-
+        
+        address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);
         (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee}("");
         if (status == false) {
             revert WithdrawerReceiveError(data);
         }
+        address operator = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);
         if (globalFee > 0) {
+            address treasury = stakingContract.getTreasury();
             (status, data) = treasury.call{value: globalFee - operatorFee}("");
+            if (status == false) {
+                revert TreasuryReceiveError(data);
+            }
+
+            (status, data) = operator.call{value: operatorFee}("");
             if (status == false) {
                 revert FeeRecipientReceiveError(data);
             }
         }
-        if (operatorFee > 0) {
-            (status, data) = operator.call{value: operatorFee}("");
-            if (status == false) {
-                revert TreasuryReceiveError(data);
-            }
-        }
-        emit Withdrawal(withdrawer, operator, balance - globalFee, operatorFee, globalFee - operatorFee);
-        */
+        emit Withdrawal(withdrawer, operator, _publicKeyRoot, balance - globalFee, operatorFee, globalFee - operatorFee);
     }
 
     /// @notice Retrieve the staking contract address

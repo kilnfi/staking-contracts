@@ -317,4 +317,35 @@ library StakingContractStorageLib {
     function setWithdrawerCustomizationEnabled(bool _enabled) internal {
         setBool(WITHDRAWER_CUSTOMIZATION_ENABLED_SLOT, _enabled);
     }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant LAST_WITHDRAW_MAPPING_SLOT = keccak256("StakingContract.lastWithdraw");
+
+    struct LastWithdrawSlot {
+        mapping(bytes32 => uint256) value;
+    }
+
+    function getLastWithdraw() internal pure returns (LastWithdrawSlot storage p) {
+        bytes32 slot = LAST_WITHDRAW_MAPPING_SLOT;
+        assembly {
+            p.slot := slot
+        }
+    }
+        
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant MAX_CL_PER_BLOCK_SLOT = keccak256("StakingContract.maxClPerBlock");
+
+    function getMaxClPerBlock() internal view returns (uint256) {
+        return getUint256(MAX_CL_PER_BLOCK_SLOT);
+    }
+
+    function setMaxClPerBlock(uint256 _newMaxClPerBlock) internal {
+        setUint256(MAX_CL_PER_BLOCK_SLOT, _newMaxClPerBlock);
+    }
 }
