@@ -348,4 +348,18 @@ library StakingContractStorageLib {
     function setMaxClPerBlock(uint256 _newMaxClPerBlock) internal {
         setUint256(MAX_CL_PER_BLOCK_SLOT, _newMaxClPerBlock);
     }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant MIGRATION_DONE_SLOT = keccak256("StakingContract.migrationDone");
+
+    function getMigrationDone() internal view returns (bool) {
+        return getBool(MIGRATION_DONE_SLOT);
+    }
+
+    function migrationDone() internal {
+        setBool(MIGRATION_DONE_SLOT, true);
+    }
 }
