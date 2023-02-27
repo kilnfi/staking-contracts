@@ -7,3 +7,5 @@ forge-cache
 .DS_Store
 .env
 .idea/
+staking-contract-upgrade/calldata.txt
+staking-contract-upgrade/target
