@@ -4,9 +4,12 @@ use ethcontract::prelude::*;
 use ethcontract::BlockNumber::Earliest;
 use ethers_core::utils::hex;
 use std::collections::HashMap;
+use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::path::Path;
 
+// TO CHANGE THE TARGET CONTRACT REPLACE THE ADDRESS HERE
 ethcontract::contract!(
     "abi/StakingContract.json",
     contract = StakingContract,
@@ -17,7 +20,6 @@ ethcontract::contract!(
    event_derives (serde::Deserialize, serde::Serialize),
 );
 
-/// Program to get the timestamp of deposits on a staking contract
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -29,7 +31,7 @@ struct Args {
     #[arg(short, long, default_value = "300")]
     limit: u16,
 
-    /// Maximum number of validator batched in one call
+    /// Flag to verify the timestamps after the migration
     #[arg(short, long)]
     verify: bool,
 }
@@ -110,10 +112,15 @@ async fn main() -> anyhow::Result<()> {
             state_mutability: StateMutability::NonPayable,
         };
 
+        let file_path = "calldata.txt";
+        if Path::new(file_path).exists() {
+            fs::remove_file(file_path).unwrap();
+        }
         let mut file = OpenOptions::new()
+            .create_new(true)
             .write(true)
             .append(true)
-            .open("calldata.txt")
+            .open(file_path)
             .unwrap();
 
         println!("Generating calldata...");
@@ -141,15 +148,7 @@ async fn main() -> anyhow::Result<()> {
                 if let Err(e) = writeln!(file, "{}", hex::encode(calldata)) {
                     eprintln!("Couldn't write to file: {}", e);
                 }
-                println!(
-                    "Batch {} done, {} items",
-                    n,
-                    if n * args.limit > event_history.len() as u16 {
-                        n % args.limit + 1
-                    } else {
-                        args.limit
-                    }
-                );
+                println!("Batch {} done {}/{}", n, i, event_history.len());
 
                 public_keys.clear();
                 timestamps.clear();

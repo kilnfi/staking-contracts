@@ -72,8 +72,8 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
         if (lastWithdrawal == 0) {
             revert ValidatorNotMigrated();
         }
-        uint256 maxClSinceWithdrawal = ((block.timestamp - lastWithdrawal) / SLOT_DURATION_SEC) *
-            stakingContract.getMaxClPerBlock();
+        uint256 maxClSinceWithdrawal = ((block.timestamp - lastWithdrawal) * stakingContract.getMaxClPerBlock()) /
+            SLOT_DURATION_SEC;
 
         uint256 nonExemptBalance = maxClSinceWithdrawal < balance ? maxClSinceWithdrawal : balance;
 
