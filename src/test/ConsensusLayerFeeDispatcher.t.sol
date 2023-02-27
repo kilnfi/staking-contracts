@@ -122,7 +122,7 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         assert(bob.balance == 0);
         assert(treasury.balance == 0);
         assert(operator.balance == 0);
-        vm.expectEmit(true, true, true, false); // Exact ammounts not checked in the event
+        vm.expectEmit(true, true, true, false); // Exact amounts not checked in the event
         emit Withdrawal(bob, operator, bytes32(0), 32.9 ether, 0.02 ether, 0.08 ether);
         cld.dispatch{value: 33 ether}(bytes32(0));
 
