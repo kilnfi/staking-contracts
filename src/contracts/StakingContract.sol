@@ -581,7 +581,6 @@ contract StakingContract {
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
-            _setLastWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
             }
