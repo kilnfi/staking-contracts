@@ -555,9 +555,12 @@ contract StakingContract {
             revert InvalidPublicKeys();
         }
         uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
-        for (uint256 i = 0; i < keyCount; i++) {
+        for (uint256 i = 0; i < keyCount; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -570,9 +573,12 @@ contract StakingContract {
             revert InvalidPublicKeys();
         }
         uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
-        for (uint256 i = 0; i < keyCount; i++) {
+        for (uint256 i = 0; i < keyCount; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -585,10 +591,13 @@ contract StakingContract {
             revert InvalidPublicKeys();
         }
         uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
-        for (uint256 i = 0; i < keyCount; i++) {
+        for (uint256 i = 0; i < keyCount; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
+            unchecked {
+                ++i;
+            }
         }
     }
 
