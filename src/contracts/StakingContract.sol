@@ -577,13 +577,16 @@ contract StakingContract {
         }
         uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
         bytes[] memory keys = new bytes[](keyCount);
-        for (uint256 i = 0; i < keyCount; i++) {
+        for (uint256 i = 0; i < keyCount; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
             address withdrawer = _getWithdrawer(_getPubKeyRoot(publicKey));
             if (msg.sender != withdrawer) {
                 revert Unauthorized();
             }
             emit ExitRequest(withdrawer, publicKey);
+            unchecked {
+                ++i;
+            }
         }
     }
 
