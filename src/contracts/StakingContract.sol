@@ -576,7 +576,6 @@ contract StakingContract {
             revert InvalidPublicKeys();
         }
         uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
-        bytes[] memory keys = new bytes[](keyCount);
         for (uint256 i = 0; i < keyCount; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
             address withdrawer = _getWithdrawer(_getPubKeyRoot(publicKey));

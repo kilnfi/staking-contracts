@@ -3551,4 +3551,27 @@ contract StakingContractBehindProxyTest is Test {
             memory corruptedPublicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd43607";
         stakingContract.requestValidatorsExit(corruptedPublicKey);
     }
+
+    function testRequestValidatorsExits_WrongSecondWithdrawer() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        bytes
+            memory publicKey2 = hex"b0ce3fa164aae897adca509ed44429e7b1f91b7c46ddbe199cee848e09b1ccbb9736b78b68aacff1011b7266fe11e060";
+        vm.deal(bob, 32 ether);
+        vm.deal(alice, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        vm.startPrank(alice);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey2) == alice);
+        vm.stopPrank();
+
+        bytes memory publicKeys = BytesLib.concat(publicKey, publicKey2);
+
+        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKeys);
+    }
 }
