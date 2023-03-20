@@ -555,12 +555,11 @@ contract StakingContract {
         if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
             revert InvalidPublicKeys();
         }
-        uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
-        for (uint256 i = 0; i < keyCount; ) {
-            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+        for (uint256 i = 0; i < _publicKeys.length; ) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
             unchecked {
-                ++i;
+                i += PUBLIC_KEY_LENGTH;
             }
         }
     }
@@ -573,12 +572,11 @@ contract StakingContract {
         if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
             revert InvalidPublicKeys();
         }
-        uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
-        for (uint256 i = 0; i < keyCount; ) {
-            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+        for (uint256 i = 0; i < _publicKeys.length; ) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
             unchecked {
-                ++i;
+                i += PUBLIC_KEY_LENGTH;
             }
         }
     }
@@ -591,13 +589,12 @@ contract StakingContract {
         if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
             revert InvalidPublicKeys();
         }
-        uint256 keyCount = _publicKeys.length / PUBLIC_KEY_LENGTH;
-        for (uint256 i = 0; i < keyCount; ) {
-            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
+        for (uint256 i = 0; i < _publicKeys.length; ) {
+            bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
             unchecked {
-                ++i;
+                i += PUBLIC_KEY_LENGTH;
             }
         }
     }
