@@ -236,13 +236,13 @@ contract StakingContract {
     /// @notice Retrieve last withdrawal timestamp of public key
     /// @param _publicKey Public Key to check
     function getLastWithdraw(bytes calldata _publicKey) external view returns (uint256) {
-        return _getLastWithdrawal(_getPubKeyRoot(_publicKey));
+        return _getLastCLWithdrawal(_getPubKeyRoot(_publicKey));
     }
 
     /// @notice Retrieve last withdrawal timestamp of public key root
     /// @param _publicKeyRoot Hash of the public key
     function getLastWithdrawFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (uint256) {
-        return _getLastWithdrawal(_publicKeyRoot);
+        return _getLastCLWithdrawal(_publicKeyRoot);
     }
 
     /// @notice Retrieve the max CL rewards per block for fee computing
@@ -582,7 +582,6 @@ contract StakingContract {
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
-            _setLastWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
             }
@@ -600,7 +599,7 @@ contract StakingContract {
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-            _setLastWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
+            _setLastCLWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
             }
@@ -619,7 +618,7 @@ contract StakingContract {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-            _setLastWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
+            _setLastCLWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
             }
@@ -640,7 +639,7 @@ contract StakingContract {
     /// @param _publicKey Validator to withdraw Consensus Layer Fees from
     function withdrawCLFee(bytes calldata _publicKey) external {
         _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-        _setLastWithdrawal(_getPubKeyRoot(_publicKey), block.timestamp);
+        _setLastCLWithdrawal(_getPubKeyRoot(_publicKey), block.timestamp);
     }
 
     /// @notice Withdraw both Consensus and Execution Layer Fee for a given validator public key
@@ -649,7 +648,7 @@ contract StakingContract {
     function withdraw(bytes calldata _publicKey) external {
         _deployAndWithdraw(_publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
         _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-        _setLastWithdrawal(_getPubKeyRoot(_publicKey), block.timestamp);
+        _setLastCLWithdrawal(_getPubKeyRoot(_publicKey), block.timestamp);
     }
 
     function requestValidatorsExit(bytes calldata _publicKeys) external {
@@ -684,7 +683,7 @@ contract StakingContract {
         }
         for (uint256 i; i < _publicKeys.length / PUBLIC_KEY_LENGTH; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
-            _setLastWithdrawal(_getPubKeyRoot(publicKey), timestamps[i]);
+            _setLastCLWithdrawal(_getPubKeyRoot(publicKey), timestamps[i]);
             unchecked {
                 ++i;
             }
@@ -724,11 +723,11 @@ contract StakingContract {
         return StakingContractStorageLib.getWithdrawers().value[_publicKeyRoot];
     }
 
-    function _getLastWithdrawal(bytes32 _publicKeyRoot) internal view returns (uint256) {
+    function _getLastCLWithdrawal(bytes32 _publicKeyRoot) internal view returns (uint256) {
         return StakingContractStorageLib.getLastWithdraw().value[_publicKeyRoot];
     }
 
-    function _setLastWithdrawal(bytes32 _publicKeyRoot, uint256 _timestamp) internal {
+    function _setLastCLWithdrawal(bytes32 _publicKeyRoot, uint256 _timestamp) internal {
         StakingContractStorageLib.getLastWithdraw().value[_publicKeyRoot] = _timestamp;
     }
 
@@ -783,7 +782,7 @@ contract StakingContract {
             _depositValidator(publicKey, signature, withdrawalCredentials);
             bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
             StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = _withdrawer;
-            _setLastWithdrawal(pubkeyRoot, block.timestamp);
+            _setLastCLWithdrawal(pubkeyRoot, block.timestamp);
             emit Deposit(msg.sender, _withdrawer, publicKey, signature);
             unchecked {
                 ++i;
