@@ -233,21 +233,25 @@ contract StakingContract {
         return _getWithdrawer(_publicKeyRoot);
     }
 
-    /// @notice Retrieve last withdrawal timestamp of public key
-    /// @param _publicKey Public Key to check
-    function getLastWithdraw(bytes calldata _publicKey) external view returns (uint256) {
-        return _getLastCLWithdrawal(_getPubKeyRoot(_publicKey));
+    /// @notice Retrieve wether the validator exit has been requested
+    /// @param _publicKeyRoot Public Key Root to check
+    function getExitRequestedFromRoot(bytes32 _publicKeyRoot) external view returns (bool) {
+        return _getExitRequest(_publicKeyRoot);
     }
 
-    /// @notice Retrieve last withdrawal timestamp of public key root
-    /// @param _publicKeyRoot Hash of the public key
-    function getLastWithdrawFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (uint256) {
-        return _getLastCLWithdrawal(_publicKeyRoot);
+    /// @notice Return true if the validator already went through the exit logic
+    /// @param _publicKeyRoot Public Key Root of the validator
+    function getWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (bool) {
+        return StakingContractStorageLib.getWithdrawnMap().value[_publicKeyRoot];
     }
 
-    /// @notice Retrieve the max CL rewards per block for fee computing
-    function getMaxClPerBlock() external view returns (uint256) {
-        return StakingContractStorageLib.getMaxClPerBlock();
+    /// @notice Allows the CLDispatcher to signal a validator went through the exit logic
+    /// @param _publicKeyRoot Public Key Root of the validator
+    function toggleWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external {
+        if (msg.sender != StakingContractStorageLib.getCLDispatcher()) {
+            revert Unauthorized();
+        }
+        StakingContractStorageLib.getWithdrawnMap().value[_publicKeyRoot] = true;
     }
 
     /// @notice Retrieve operator details
@@ -385,13 +389,6 @@ contract StakingContract {
         emit ChangedWithdrawer(_publicKey, _newWithdrawer);
 
         withdrawers.value[pubkeyRoot] = _newWithdrawer;
-    }
-
-    /// @notice Set max CL reward per block for fee computing
-    /// @dev Only callable by the admin
-    /// @param _newMaxClPerBlock New max CL reward per block address
-    function setMaxCLPerBlock(uint256 _newMaxClPerBlock) external onlyAdmin {
-        StakingContractStorageLib.setMaxClPerBlock(_newMaxClPerBlock);
     }
 
     /// @notice Set operator staking limits
@@ -599,7 +596,6 @@ contract StakingContract {
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-            _setLastCLWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
             }
@@ -618,7 +614,6 @@ contract StakingContract {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-            _setLastCLWithdrawal(_getPubKeyRoot(publicKey), block.timestamp);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
             }
@@ -639,7 +634,6 @@ contract StakingContract {
     /// @param _publicKey Validator to withdraw Consensus Layer Fees from
     function withdrawCLFee(bytes calldata _publicKey) external {
         _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-        _setLastCLWithdrawal(_getPubKeyRoot(_publicKey), block.timestamp);
     }
 
     /// @notice Withdraw both Consensus and Execution Layer Fee for a given validator public key
@@ -648,7 +642,6 @@ contract StakingContract {
     function withdraw(bytes calldata _publicKey) external {
         _deployAndWithdraw(_publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
         _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-        _setLastCLWithdrawal(_getPubKeyRoot(_publicKey), block.timestamp);
     }
 
     function requestValidatorsExit(bytes calldata _publicKeys) external {
@@ -661,38 +654,13 @@ contract StakingContract {
             if (msg.sender != withdrawer) {
                 revert Unauthorized();
             }
+            _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
+            _setExitRequest(_getPubKeyRoot(publicKey), true);
             emit ExitRequest(withdrawer, publicKey);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
             }
         }
-    }
-
-    /// @notice Utility to set timestamp for a list of validator for migration purposes
-    /// @dev Reverts if migration is done or if lists are of unequal length
-    /// @param _publicKeys Validator public keys
-    /// @param timestamps Timestamps to set
-    function adminSetTimestamp(bytes calldata _publicKeys, uint64[] calldata timestamps) external onlyAdmin {
-        if (StakingContractStorageLib.getMigrationDone()) {
-            revert Forbidden();
-        }
-        if (
-            _publicKeys.length % PUBLIC_KEY_LENGTH != 0 || _publicKeys.length / PUBLIC_KEY_LENGTH != timestamps.length
-        ) {
-            revert InvalidArgument();
-        }
-        for (uint256 i; i < _publicKeys.length / PUBLIC_KEY_LENGTH; ) {
-            bytes memory publicKey = BytesLib.slice(_publicKeys, i * PUBLIC_KEY_LENGTH, PUBLIC_KEY_LENGTH);
-            _setLastCLWithdrawal(_getPubKeyRoot(publicKey), timestamps[i]);
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    /// @notice Utility to end migration
-    function endMigration() external onlyAdmin {
-        StakingContractStorageLib.migrationDone();
     }
 
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
@@ -723,12 +691,12 @@ contract StakingContract {
         return StakingContractStorageLib.getWithdrawers().value[_publicKeyRoot];
     }
 
-    function _getLastCLWithdrawal(bytes32 _publicKeyRoot) internal view returns (uint256) {
-        return StakingContractStorageLib.getLastWithdraw().value[_publicKeyRoot];
+    function _getExitRequest(bytes32 _publicKeyRoot) internal view returns (bool) {
+        return StakingContractStorageLib.getExitRequestMap().value[_publicKeyRoot];
     }
 
-    function _setLastCLWithdrawal(bytes32 _publicKeyRoot, uint256 _timestamp) internal {
-        StakingContractStorageLib.getLastWithdraw().value[_publicKeyRoot] = _timestamp;
+    function _setExitRequest(bytes32 _publicKeyRoot, bool _value) internal {
+        StakingContractStorageLib.getExitRequestMap().value[_publicKeyRoot] = _value;
     }
 
     function _updateAvailableValidatorCount(uint256 _operatorIndex) internal {
@@ -782,7 +750,6 @@ contract StakingContract {
             _depositValidator(publicKey, signature, withdrawalCredentials);
             bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
             StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = _withdrawer;
-            _setLastCLWithdrawal(pubkeyRoot, block.timestamp);
             emit Deposit(msg.sender, _withdrawer, publicKey, signature);
             unchecked {
                 ++i;
@@ -1151,10 +1118,12 @@ contract StakingContract {
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
         address implementation = StakingContractStorageLib.getFeeRecipientImplementation();
         address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
-        if (feeRecipientAddress.code.length == 0) {
-            Clones.cloneDeterministic(implementation, feeRecipientSalt);
-            IFeeRecipient(feeRecipientAddress).init(_dispatcher, publicKeyRoot);
+        if (feeRecipientAddress.balance > 0) {
+            if (feeRecipientAddress.code.length == 0) {
+                Clones.cloneDeterministic(implementation, feeRecipientSalt);
+                IFeeRecipient(feeRecipientAddress).init(_dispatcher, publicKeyRoot);
+            }
+            IFeeRecipient(feeRecipientAddress).withdraw();
         }
-        IFeeRecipient(feeRecipientAddress).withdraw();
     }
 }

@@ -68,14 +68,22 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
             revert ZeroBalanceWithdrawal();
         }
 
-        uint256 lastWithdrawal = stakingContract.getLastWithdrawFromPublicKeyRoot(_publicKeyRoot);
-        if (lastWithdrawal == 0) {
-            revert ValidatorNotMigrated();
-        }
-        uint256 maxClSinceWithdrawal = ((block.timestamp - lastWithdrawal) * stakingContract.getMaxClPerBlock()) /
-            SLOT_DURATION_SEC;
+        bool exitRequested = stakingContract.getExitRequestedFromRoot(_publicKeyRoot);
+        bool withdrawn = stakingContract.getWithdrawnFromPublicKeyRoot(_publicKeyRoot);
 
-        uint256 nonExemptBalance = maxClSinceWithdrawal < balance ? maxClSinceWithdrawal : balance;
+        uint256 nonExemptBalance = balance;
+
+        if (exitRequested && balance > 10 ether && !withdrawn) {
+            if (balance >= 32 ether) {
+                // In case of healthy exit
+                nonExemptBalance -= 32 ether;
+                stakingContract.toggleWithdrawnFromPublicKeyRoot(_publicKeyRoot);
+            } else {
+                // In case of slashing
+                nonExemptBalance -= balance;
+                stakingContract.toggleWithdrawnFromPublicKeyRoot(_publicKeyRoot);
+            }
+        }
 
         uint256 globalFee = (nonExemptBalance * stakingContract.getGlobalFee()) / BASIS_POINTS;
 
