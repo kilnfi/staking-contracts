@@ -137,7 +137,9 @@ contract StakingContractTest is DSTestPlus {
             address(0),
             address(0),
             1000,
-            2000
+            2000,
+            2000,
+            5000
         );
 
         vm.startPrank(admin);
@@ -214,7 +216,9 @@ contract StakingContractTest is DSTestPlus {
             address(0),
             address(0),
             1000,
-            2000
+            2000,
+            2000,
+            5000
         );
     }
 
@@ -1008,7 +1012,9 @@ contract StakingContractInitializationTest is DSTestPlus {
             address(0),
             address(0),
             10001,
-            2000
+            2000,
+            2000,
+            5000
         );
 
         vm.expectRevert(abi.encodeWithSignature("InvalidFee()"));
@@ -1020,6 +1026,36 @@ contract StakingContractInitializationTest is DSTestPlus {
             address(0),
             address(0),
             10000,
+            10001,
+            2000,
+            5000
+        );
+
+        vm.expectRevert(abi.encodeWithSignature("InvalidFee()"));
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(0),
+            address(0),
+            address(0),
+            2000,
+            5000,
+            10001,
+            5000
+        );
+
+        vm.expectRevert(abi.encodeWithSignature("InvalidFee()"));
+        stakingContract.initialize_1(
+            admin,
+            address(treasury),
+            address(depositContract),
+            address(0),
+            address(0),
+            address(0),
+            2000,
+            5000,
+            2000,
             10001
         );
     }
@@ -1053,7 +1089,9 @@ contract StakingContractOperatorTest is DSTestPlus {
             address(0),
             address(0),
             1000,
-            2000
+            2000,
+            2000,
+            5000
         );
     }
 
@@ -1119,8 +1157,8 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
     address internal operatorTwo = address(5);
     address internal feeRecipientTwo = address(55);
 
-    address internal operatorThree = address(5);
-    address internal feeRecipientThree = address(55);
+    address internal operatorThree = address(6);
+    address internal feeRecipientThree = address(66);
 
     function setUp() public {
         uf = new UserFactory();
@@ -1138,7 +1176,9 @@ contract StakingContractThreeValidatorsTest is DSTestPlus {
             address(0),
             address(0),
             1000,
-            2000
+            2000,
+            2000,
+            5000
         );
 
         vm.startPrank(admin);
@@ -1741,7 +1781,9 @@ contract StakingContractDistributionTest is DSTestPlus {
             address(0),
             address(0),
             1000,
-            2000
+            2000,
+            2000,
+            5000
         );
     }
 
@@ -1855,7 +1897,9 @@ contract StakingContractTwoValidatorsTest is DSTestPlus {
             address(0),
             address(0),
             1000,
-            2000
+            2000,
+            2000,
+            5000
         );
 
         vm.startPrank(admin);
@@ -2228,7 +2272,9 @@ contract StakingContractOneValidatorTest is Test {
             address(cld),
             address(feeRecipientImpl),
             1000,
-            2000
+            2000,
+            2000,
+            5000
         );
 
         vm.startPrank(admin);
@@ -2544,6 +2590,15 @@ contract StakingContractOneValidatorTest is Test {
         assert(stakingContract.getOperatorFee() == 3000);
     }
 
+    function testEditOperatorFee_OverLimit() public {
+        assert(stakingContract.getOperatorFee() == 2000);
+        vm.expectRevert(abi.encodeWithSignature("InvalidFee()"));
+        vm.startPrank(admin);
+        stakingContract.setOperatorFee(5001);
+        vm.stopPrank();
+        assert(stakingContract.getOperatorFee() == 2000);
+    }
+
     event ChangedGlobalFee(uint256 newGlobalFee);
 
     function testEditGlobalFee() public {
@@ -2554,6 +2609,15 @@ contract StakingContractOneValidatorTest is Test {
         stakingContract.setGlobalFee(2000);
         vm.stopPrank();
         assert(stakingContract.getGlobalFee() == 2000);
+    }
+
+    function testEditGlobalFee_OverLimit() public {
+        assert(stakingContract.getGlobalFee() == 1000);
+        vm.expectRevert(abi.encodeWithSignature("InvalidFee()"));
+        vm.startPrank(admin);
+        stakingContract.setGlobalFee(2001);
+        vm.stopPrank();
+        assert(stakingContract.getGlobalFee() == 1000);
     }
 
     function testFeeRecipients() public {
@@ -2918,7 +2982,9 @@ contract StakingContractBehindProxyTest is Test {
             address(cld),
             address(feeRecipientImpl),
             1000,
-            2000
+            2000,
+            2000,
+            5000
         );
 
         vm.startPrank(admin);
