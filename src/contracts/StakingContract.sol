@@ -147,7 +147,9 @@ contract StakingContract {
         address _clDispatcher,
         address _feeRecipientImplementation,
         uint256 _globalFee,
-        uint256 _operatorFee
+        uint256 _operatorFee,
+        uint256 globalCommissionLimitBPS,
+        uint256 operatorCommissionLimitBPS
     ) external init(1) {
         StakingContractStorageLib.setAdmin(_admin);
         StakingContractStorageLib.setTreasury(_treasury);
@@ -165,6 +167,14 @@ contract StakingContract {
         StakingContractStorageLib.setCLDispatcher(_clDispatcher);
         StakingContractStorageLib.setDepositContract(_depositContract);
         StakingContractStorageLib.setFeeRecipientImplementation(_feeRecipientImplementation);
+        if (globalCommissionLimitBPS > BASIS_POINTS) {
+            revert InvalidFee();
+        }
+        StakingContractStorageLib.setGlobalCommissionLimit(globalCommissionLimitBPS);
+        if (operatorCommissionLimitBPS > BASIS_POINTS) {
+            revert InvalidFee();
+        }
+        StakingContractStorageLib.setOperatorCommissionLimit(operatorCommissionLimitBPS);
     }
 
     /// @notice Changes the behavior of the withdrawer customization logic
@@ -447,7 +457,7 @@ contract StakingContract {
     /// @notice Change the Operator fee
     /// @param _operatorFee Fee in Basis Point
     function setOperatorFee(uint256 _operatorFee) external onlyAdmin {
-        if (_operatorFee > BASIS_POINTS) {
+        if (_operatorFee > BASIS_POINTS || _operatorFee > StakingContractStorageLib.getOperatorCommissionLimit()) {
             revert InvalidFee();
         }
         StakingContractStorageLib.setOperatorFee(_operatorFee);
@@ -457,7 +467,7 @@ contract StakingContract {
     /// @notice Change the Global fee
     /// @param _globalFee Fee in Basis Point
     function setGlobalFee(uint256 _globalFee) external onlyAdmin {
-        if (_globalFee > BASIS_POINTS) {
+        if (_globalFee > BASIS_POINTS || _globalFee > StakingContractStorageLib.getGlobalCommissionLimit()) {
             revert InvalidFee();
         }
         StakingContractStorageLib.setGlobalFee(_globalFee);
