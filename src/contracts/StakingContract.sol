@@ -33,6 +33,7 @@ contract StakingContract {
     error UnsortedIndexes();
     error InvalidPublicKeys();
     error InvalidSignatures();
+    error InvalidWithdrawer();
     error AlreadyInitialized();
     error InvalidDepositValue();
     error NotEnoughValidators();
@@ -595,6 +596,7 @@ contract StakingContract {
         }
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
+            _onlyWithdrawerOrAdmin(publicKey);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
@@ -612,6 +614,7 @@ contract StakingContract {
         }
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
+            _onlyWithdrawerOrAdmin(publicKey);
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
@@ -621,7 +624,6 @@ contract StakingContract {
 
     /// @notice Withdraw both Consensus and Execution Layer Fees for given validators public keys
     /// @dev Funds are sent to the withdrawer account
-    /// @dev This method is public on purpose
     /// @param _publicKeys Validators to withdraw fees from
     function batchWithdraw(bytes calldata _publicKeys) external {
         if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
@@ -629,6 +631,7 @@ contract StakingContract {
         }
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
+            _onlyWithdrawerOrAdmin(publicKey);
             _deployAndWithdraw(publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
             _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
             unchecked {
@@ -639,17 +642,17 @@ contract StakingContract {
 
     /// @notice Withdraw the Execution Layer Fee for a given validator public key
     /// @dev Funds are sent to the withdrawer account
-    /// @dev This method is public on purpose
     /// @param _publicKey Validator to withdraw Execution Layer Fees from
     function withdrawELFee(bytes calldata _publicKey) external {
+        _onlyWithdrawerOrAdmin(_publicKey);
         _deployAndWithdraw(_publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
     }
 
     /// @notice Withdraw the Consensus Layer Fee for a given validator public key
     /// @dev Funds are sent to the withdrawer account
-    /// @dev This method is public on purpose
     /// @param _publicKey Validator to withdraw Consensus Layer Fees from
     function withdrawCLFee(bytes calldata _publicKey) external {
+        _onlyWithdrawerOrAdmin(_publicKey);
         _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
     }
 
@@ -657,6 +660,7 @@ contract StakingContract {
     /// @dev Reverts if any is null
     /// @param _publicKey Validator to withdraw Execution and Consensus Layer Fees from
     function withdraw(bytes calldata _publicKey) external {
+        _onlyWithdrawerOrAdmin(_publicKey);
         _deployAndWithdraw(_publicKey, EXECUTION_LAYER_SALT_PREFIX, StakingContractStorageLib.getELDispatcher());
         _deployAndWithdraw(_publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
     }
@@ -691,6 +695,15 @@ contract StakingContract {
     /// ██ ██ ██  ██    ██    █████   ██████  ██ ██  ██ ███████ ██
     /// ██ ██  ██ ██    ██    ██      ██   ██ ██  ██ ██ ██   ██ ██
     /// ██ ██   ████    ██    ███████ ██   ██ ██   ████ ██   ██ ███████
+
+    function _onlyWithdrawerOrAdmin(bytes memory _publicKey) internal view {
+        if (
+            msg.sender != _getWithdrawer(_getPubKeyRoot(_publicKey)) &&
+            StakingContractStorageLib.getAdmin() != msg.sender
+        ) {
+            revert InvalidWithdrawer();
+        }
+    }
 
     function _onlyActiveOperator(uint256 _operatorIndex) internal view {
         StakingContractStorageLib.OperatorInfo storage operatorInfo = StakingContractStorageLib.getOperators().value[
