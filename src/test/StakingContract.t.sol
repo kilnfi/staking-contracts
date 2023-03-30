@@ -2233,8 +2233,6 @@ contract StakingContractOneValidatorTest is Test {
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
-        // Annual reward divided by number of slots in a year
-        stakingContract.setMaxCLPerBlock(608411286029); // At 5% APR 1.6 ETH / ((365.25 * 3600 * 24) / 12)
         vm.stopPrank();
 
         {
@@ -2651,9 +2649,11 @@ contract StakingContractOneValidatorTest is Test {
         vm.startPrank(bob);
         stakingContract.deposit{value: 32 ether}();
         assert(stakingContract.getWithdrawer(publicKey) == bob);
-        vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawELFee(publicKey);
+        vm.stopPrank();
+        assertEq(bob.balance, 0);
+        assertEq(address(treasury).balance, 0);
+        assertEq(feeRecipientOne.balance, 0);
     }
 
     function testWithdrawCLFeesExitedValidator() public {
@@ -2670,8 +2670,10 @@ contract StakingContractOneValidatorTest is Test {
         assert(operatorOne.balance == 0);
         assert(address(treasury).balance == 0 ether);
         assert(feeRecipientOne.balance == 0);
-        vm.deal(address(clfrBob), 33 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 32 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
         assertApproxEqAbs(bob.balance, 32.90 ether, 10**5);
@@ -2697,8 +2699,10 @@ contract StakingContractOneValidatorTest is Test {
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
-        vm.deal(address(clfrBob), 33 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 32 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
         assertApproxEqAbs(bob.balance, 32.90 ether, 10**6);
@@ -2745,14 +2749,13 @@ contract StakingContractOneValidatorTest is Test {
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
-        vm.deal(address(clfrBob), 1.2 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 2 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
-        assertApproxEqAbs(bob.balance, 1.1 ether, 10**6);
-        assertApproxEqAbs(address(treasury).balance, 0.08 ether, 10**6);
+        assertApproxEqAbs(bob.balance, 1.8 ether, 10**6);
+        assertApproxEqAbs(address(treasury).balance, 0.16 ether, 10**6);
         assertEq(operatorOne.balance, 0);
-        assertApproxEqAbs(feeRecipientOne.balance, 0.02 ether, 10**6);
+        assertApproxEqAbs(feeRecipientOne.balance, 0.04 ether, 10**6);
     }
 
     function testWithdrawCLFeesSlashedValidator() public {
@@ -2767,11 +2770,13 @@ contract StakingContractOneValidatorTest is Test {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        vm.prank(bob);
+        vm.deal(address(clfrBob), 1 ether);
+        stakingContract.requestValidatorsExit(publicKey);
         vm.deal(address(clfrBob), 31.95 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
-        assertApproxEqAbs(bob.balance, 31.85 ether, 10**6);
+        assertApproxEqAbs(bob.balance, 32.85 ether, 1); //31.95 + 0.9 from rewards withdrawn on request exit
         assert(operatorOne.balance == 0);
     }
 
@@ -2789,18 +2794,19 @@ contract StakingContractOneValidatorTest is Test {
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
 
-        vm.deal(address(clfrBob), 33 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 1 ether);
         stakingContract.withdrawCLFee(publicKey);
 
         assert(clfrBob.code.length != 0);
-        assertApproxEqAbs(bob.balance, 32.90 ether, 10**6);
+        assertApproxEqAbs(bob.balance, 0.90 ether, 10**6);
         assertApproxEqAbs(address(treasury).balance, 0.08 ether, 10**6);
         assertEq(operatorOne.balance, 0);
         assertApproxEqAbs(feeRecipientOne.balance, 0.02 ether, 10**6);
 
         vm.deal(address(clfrBob), 1 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 32 ether);
         stakingContract.withdrawCLFee(publicKey);
 
         assertApproxEqAbs(bob.balance, 33.80 ether, 10**6);
@@ -2816,9 +2822,11 @@ contract StakingContractOneValidatorTest is Test {
         vm.startPrank(bob);
         stakingContract.deposit{value: 32 ether}();
         assert(stakingContract.getWithdrawer(publicKey) == bob);
-        vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawCLFee(publicKey);
+        vm.stopPrank();
+        assertEq(bob.balance, 0);
+        assertEq(address(treasury).balance, 0);
+        assertEq(feeRecipientOne.balance, 0);
     }
 
     function testWithdrawAllFees() public {
@@ -2832,18 +2840,21 @@ contract StakingContractOneValidatorTest is Test {
 
         address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
         assert(clfrBob.code.length == 0);
-        vm.deal(address(clfrBob), 33 ether);
-
-        address elfrBob = stakingContract.getELFeeRecipient(publicKey);
-        assert(elfrBob.code.length == 0);
-        vm.deal(address(elfrBob), 1 ether);
 
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
 
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 32 ether);
+
+        address elfrBob = stakingContract.getELFeeRecipient(publicKey);
+        assert(elfrBob.code.length == 0);
+        vm.deal(address(elfrBob), 1 ether);
+
         stakingContract.withdraw(publicKey);
 
         assertApproxEqAbs(bob.balance, 33.80 ether, 10**6);
@@ -2911,8 +2922,6 @@ contract StakingContractBehindProxyTest is Test {
 
         vm.startPrank(admin);
         stakingContract.addOperator(operatorOne, feeRecipientOne);
-        // Annual reward divided by number of slots in a year
-        stakingContract.setMaxCLPerBlock(608411286029); // At 5% APR 1.6 ETH / ((365.25 * 3600 * 24) / 12)
         vm.stopPrank();
 
         {
@@ -3258,7 +3267,6 @@ contract StakingContractBehindProxyTest is Test {
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.02 ether);
         assert(address(treasury).balance == 0.08 ether);
-        assertEq(stakingContract.getLastWithdraw(publicKey), 1); // EL withdraw does not affect last withdraw
     }
 
     function testBatchWithdrawELFees() public {
@@ -3283,8 +3291,6 @@ contract StakingContractBehindProxyTest is Test {
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0.04 ether);
         assert(address(treasury).balance == 0.16 ether);
-        assertEq(stakingContract.getLastWithdraw(publicKey), 1); // EL withdraw does not affect last withdraw
-        assertEq(stakingContract.getLastWithdraw(publicKey2), 1);
     }
 
     function testBatchWithdrawELFees_WrongPublicKeys() public {
@@ -3370,9 +3376,11 @@ contract StakingContractBehindProxyTest is Test {
         vm.startPrank(bob);
         stakingContract.deposit{value: 32 ether}();
         assert(stakingContract.getWithdrawer(publicKey) == bob);
-        vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawELFee(publicKey);
+        vm.stopPrank();
+        assertEq(bob.balance, 0);
+        assertEq(address(treasury).balance, 0);
+        assertEq(feeRecipientOne.balance, 0);
     }
 
     function testWithdrawCLFeesExitedValidator() public {
@@ -3389,14 +3397,74 @@ contract StakingContractBehindProxyTest is Test {
         assert(operatorOne.balance == 0);
         assert(address(treasury).balance == 0 ether);
         assert(feeRecipientOne.balance == 0);
-        vm.deal(address(clfrBob), 33 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 32 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
         assertApproxEqAbs(bob.balance, 32.90 ether, 10**5);
         assert(operatorOne.balance == 0);
         assertApproxEqAbs(address(treasury).balance, 0.08 ether, 10**5);
         assertApproxEqAbs(feeRecipientOne.balance, 0.02 ether, 10**5);
+    }
+
+    function testWithdrawCLFeesExitedValidator_RewardsAfterRequest() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        assert(address(treasury).balance == 0 ether);
+        assert(feeRecipientOne.balance == 0);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        assertApproxEqAbs(bob.balance, 0.90 ether, 1);
+        vm.deal(address(clfrBob), 33 ether); // Exit + rewards earned since last skimming
+        stakingContract.withdrawCLFee(publicKey);
+        assert(clfrBob.code.length != 0);
+        assertApproxEqAbs(bob.balance, 33.80 ether, 10**5);
+        assert(operatorOne.balance == 0);
+        assertApproxEqAbs(address(treasury).balance, 0.16 ether, 10**5);
+        assertApproxEqAbs(feeRecipientOne.balance, 0.04 ether, 10**5);
+    }
+
+    function testWithdrawCLFeesExitedValidator_UserTriesToStealFee() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        assert(address(treasury).balance == 0 ether);
+        assert(feeRecipientOne.balance == 0);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        assertEq(bob.balance, 0.90 ether);
+        vm.deal(address(clfrBob), 1 ether); // skimming happens between request & actual exit
+        vm.deal(address(clfrBob), 11 ether); // withdrawer send 10 ETH to the fee recipient, using a self destructing contract
+        stakingContract.withdrawCLFee(publicKey);
+        assertEq(bob.balance, 11.90 ether); // no fee was paid on the last withdraw, it was treated as a slashed validator
+        vm.deal(address(clfrBob), 32 ether);
+        stakingContract.withdrawCLFee(publicKey); // The user tried to scam the commission, as a consequence the fee is applied to their whole balance
+        assert(clfrBob.code.length != 0);
+        assertEq(bob.balance, 40.70 ether);
+        assert(operatorOne.balance == 0);
+        assertEq(address(treasury).balance, 2.64 ether);
+        assertEq(feeRecipientOne.balance, 0.66 ether);
     }
 
     function testWithdrawCLFeesEditedOperatorFee() public {
@@ -3416,8 +3484,10 @@ contract StakingContractBehindProxyTest is Test {
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
-        vm.deal(address(clfrBob), 33 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 32 ether);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
 
@@ -3442,14 +3512,13 @@ contract StakingContractBehindProxyTest is Test {
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
         vm.deal(address(clfrBob), 1 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.prank(bob);
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
         assertApproxEqAbs(bob.balance, 0.90 ether, 10**5);
         assert(operatorOne.balance == 0);
         assertApproxEqAbs(address(treasury).balance, 0.08 ether, 10**5);
         assertApproxEqAbs(feeRecipientOne.balance, 0.02 ether, 10**5);
-        assertEq(stakingContract.getLastWithdraw(publicKey), block.timestamp);
     }
 
     function testBatchWithdrawCLFees() public {
@@ -3467,7 +3536,6 @@ contract StakingContractBehindProxyTest is Test {
         address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
         address clfrBob2 = stakingContract.getCLFeeRecipient(publicKey2);
         bytes memory publicKeys = BytesLib.concat(publicKey, publicKey2);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
         vm.deal(address(clfrBob), 1 ether);
         vm.deal(address(clfrBob2), 1 ether);
         stakingContract.batchWithdrawCLFee(publicKeys);
@@ -3475,8 +3543,6 @@ contract StakingContractBehindProxyTest is Test {
         assert(operatorOne.balance == 0);
         assertApproxEqAbs(address(treasury).balance, 0.16 ether, 10**5);
         assertApproxEqAbs(feeRecipientOne.balance, 0.04 ether, 10**5);
-        assertEq(stakingContract.getLastWithdraw(publicKey), block.timestamp);
-        assertEq(stakingContract.getLastWithdraw(publicKey2), block.timestamp);
     }
 
     function testBatchWithdrawCLFees_WrongPublicKeys() public {
@@ -3495,7 +3561,6 @@ contract StakingContractBehindProxyTest is Test {
         address clfrBob2 = stakingContract.getCLFeeRecipient(publicKey2);
         bytes memory publicKeys = BytesLib.concat(publicKey, publicKey2);
         publicKeys = BytesLib.concat(publicKeys, hex"66");
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
         vm.deal(address(clfrBob), 1 ether);
         vm.deal(address(clfrBob2), 1 ether);
         vm.expectRevert(abi.encodeWithSignature("InvalidPublicKeys()"));
@@ -3514,13 +3579,39 @@ contract StakingContractBehindProxyTest is Test {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
         vm.deal(address(clfrBob), 31.95 ether);
         vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
         stakingContract.withdrawCLFee(publicKey);
 
         // In this case the user will the be manually rebated and covered by insurance
         assert(clfrBob.code.length != 0);
-        assertApproxEqAbs(bob.balance, 31.85 ether, 10**6);
+        assertApproxEqAbs(bob.balance, 31.95 ether, 10**6);
+        assertEq(operatorOne.balance, 0);
+    }
+
+    function testWithdrawCLFeesSlashedValidatorWithRewards() public {
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        assert(stakingContract.getWithdrawer(publicKey) == bob);
+        vm.stopPrank();
+        address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
+        assert(clfrBob.code.length == 0);
+        assert(bob.balance == 0);
+        assert(operatorOne.balance == 0);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 31.95 ether);
+        stakingContract.withdrawCLFee(publicKey);
+
+        // In this case the user will the be manually rebated and covered by insurance
+        assert(clfrBob.code.length != 0);
+        assertApproxEqAbs(bob.balance, 32.85 ether, 10**6);
         assertEq(operatorOne.balance, 0);
     }
 
@@ -3537,16 +3628,19 @@ contract StakingContractBehindProxyTest is Test {
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
-        vm.deal(address(clfrBob), 33 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 1 ether);
+
         stakingContract.withdrawCLFee(publicKey);
         assert(clfrBob.code.length != 0);
-        assertApproxEqAbs(bob.balance, 32.90 ether, 10**5);
+        assertApproxEqAbs(bob.balance, 0.90 ether, 10**5);
         assert(operatorOne.balance == 0);
         assertApproxEqAbs(address(treasury).balance, 0.08 ether, 10**5);
         assertApproxEqAbs(feeRecipientOne.balance, 0.02 ether, 10**5);
+
         vm.deal(address(clfrBob), 1 ether);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 32 ether);
         stakingContract.withdrawCLFee(publicKey);
 
         assertApproxEqAbs(bob.balance, 33.80 ether, 10**6);
@@ -3562,9 +3656,11 @@ contract StakingContractBehindProxyTest is Test {
         vm.startPrank(bob);
         stakingContract.deposit{value: 32 ether}();
         assert(stakingContract.getWithdrawer(publicKey) == bob);
-        vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawCLFee(publicKey);
+        vm.stopPrank();
+        assertEq(bob.balance, 0);
+        assertEq(address(treasury).balance, 0);
+        assertEq(feeRecipientOne.balance, 0);
     }
 
     function testWithdrawAllFees() public {
@@ -3578,25 +3674,27 @@ contract StakingContractBehindProxyTest is Test {
 
         address clfrBob = stakingContract.getCLFeeRecipient(publicKey);
         assert(clfrBob.code.length == 0);
-        vm.deal(address(clfrBob), 33 ether);
-
-        address elfrBob = stakingContract.getELFeeRecipient(publicKey);
-        assert(elfrBob.code.length == 0);
-        vm.deal(address(elfrBob), 1 ether);
 
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
 
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        vm.deal(address(clfrBob), 1 ether);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+        vm.deal(address(clfrBob), 32 ether);
+        stakingContract.withdrawCLFee(publicKey);
+        address elfrBob = stakingContract.getELFeeRecipient(publicKey);
+        assert(elfrBob.code.length == 0);
+        vm.deal(address(elfrBob), 1 ether);
+
         stakingContract.withdraw(publicKey);
 
         assertApproxEqAbs(bob.balance, 33.80 ether, 10**5);
         assert(operatorOne.balance == 0);
         assertApproxEqAbs(address(treasury).balance, 0.16 ether, 10**5);
         assertApproxEqAbs(feeRecipientOne.balance, 0.04 ether, 10**5);
-        assertEq(stakingContract.getLastWithdraw(publicKey), block.timestamp);
     }
 
     function testBatchWithdrawAllFees() public {
@@ -3626,8 +3724,6 @@ contract StakingContractBehindProxyTest is Test {
         assert(operatorOne.balance == 0);
         assertApproxEqAbs(address(treasury).balance, 0.32 ether, 10**5);
         assertApproxEqAbs(feeRecipientOne.balance, 0.08 ether, 10**5);
-        assertEq(stakingContract.getLastWithdraw(publicKey), block.timestamp);
-        assertEq(stakingContract.getLastWithdraw(publicKey2), block.timestamp);
     }
 
     function testBatchWithdrawAllFees_WrongPublicKeys() public {
@@ -3677,9 +3773,6 @@ contract StakingContractBehindProxyTest is Test {
         assertEq(operatorOne.balance, 0);
         assertEq(feeRecipientOne.balance, 0.2 ether);
         assertEq(address(treasury).balance, 0.8 ether);
-        for (uint256 i = 0; i < publicKeys_10.length; i += 48) {
-            assertEq(stakingContract.getLastWithdraw(BytesLib.slice(publicKeys_10, i, 48)), 1); // EL withdraw does not affect last withdraw
-        }
     }
 
     function testBatchWithdrawCLFees_10() public {
@@ -3704,9 +3797,6 @@ contract StakingContractBehindProxyTest is Test {
         assertApproxEqAbs(address(treasury).balance, 0.8 ether, 10**6);
         assertApproxEqAbs(feeRecipientOne.balance, 0.2 ether, 10**6);
         assert(block.timestamp > 1);
-        for (uint256 i = 0; i < publicKeys_10.length; i += 48) {
-            assertEq(stakingContract.getLastWithdraw(BytesLib.slice(publicKeys_10, i, 48)), block.timestamp);
-        }
     }
 
     function testBatchWithdrawAllFees_10() public {
@@ -3733,9 +3823,6 @@ contract StakingContractBehindProxyTest is Test {
         assertApproxEqAbs(address(treasury).balance, 1.6 ether, 10**6);
         assertApproxEqAbs(feeRecipientOne.balance, 0.4 ether, 10**6);
         assert(block.timestamp > 1);
-        for (uint256 i = 0; i < publicKeys_10.length; i += 48) {
-            assertEq(stakingContract.getLastWithdraw(BytesLib.slice(publicKeys_10, i, 48)), block.timestamp);
-        }
     }
 
     function testRequestValidatorsExits_OneValidator() public {

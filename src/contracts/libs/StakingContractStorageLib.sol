@@ -322,14 +322,14 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant LAST_WITHDRAW_MAPPING_SLOT = keccak256("StakingContract.lastWithdraw");
+    bytes32 internal constant EXIT_REQUEST_MAPPING_SLOT = keccak256("StakingContract.exitRequest");
 
-    struct LastWithdrawSlot {
-        mapping(bytes32 => uint256) value;
+    struct ExitRequestMap {
+        mapping(bytes32 => bool) value;
     }
 
-    function getLastWithdraw() internal pure returns (LastWithdrawSlot storage p) {
-        bytes32 slot = LAST_WITHDRAW_MAPPING_SLOT;
+    function getExitRequestMap() internal pure returns (ExitRequestMap storage p) {
+        bytes32 slot = EXIT_REQUEST_MAPPING_SLOT;
         assembly {
             p.slot := slot
         }
@@ -339,27 +339,16 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant MAX_CL_PER_BLOCK_SLOT = keccak256("StakingContract.maxClPerBlock");
+    bytes32 internal constant WITHDRAWN_MAPPING_SLOT = keccak256("StakingContract.withdrawn");
 
-    function getMaxClPerBlock() internal view returns (uint256) {
-        return getUint256(MAX_CL_PER_BLOCK_SLOT);
+    struct WithdrawnMap {
+        mapping(bytes32 => bool) value;
     }
 
-    function setMaxClPerBlock(uint256 _newMaxClPerBlock) internal {
-        setUint256(MAX_CL_PER_BLOCK_SLOT, _newMaxClPerBlock);
-    }
-
-    /* ========================================
-    ===========================================
-    =========================================*/
-
-    bytes32 internal constant MIGRATION_DONE_SLOT = keccak256("StakingContract.migrationDone");
-
-    function getMigrationDone() internal view returns (bool) {
-        return getBool(MIGRATION_DONE_SLOT);
-    }
-
-    function migrationDone() internal {
-        setBool(MIGRATION_DONE_SLOT, true);
+    function getWithdrawnMap() internal pure returns (WithdrawnMap storage p) {
+        bytes32 slot = WITHDRAWN_MAPPING_SLOT;
+        assembly {
+            p.slot := slot
+        }
     }
 }

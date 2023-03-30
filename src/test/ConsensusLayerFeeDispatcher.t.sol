@@ -13,6 +13,8 @@ contract StakingContractMock {
     address internal constant operator = address(2);
     address internal constant treasury = address(3);
 
+    bool internal exitRequested;
+
     function getWithdrawerFromPublicKeyRoot(bytes32 v) external pure returns (address) {
         if (v == bytes32(0)) {
             return bob;
@@ -41,9 +43,19 @@ contract StakingContractMock {
         return 608411286029; //Based on a 5 % APY and 12 second slot duration
     }
 
-    function getLastWithdrawFromPublicKeyRoot(bytes32) external pure returns (uint256) {
-        return 1; // initial timestamp in unit test
+    function getExitRequestedFromRoot(bytes32) external view returns (bool) {
+        return exitRequested;
     }
+
+    function setExitRequestedFromRoot(bool _exitRequested) external {
+        exitRequested = _exitRequested;
+    }
+
+    function getWithdrawnFromPublicKeyRoot(bytes32) external pure returns (bool) {
+        return false;
+    }
+
+    function toggleWithdrawnFromPublicKeyRoot(bytes32) external pure {}
 }
 
 contract ConsensusLayerFeeDispatcherTest is Test {
@@ -117,7 +129,7 @@ contract ConsensusLayerFeeDispatcherTest is Test {
     }
 
     function testWithdrawCLFeesExitedValidator() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        StakingContractMock(address(stakingContract)).setExitRequestedFromRoot(true);
         vm.deal(address(this), 33 ether);
         assert(bob.balance == 0);
         assert(treasury.balance == 0);
@@ -132,7 +144,6 @@ contract ConsensusLayerFeeDispatcherTest is Test {
     }
 
     function testWithdrawCLFeesSkimmedValidator() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2); //to avoid rounding errors in the event
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
         assert(treasury.balance == 0);
@@ -146,7 +157,7 @@ contract ConsensusLayerFeeDispatcherTest is Test {
     }
 
     function testWithdrawCLFeesSlashedValidator() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
+        StakingContractMock(address(stakingContract)).setExitRequestedFromRoot(true);
         vm.deal(address(this), 31.95 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);
@@ -154,13 +165,12 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         emit Withdrawal(bob, operator, bytes32(0), 0 ether, 0 ether, 0 ether);
         cld.dispatch{value: 31.95 ether}(bytes32(0));
 
-        assertApproxEqAbs(bob.balance, 31.85 ether, 10**6);
-        assertApproxEqAbs(treasury.balance, 0.08 ether, 10**5);
-        assertApproxEqAbs(operator.balance, 0.02 ether, 10**5);
+        assertApproxEqAbs(bob.balance, 31.95 ether, 10**6);
+        assertEq(treasury.balance, 0.00 ether);
+        assertEq(operator.balance, 0.00 ether);
     }
 
     function testWithdrawCLFeesTwice() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2); //to avoid rounding errors in the event
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
         assert(treasury.balance == 0);
@@ -171,7 +181,6 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         assertApproxEqAbs(bob.balance, 0.9 ether, 10**6);
         assertApproxEqAbs(treasury.balance, 0.08 ether, 10**6);
         assertApproxEqAbs(operator.balance, 0.02 ether, 10**6);
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME);
         vm.deal(address(this), 1 ether);
         vm.expectEmit(true, true, true, true);
         emit Withdrawal(bob, operator, bytes32(0), 0.9 ether, 0.02 ether, 0.08 ether);
@@ -182,7 +191,6 @@ contract ConsensusLayerFeeDispatcherTest is Test {
     }
 
     function testWithdrawCLFeesAnotherPublicKey() external {
-        vm.warp(block.timestamp + ONE_ETH_REWARD_TIME * 2); //to avoid rounding errors in the event
         vm.deal(address(this), 1 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);

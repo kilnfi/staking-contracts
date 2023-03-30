@@ -14,5 +14,9 @@ interface IStakingContractFeeDetails {
 
     function getOperatorFee() external view returns (uint256);
 
-    function getMaxClPerBlock() external view returns (uint256);
+    function getExitRequestedFromRoot(bytes32 _publicKeyRoot) external view returns (bool);
+
+    function getWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (bool);
+
+    function toggleWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external;
 }
