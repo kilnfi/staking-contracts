@@ -2620,6 +2620,34 @@ contract StakingContractOneValidatorTest is Test {
         assert(stakingContract.getGlobalFee() == 1000);
     }
 
+    event ChangedDepositsStopped(bool isStopped);
+
+    function testSetDepositStopped() public {
+        address staker = makeAddr("staker");
+        vm.deal(staker, 64 ether);
+        assert(stakingContract.getDepositsStopped() == false);
+        vm.prank(staker);
+        stakingContract.deposit{value: 32 ether}();
+
+        vm.expectEmit(true, true, true, true);
+        emit ChangedDepositsStopped(true);
+        vm.startPrank(admin);
+        stakingContract.setDepositsStopped(true);
+        vm.stopPrank();
+
+        assert(stakingContract.getDepositsStopped() == true);
+        vm.expectRevert(abi.encodeWithSignature("DepositsStopped()"));
+        vm.prank(staker);
+        stakingContract.deposit{value: 32 ether}();
+    }
+
+    function testSetDepositStopped_asRandom() public {
+        assert(stakingContract.getDepositsStopped() == false);
+        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+        vm.startPrank(address(0x31337));
+        stakingContract.setDepositsStopped(true);
+    }
+
     function testFeeRecipients() public {
         bytes
             memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";

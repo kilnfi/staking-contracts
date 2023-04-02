@@ -379,4 +379,18 @@ library StakingContractStorageLib {
     function setOperatorCommissionLimit(uint256 value) internal {
         setUint256(OPERATOR_COMMISSION_LIMIT_SLOT, value);
     }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant DEPOSIT_STOPPED_SLOT = keccak256("StakingContract.depositStopped");
+
+    function getDepositStopped() internal view returns (bool) {
+        return getBool(DEPOSIT_STOPPED_SLOT);
+    }
+
+    function setDepositStopped(bool val) internal {
+        setBool(DEPOSIT_STOPPED_SLOT, val);
+    }
 }
