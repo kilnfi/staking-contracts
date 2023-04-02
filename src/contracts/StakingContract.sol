@@ -28,6 +28,7 @@ contract StakingContract {
     error InvalidCall();
     error Unauthorized();
     error DepositFailure();
+    error DepositsStopped();
     error InvalidArgument();
     error UnsortedIndexes();
     error InvalidPublicKeys();
@@ -58,6 +59,7 @@ contract StakingContract {
     event ChangedGlobalFee(uint256 newGlobalFee);
     event ChangedOperatorFee(uint256 newOperatorFee);
     event ChangedAdmin(address newAdmin);
+    event ChangedDepositsStopped(bool isStopped);
     event NewOperator(address operatorAddress, address feeRecipientAddress, uint256 index);
     event ChangedOperatorAddresses(uint256 operatorIndex, address operatorAddress, address feeRecipientAddress);
     event DeactivatedOperator(uint256 _operatorIndex);
@@ -266,6 +268,11 @@ contract StakingContract {
             revert Unauthorized();
         }
         StakingContractStorageLib.getWithdrawnMap().value[_publicKeyRoot] = true;
+    }
+
+    /// @notice Returns false if the users can deposit, true if deposits are stopped
+    function getDepositsStopped() external view returns (bool) {
+        return StakingContractStorageLib.getDepositStopped();
     }
 
     /// @notice Retrieve operator details
@@ -677,6 +684,12 @@ contract StakingContract {
         }
     }
 
+    /// @notice Utility to stop or allow deposits
+    function setDepositsStopped(bool val) external onlyAdmin {
+        emit ChangedDepositsStopped(val);
+        StakingContractStorageLib.setDepositStopped(val);
+    }
+
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
     /// ██ ████   ██    ██    ██      ██   ██ ████   ██ ██   ██ ██
     /// ██ ██ ██  ██    ██    █████   ██████  ██ ██  ██ ███████ ██
@@ -1010,6 +1023,9 @@ contract StakingContract {
     }
 
     function _deposit(address _withdrawer) internal {
+        if (StakingContractStorageLib.getDepositStopped()) {
+            revert DepositsStopped();
+        }
         if (msg.value == 0 || msg.value % DEPOSIT_SIZE != 0) {
             revert InvalidDepositValue();
         }
