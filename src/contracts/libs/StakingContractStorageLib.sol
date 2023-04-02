@@ -351,4 +351,18 @@ library StakingContractStorageLib {
             p.slot := slot
         }
     }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant DEPOSIT_STOPPED_SLOT = keccak256("StakingContract.depositStopped");
+
+    function getDepositStopped() internal view returns (bool) {
+        return getBool(DEPOSIT_STOPPED_SLOT);
+    }
+
+    function setDepositStopped(bool val) internal {
+        setBool(DEPOSIT_STOPPED_SLOT, val);
+    }
 }
