@@ -4064,7 +4064,6 @@ contract StakingContractBehindProxyTest is Test {
         assert(feeRecipientOne.balance == 0);
         assert(address(treasury).balance == 0);
 
-
         vm.expectRevert(abi.encodeWithSignature("InvalidWithdrawer()"));
         vm.prank(address(0xdede));
         stakingContract.withdraw(publicKey);
