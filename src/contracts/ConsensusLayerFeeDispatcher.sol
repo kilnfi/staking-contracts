@@ -73,17 +73,12 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
 
         uint256 nonExemptBalance = balance;
 
-        if (exitRequested && balance > 10 ether && !withdrawn) {
-            if (balance >= 32 ether) {
-                // In case of healthy exit
-                nonExemptBalance -= 32 ether;
-                stakingContract.toggleWithdrawnFromPublicKeyRoot(_publicKeyRoot);
-            } else {
-                // In case of slashing
-                nonExemptBalance -= balance;
-                stakingContract.toggleWithdrawnFromPublicKeyRoot(_publicKeyRoot);
-            }
+        if (exitRequested && balance >= 32 ether && !withdrawn) { // In case of healthy exit
+            nonExemptBalance -= 32 ether;
+            stakingContract.toggleWithdrawnFromPublicKeyRoot(_publicKeyRoot);
         }
+        // if balance is less than 32 ether we don't exempt anything
+        // in case of slashing (withdrawn balance < 32 ETH), staker will be rebated manually to compensate for the commission taken on its principal and loss according to the SLA described in the Terms&Conditions
 
         uint256 globalFee = (nonExemptBalance * stakingContract.getGlobalFee()) / BASIS_POINTS;
 
