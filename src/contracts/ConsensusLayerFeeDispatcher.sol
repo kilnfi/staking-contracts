@@ -31,7 +31,6 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
     bytes32 internal constant STAKING_CONTRACT_ADDRESS_SLOT =
         keccak256("ConsensusLayerFeeRecipient.stakingContractAddress");
     uint256 internal constant BASIS_POINTS = 10_000;
-    uint256 internal constant SLOT_DURATION_SEC = 12;
     bytes32 internal constant VERSION_SLOT = keccak256("ConsensusLayerFeeRecipient.version");
 
     /// @notice Ensures an initialisation call has been called only once per _version value
@@ -73,12 +72,16 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
 
         uint256 nonExemptBalance = balance;
 
-        if (exitRequested && balance >= 32 ether && !withdrawn) { // In case of healthy exit
+        if (exitRequested && balance >= 32 ether && !withdrawn) {
+            // In case of healthy exit, exempt 32 ETH once from the balance, happens only once.
+            // !withdrawn prevents this logic being reused to not pay the fee on rewards
             nonExemptBalance -= 32 ether;
             stakingContract.toggleWithdrawnFromPublicKeyRoot(_publicKeyRoot);
         }
         // if balance is less than 32 ether we don't exempt anything
-        // in case of slashing (withdrawn balance < 32 ETH), staker will be rebated manually to compensate for the commission taken on its principal and loss according to the SLA described in the Terms&Conditions
+        // in case of slashing (withdrawn balance < 32 ETH), staker will be rebated manually
+        // It will compensate for the commission taken on its principal and the loss according to
+        // the SLA described in the Terms&Conditions
 
         uint256 globalFee = (nonExemptBalance * stakingContract.getGlobalFee()) / BASIS_POINTS;
 

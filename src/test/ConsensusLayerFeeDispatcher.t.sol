@@ -157,7 +157,6 @@ contract ConsensusLayerFeeDispatcherTest is Test {
     }
 
     function testWithdrawCLFeesSlashedValidator() external {
-        StakingContractMock(address(stakingContract)).setExitRequestedFromRoot(true);
         vm.deal(address(this), 31.95 ether);
         assert(bob.balance == 0);
         assert(operator.balance == 0);
@@ -165,9 +164,10 @@ contract ConsensusLayerFeeDispatcherTest is Test {
         emit Withdrawal(bob, operator, bytes32(0), 0 ether, 0 ether, 0 ether);
         cld.dispatch{value: 31.95 ether}(bytes32(0));
 
-        assertApproxEqAbs(bob.balance, 31.95 ether, 10**6);
-        assertEq(treasury.balance, 0.00 ether);
-        assertEq(operator.balance, 0.00 ether);
+        // In this case bob would be manually rebated, including the commission charged on it's principal
+        assertApproxEqAbs(bob.balance, 28.755 ether, 10**6);
+        assertEq(treasury.balance, 2.556 ether);
+        assertEq(operator.balance, 0.639 ether);
     }
 
     function testWithdrawCLFeesTwice() external {

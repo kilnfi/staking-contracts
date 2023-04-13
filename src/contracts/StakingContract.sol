@@ -233,7 +233,7 @@ contract StakingContract {
         return _getWithdrawer(_publicKeyRoot);
     }
 
-    /// @notice Retrieve wether the validator exit has been requested
+    /// @notice Retrieve whether the validator exit has been requested
     /// @param _publicKeyRoot Public Key Root to check
     function getExitRequestedFromRoot(bytes32 _publicKeyRoot) external view returns (bool) {
         return _getExitRequest(_publicKeyRoot);
@@ -650,12 +650,12 @@ contract StakingContract {
         }
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
-            address withdrawer = _getWithdrawer(_getPubKeyRoot(publicKey));
+            bytes32 pubKeyRoot = _getPubKeyRoot(publicKey);
+            address withdrawer = _getWithdrawer(pubKeyRoot);
             if (msg.sender != withdrawer) {
                 revert Unauthorized();
             }
-            _deployAndWithdraw(publicKey, CONSENSUS_LAYER_SALT_PREFIX, StakingContractStorageLib.getCLDispatcher());
-            _setExitRequest(_getPubKeyRoot(publicKey), true);
+            _setExitRequest(pubKeyRoot, true);
             emit ExitRequest(withdrawer, publicKey);
             unchecked {
                 i += PUBLIC_KEY_LENGTH;
