@@ -165,6 +165,10 @@ contract StakingContract {
         StakingContractStorageLib.setCLDispatcher(_clDispatcher);
         StakingContractStorageLib.setDepositContract(_depositContract);
         StakingContractStorageLib.setFeeRecipientImplementation(_feeRecipientImplementation);
+        initialize_2(globalCommissionLimitBPS, operatorCommissionLimitBPS);
+    }
+
+    function initialize_2(uint256 globalCommissionLimitBPS, uint256 operatorCommissionLimitBPS) public init(2) {
         if (globalCommissionLimitBPS > BASIS_POINTS) {
             revert InvalidFee();
         }
