@@ -2937,7 +2937,7 @@ contract StakingContractOneValidatorTest is Test {
         vm.deal(address(clfrBob), 1 ether);
         vm.prank(bob);
 
-    stakingContract.withdrawCLFee(publicKey);
+        stakingContract.withdrawCLFee(publicKey);
 
         assert(clfrBob.code.length != 0);
         assertApproxEqAbs(bob.balance, 0.90 ether, 10**6);
