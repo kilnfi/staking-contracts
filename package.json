@@ -16,7 +16,7 @@
     "typescript": "^4.6.3"
   },
   "scripts": {
-    "format": "prettier --write ./src",
+    "format": "prettier --write ./src --plugin=prettier-plugin-solidity",
     "format:check": "prettier --check ./src",
     "lint": "solhint 'src/**/*.sol'",
     "test": "forge",
