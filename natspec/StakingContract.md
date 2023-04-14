@@ -131,6 +131,54 @@ Add new validator public keys and signatures
 | _publicKeys | bytes | Concatenated _keyCount public keys |
 | _signatures | bytes | Concatenated _keyCount signatures |
 
+### batchWithdraw
+
+```solidity
+function batchWithdraw(bytes _publicKeys) external nonpayable
+```
+
+Withdraw both Consensus and Execution Layer Fees for given validators public keys
+
+*Funds are sent to the withdrawer account*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeys | bytes | Validators to withdraw fees from |
+
+### batchWithdrawCLFee
+
+```solidity
+function batchWithdrawCLFee(bytes _publicKeys) external nonpayable
+```
+
+Withdraw the Consensus Layer Fee for given validators public keys
+
+*Funds are sent to the withdrawer accountThis method is public on purpose*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeys | bytes | Validators to withdraw Consensus Layer Fees from |
+
+### batchWithdrawELFee
+
+```solidity
+function batchWithdrawELFee(bytes _publicKeys) external nonpayable
+```
+
+Withdraw the Execution Layer Fee for given validators public keys
+
+*Funds are sent to the withdrawer accountThis method is public on purpose*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeys | bytes | Validators to withdraw Execution Layer Fees from |
+
 ### deactivateOperator
 
 ```solidity
@@ -215,6 +263,23 @@ Compute the Consensus Layer Fee recipient address for a given validator public k
 |---|---|---|
 | _0 | address | undefined |
 
+### getDepositsStopped
+
+```solidity
+function getDepositsStopped() external view returns (bool)
+```
+
+Returns false if the users can deposit, true if deposits are stopped
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### getELFeeRecipient
 
 ```solidity
@@ -236,6 +301,28 @@ Compute the Execution Layer Fee recipient address for a given validator public k
 | Name | Type | Description |
 |---|---|---|
 | _0 | address | undefined |
+
+### getExitRequestedFromRoot
+
+```solidity
+function getExitRequestedFromRoot(bytes32 _publicKeyRoot) external view returns (bool)
+```
+
+Retrieve whether the validator exit has been requested
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeyRoot | bytes32 | Public Key Root to check |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
 
 ### getGlobalFee
 
@@ -425,10 +512,32 @@ Retrieve withdrawer of public key root
 |---|---|---|
 | _0 | address | undefined |
 
+### getWithdrawnFromPublicKeyRoot
+
+```solidity
+function getWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (bool)
+```
+
+Return true if the validator already went through the exit logic
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeyRoot | bytes32 | Public Key Root of the validator |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### initialize_1
 
 ```solidity
-function initialize_1(address _admin, address _treasury, address _depositContract, address _elDispatcher, address _clDispatcher, address _feeRecipientImplementation, uint256 _globalFee, uint256 _operatorFee) external nonpayable
+function initialize_1(address _admin, address _treasury, address _depositContract, address _elDispatcher, address _clDispatcher, address _feeRecipientImplementation, uint256 _globalFee, uint256 _operatorFee, uint256 globalCommissionLimitBPS, uint256 operatorCommissionLimitBPS) external nonpayable
 ```
 
 
@@ -447,6 +556,25 @@ function initialize_1(address _admin, address _treasury, address _depositContrac
 | _feeRecipientImplementation | address | undefined |
 | _globalFee | uint256 | undefined |
 | _operatorFee | uint256 | undefined |
+| globalCommissionLimitBPS | uint256 | undefined |
+| operatorCommissionLimitBPS | uint256 | undefined |
+
+### initialize_2
+
+```solidity
+function initialize_2(uint256 globalCommissionLimitBPS, uint256 operatorCommissionLimitBPS) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| globalCommissionLimitBPS | uint256 | undefined |
+| operatorCommissionLimitBPS | uint256 | undefined |
 
 ### removeValidators
 
@@ -464,6 +592,38 @@ Remove unfunded validators
 |---|---|---|
 | _operatorIndex | uint256 | Operator Index |
 | _indexes | uint256[] | List of indexes to delete, in decreasing order |
+
+### requestValidatorsExit
+
+```solidity
+function requestValidatorsExit(bytes _publicKeys) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeys | bytes | undefined |
+
+### setDepositsStopped
+
+```solidity
+function setDepositsStopped(bool val) external nonpayable
+```
+
+Utility to stop or allow deposits
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| val | bool | undefined |
 
 ### setGlobalFee
 
@@ -581,6 +741,22 @@ Changes the behavior of the withdrawer customization logic
 |---|---|---|
 | _enabled | bool | True to allow users to customize the withdrawer |
 
+### toggleWithdrawnFromPublicKeyRoot
+
+```solidity
+function toggleWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external nonpayable
+```
+
+Allows the CLDispatcher to signal a validator went through the exit logic
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeyRoot | bytes32 | Public Key Root of the validator |
+
 ### transferOwnership
 
 ```solidity
@@ -621,7 +797,7 @@ function withdrawCLFee(bytes _publicKey) external nonpayable
 
 Withdraw the Consensus Layer Fee for a given validator public key
 
-*Funds are sent to the withdrawer accountThis method is public on purpose*
+*Funds are sent to the withdrawer account*
 
 #### Parameters
 
@@ -637,7 +813,7 @@ function withdrawELFee(bytes _publicKey) external nonpayable
 
 Withdraw the Execution Layer Fee for a given validator public key
 
-*Funds are sent to the withdrawer accountThis method is public on purpose*
+*Funds are sent to the withdrawer account*
 
 #### Parameters
 
@@ -680,6 +856,22 @@ event ChangedAdmin(address newAdmin)
 | Name | Type | Description |
 |---|---|---|
 | newAdmin  | address | undefined |
+
+### ChangedDepositsStopped
+
+```solidity
+event ChangedDepositsStopped(bool isStopped)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| isStopped  | bool | undefined |
 
 ### ChangedGlobalFee
 
@@ -816,6 +1008,23 @@ event Deposit(address indexed caller, address indexed withdrawer, bytes publicKe
 | publicKey  | bytes | undefined |
 | signature  | bytes | undefined |
 
+### ExitRequest
+
+```solidity
+event ExitRequest(address caller, bytes pubkey)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| caller  | address | undefined |
+| pubkey  | bytes | undefined |
+
 ### NewOperator
 
 ```solidity
@@ -915,6 +1124,17 @@ error Deactivated()
 
 ```solidity
 error DepositFailure()
+```
+
+
+
+
+
+
+### DepositsStopped
+
+```solidity
+error DepositsStopped()
 ```
 
 
@@ -1030,6 +1250,17 @@ error InvalidSignatures()
 
 ```solidity
 error InvalidValidatorCount()
+```
+
+
+
+
+
+
+### InvalidWithdrawer
+
+```solidity
+error InvalidWithdrawer()
 ```
 
 

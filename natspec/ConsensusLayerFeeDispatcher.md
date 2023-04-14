@@ -13,7 +13,7 @@ This contract can be used to receive fees from a validator and split them with a
 ### dispatch
 
 ```solidity
-function dispatch(bytes32) external payable
+function dispatch(bytes32 _publicKeyRoot) external payable
 ```
 
 Performs a withdrawal on this contract&#39;s balance
@@ -24,7 +24,7 @@ Performs a withdrawal on this contract&#39;s balance
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | bytes32 | undefined |
+| _publicKeyRoot | bytes32 | undefined |
 
 ### getStakingContract
 
@@ -148,17 +148,6 @@ error InvalidCall()
 
 
 
-### NotImplemented
-
-```solidity
-error NotImplemented()
-```
-
-
-
-
-
-
 ### TreasuryReceiveError
 
 ```solidity
@@ -174,6 +163,17 @@ error TreasuryReceiveError(bytes errorData)
 | Name | Type | Description |
 |---|---|---|
 | errorData | bytes | undefined |
+
+### ValidatorNotMigrated
+
+```solidity
+error ValidatorNotMigrated()
+```
+
+
+
+
+
 
 ### WithdrawerReceiveError
 
