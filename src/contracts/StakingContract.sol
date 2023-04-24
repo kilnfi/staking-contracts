@@ -19,6 +19,8 @@ contract StakingContract {
     uint256 public constant SIGNATURE_LENGTH = 96;
     uint256 public constant PUBLIC_KEY_LENGTH = 48;
     uint256 public constant DEPOSIT_SIZE = 32 ether;
+    // this is the equivalent of Uint256Lib.toLittleEndian64(DEPOSIT_SIZE / 1000000000 wei);
+    uint256 constant DEPOSIT_SIZE_AMOUNT_LITTLEENDIAN64 = 0x0040597307000000000000000000000000000000000000000000000000000000;
     uint256 internal constant BASIS_POINTS = 10_000;
 
     error Forbidden();
@@ -820,12 +822,10 @@ contract StakingContract {
             )
         );
 
-        uint256 depositAmount = DEPOSIT_SIZE / 1000000000 wei;
-
         bytes32 depositDataRoot = sha256(
             abi.encodePacked(
                 sha256(abi.encodePacked(pubkeyRoot, _withdrawalCredentials)),
-                sha256(abi.encodePacked(Uint256Lib.toLittleEndian64(depositAmount), signatureRoot))
+                sha256(abi.encodePacked(DEPOSIT_SIZE_AMOUNT_LITTLEENDIAN64, signatureRoot))
             )
         );
 
