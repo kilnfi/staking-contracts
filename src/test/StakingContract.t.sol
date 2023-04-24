@@ -4,7 +4,6 @@ pragma solidity >=0.8.10;
 import "forge-std/Vm.sol";
 import "forge-std/Test.sol";
 import "./UserFactory.sol";
-import "../contracts/Treasury.sol";
 import "../contracts/StakingContract.sol";
 import "solmate/test/utils/DSTestPlus.sol";
 import "../contracts/interfaces/IDepositContract.sol";
@@ -54,7 +53,7 @@ contract DepositContractMock is IDepositContract {
 contract StakingContractTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
-    Treasury internal treasury;
+    address internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -124,12 +123,12 @@ contract StakingContractTest is DSTestPlus {
         address[] memory recipients = new address[](1);
         uint256[] memory percents = new uint256[](1);
         percents[0] = 10_000;
-        treasury = new Treasury(admin, recipients, percents);
+        treasury = address(99);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         stakingContract.initialize_1(
             admin,
-            address(treasury),
+            treasury,
             address(depositContract),
             address(0),
             address(0),
@@ -902,7 +901,7 @@ contract StakingContractTest is DSTestPlus {
 contract StakingContractInitializationTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
-    Treasury internal treasury;
+    address internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -916,7 +915,7 @@ contract StakingContractInitializationTest is DSTestPlus {
         address[] memory recipients = new address[](1);
         uint256[] memory percents = new uint256[](1);
         percents[0] = 10_000;
-        treasury = new Treasury(admin, recipients, percents);
+        treasury = address(99);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
     }
@@ -1027,7 +1026,7 @@ contract StakingContractInitializationTest is DSTestPlus {
 contract StakingContractOperatorTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
-    Treasury internal treasury;
+    address internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -1041,7 +1040,7 @@ contract StakingContractOperatorTest is DSTestPlus {
         address[] memory recipients = new address[](1);
         uint256[] memory percents = new uint256[](1);
         percents[0] = 10_000;
-        treasury = new Treasury(admin, recipients, percents);
+        treasury = address(99);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         stakingContract.initialize_1(
@@ -1106,7 +1105,7 @@ contract StakingContractOperatorTest is DSTestPlus {
 contract StakingContractDistributionTest is DSTestPlus {
     Vm internal vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
-    Treasury internal treasury;
+    address internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -1122,7 +1121,7 @@ contract StakingContractDistributionTest is DSTestPlus {
         address[] memory recipients = new address[](1);
         uint256[] memory percents = new uint256[](1);
         percents[0] = 10_000;
-        treasury = new Treasury(admin, recipients, percents);
+        treasury = address(99);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         stakingContract.initialize_1(
@@ -1215,7 +1214,7 @@ contract StakingContractDistributionTest is DSTestPlus {
 }
 
 contract StakingContractOneValidatorTest is Test {
-    Treasury internal treasury;
+    address internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -1234,7 +1233,7 @@ contract StakingContractOneValidatorTest is Test {
         address[] memory recipients = new address[](1);
         uint256[] memory percents = new uint256[](1);
         percents[0] = 10_000;
-        treasury = new Treasury(admin, recipients, percents);
+        treasury = address(99);
         stakingContract = new StakingContract();
         depositContract = new DepositContractMock();
         feeRecipientImpl = new FeeRecipient();
@@ -1996,7 +1995,7 @@ contract StakingContractOneValidatorTest is Test {
 }
 
 contract StakingContractBehindProxyTest is Test {
-    Treasury internal treasury;
+    address internal treasury;
     StakingContract internal stakingContract;
     DepositContractMock internal depositContract;
     UserFactory internal uf;
@@ -2019,7 +2018,7 @@ contract StakingContractBehindProxyTest is Test {
         address[] memory recipients = new address[](1);
         uint256[] memory percents = new uint256[](1);
         percents[0] = 10_000;
-        treasury = new Treasury(admin, recipients, percents);
+        treasury = address(99);
         address eldImpl = address(new ExecutionLayerFeeDispatcher(1));
         address cldImpl = address(new ConsensusLayerFeeDispatcher(1));
         address stakingContractImpl = address(new StakingContract());
