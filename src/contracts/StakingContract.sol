@@ -107,7 +107,7 @@ contract StakingContract {
     }
 
     /// @notice Ensures that the caller is the operator fee recipient
-    modifier onlyOperatorFeeRecipient(uint256 _operatorIndex) {
+    modifier onlyActiveOperatorFeeRecipient(uint256 _operatorIndex) {
         StakingContractStorageLib.OperatorInfo storage operatorInfo = StakingContractStorageLib.getOperators().value[
             _operatorIndex
         ];
@@ -387,7 +387,7 @@ contract StakingContract {
         uint256 _operatorIndex,
         address _operatorAddress,
         address _feeRecipientAddress
-    ) external onlyOperatorFeeRecipient(_operatorIndex) {
+    ) external onlyActiveOperatorFeeRecipient(_operatorIndex) {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
 
         operators.value[_operatorIndex].operator = _operatorAddress;
