@@ -36,6 +36,7 @@ contract StakingContract {
     error InvalidPublicKeys();
     error InvalidSignatures();
     error InvalidWithdrawer();
+    error InvalidZeroAddress();
     error AlreadyInitialized();
     error InvalidDepositValue();
     error NotEnoughValidators();
@@ -154,7 +155,9 @@ contract StakingContract {
         uint256 globalCommissionLimitBPS,
         uint256 operatorCommissionLimitBPS
     ) external init(1) {
+        _checkAddress(_admin);
         StakingContractStorageLib.setAdmin(_admin);
+        _checkAddress(_treasury);
         StakingContractStorageLib.setTreasury(_treasury);
 
         if (_globalFee > BASIS_POINTS) {
@@ -166,9 +169,13 @@ contract StakingContract {
         }
         StakingContractStorageLib.setOperatorFee(_operatorFee);
 
+        _checkAddress(_elDispatcher);
         StakingContractStorageLib.setELDispatcher(_elDispatcher);
+        _checkAddress(_clDispatcher);
         StakingContractStorageLib.setCLDispatcher(_clDispatcher);
+        _checkAddress(_depositContract);
         StakingContractStorageLib.setDepositContract(_depositContract);
+        _checkAddress(_depositContract);
         StakingContractStorageLib.setFeeRecipientImplementation(_feeRecipientImplementation);
         initialize_2(globalCommissionLimitBPS, operatorCommissionLimitBPS);
     }
@@ -389,6 +396,8 @@ contract StakingContract {
         address _operatorAddress,
         address _feeRecipientAddress
     ) external onlyActiveOperatorFeeRecipient(_operatorIndex) {
+        _checkAddress(_operatorAddress);
+        _checkAddress(_feeRecipientAddress);
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
 
         operators.value[_operatorIndex].operator = _operatorAddress;
@@ -404,6 +413,7 @@ contract StakingContract {
         if (!StakingContractStorageLib.getWithdrawerCustomizationEnabled()) {
             revert Forbidden();
         }
+        _checkAddress(_newWithdrawer);
         bytes32 pubkeyRoot = _getPubKeyRoot(_publicKey);
         StakingContractStorageLib.WithdrawersSlot storage withdrawers = StakingContractStorageLib.getWithdrawers();
 
@@ -907,5 +917,11 @@ contract StakingContract {
             IFeeRecipient(feeRecipientAddress).init(_dispatcher, publicKeyRoot);
         }
         IFeeRecipient(feeRecipientAddress).withdraw();
+    }
+
+    function _checkAddress(address _address) internal pure {
+        if (_address == address(0)) {
+            revert InvalidZeroAddress();
+        }
     }
 }
