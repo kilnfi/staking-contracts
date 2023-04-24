@@ -403,7 +403,7 @@ contract StakingContract {
         if (!StakingContractStorageLib.getWithdrawerCustomizationEnabled()) {
             revert Forbidden();
         }
-        bytes32 pubkeyRoot = sha256(BytesLib.pad64(_publicKey));
+        bytes32 pubkeyRoot = _getPubKeyRoot(_publicKey);
         StakingContractStorageLib.WithdrawersSlot storage withdrawers = StakingContractStorageLib.getWithdrawers();
 
         if (withdrawers.value[pubkeyRoot] != msg.sender) {
