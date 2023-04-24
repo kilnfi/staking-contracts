@@ -351,6 +351,7 @@ contract StakingContract {
             revert Unauthorized();
         }
         StakingContractStorageLib.setAdmin(newAdmin);
+        StakingContractStorageLib.setPendingAdmin(address(0));
         emit ChangedAdmin(newAdmin);
     }
 
