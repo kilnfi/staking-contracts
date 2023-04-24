@@ -462,7 +462,7 @@ contract StakingContract {
     /// @notice Change the Operator fee
     /// @param _operatorFee Fee in Basis Point
     function setOperatorFee(uint256 _operatorFee) external onlyAdmin {
-        if (_operatorFee > BASIS_POINTS || _operatorFee > StakingContractStorageLib.getOperatorCommissionLimit()) {
+        if (_operatorFee > StakingContractStorageLib.getOperatorCommissionLimit()) {
             revert InvalidFee();
         }
         StakingContractStorageLib.setOperatorFee(_operatorFee);
@@ -472,7 +472,7 @@ contract StakingContract {
     /// @notice Change the Global fee
     /// @param _globalFee Fee in Basis Point
     function setGlobalFee(uint256 _globalFee) external onlyAdmin {
-        if (_globalFee > BASIS_POINTS || _globalFee > StakingContractStorageLib.getGlobalCommissionLimit()) {
+        if (_globalFee > StakingContractStorageLib.getGlobalCommissionLimit()) {
             revert InvalidFee();
         }
         StakingContractStorageLib.setGlobalFee(_globalFee);
