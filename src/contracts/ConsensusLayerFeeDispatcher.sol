@@ -26,7 +26,6 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
     error ZeroBalanceWithdrawal();
     error AlreadyInitialized();
     error InvalidCall();
-    error ValidatorNotMigrated();
 
     bytes32 internal constant STAKING_CONTRACT_ADDRESS_SLOT =
         keccak256("ConsensusLayerFeeRecipient.stakingContractAddress");
