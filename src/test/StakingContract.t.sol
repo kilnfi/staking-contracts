@@ -2868,8 +2868,8 @@ contract StakingContractBehindProxyTest is Test {
         assert(clfrBob.code.length == 0);
         assert(bob.balance == 0);
         assert(operatorOne.balance == 0);
-        vm.prank(bob);
-        stakingContract.requestValidatorsExit(publicKey);
+        // Validator accumulated ~1 ETH or rewards then get slashed for 1 ETH + exit drain
+        // Less than 32 ETH land on the fee recipient
         vm.deal(address(clfrBob), 31.95 ether);
         vm.prank(bob);
         stakingContract.withdrawCLFee(publicKey);
