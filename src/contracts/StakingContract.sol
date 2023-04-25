@@ -869,8 +869,8 @@ contract StakingContract {
         uint256 _depositCount,
         uint256 _totalAvailableValidators
     ) internal {
-        _depositValidatorsOfOperator(0, _depositCount, _withdrawer);
         StakingContractStorageLib.setTotalAvailableValidators(_totalAvailableValidators - _depositCount);
+        _depositValidatorsOfOperator(0, _depositCount, _withdrawer);
     }
 
     function _deposit(address _withdrawer) internal {
