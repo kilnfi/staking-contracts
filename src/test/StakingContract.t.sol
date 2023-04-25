@@ -419,7 +419,7 @@ contract StakingContractTest is DSTestPlus {
 
         bytes
             memory pubKey1 = hex"0c74b6d3d877bbb2083f1bcc83b302f3ed533eaf3cd39cff97daf2c7b9b776168481aa7b51778df673a37049886f25b0";
-        assertFalse(stakingContract.getEnabledFromPublicKeyRoot(sha256(BytesLib.pad64(pubKey1))));
+        assertFalse(stakingContract.getEnabledFromPublicKeyRoot(sha256(abi.encodePacked(pubKey1, bytes16(0)))));
 
         vm.startPrank(operatorOne);
         vm.expectEmit(true, true, true, true);
@@ -427,7 +427,7 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.addValidators(0, 10, publicKeys, signatures);
         vm.stopPrank();
 
-        assertTrue(stakingContract.getEnabledFromPublicKeyRoot(sha256(BytesLib.pad64(pubKey1))));
+        assertTrue(stakingContract.getEnabledFromPublicKeyRoot(sha256(abi.encodePacked(pubKey1, bytes16(0)))));
 
         (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
             .getOperator(0);
@@ -638,7 +638,7 @@ contract StakingContractTest is DSTestPlus {
 
         bytes
             memory pubKey = hex"fdca2994adc49ddccb195bda2510e50a4ae10de26cf96dee5e577689f51650a610a33da0a826ae47247d8d1189cb3386";
-        assertTrue(stakingContract.getEnabledFromPublicKeyRoot(sha256(BytesLib.pad64(pubKey))));
+        assertTrue(stakingContract.getEnabledFromPublicKeyRoot(sha256(abi.encodePacked(pubKey, bytes16(0)))));
 
         vm.startPrank(operatorOne);
         vm.expectEmit(true, true, true, true);
@@ -646,7 +646,7 @@ contract StakingContractTest is DSTestPlus {
         stakingContract.removeValidators(0, indexes);
         vm.stopPrank();
 
-        assertFalse(stakingContract.getEnabledFromPublicKeyRoot(sha256(BytesLib.pad64(pubKey))));
+        assertFalse(stakingContract.getEnabledFromPublicKeyRoot(sha256(abi.encodePacked(pubKey, bytes16(0)))));
 
         (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
             .getOperator(0);

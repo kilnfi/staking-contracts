@@ -766,7 +766,7 @@ contract StakingContract {
     }
 
     function _getPubKeyRoot(bytes memory _publicKey) internal pure returns (bytes32) {
-        return sha256(BytesLib.pad64(_publicKey));
+        return sha256(abi.encodePacked(_publicKey, bytes16(0)));
     }
 
     function _getWithdrawer(bytes32 _publicKeyRoot) internal view returns (address) {
@@ -858,7 +858,7 @@ contract StakingContract {
         bytes32 signatureRoot = sha256(
             abi.encodePacked(
                 sha256(BytesLib.slice(_signature, 0, 64)),
-                sha256(BytesLib.pad64(BytesLib.slice(_signature, 64, SIGNATURE_LENGTH - 64)))
+                sha256(abi.encodePacked(BytesLib.slice(_signature, 64, SIGNATURE_LENGTH - 64), bytes32(0)))
             )
         );
 
