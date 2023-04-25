@@ -133,6 +133,14 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
+    /// Validator funding information is stored in a packed fashion
+    /// We fit 4 vfi per storage slot.
+    /// Each vfi is stored in 64 bits, with the following layout:
+    /// 32 bits for the number of available keys
+    /// 32 bits for the number of funded keys
+
+    uint256 internal constant FUNDED_OFFSET = 32;
+
     bytes32 internal constant VALIDATORS_FUNDING_INFO_SLOT = keccak256("StakingContract.validatorsFundingInfo");
 
     struct ValidatorsFundingInfo {
@@ -152,11 +160,11 @@ library StakingContractStorageLib {
             p.slot := slot
         }
 
-        uint256 slotIndex = _index >> 2;
-        uint256 innerIndex = (_index & 3) << 6;
+        uint256 slotIndex = _index >> 2; // divide by 4
+        uint256 innerIndex = (_index & 3) << 6; // modulo 4, multiply by 64
         uint256 value = p.value[slotIndex] >> innerIndex;
         vfi.availableKeys = uint32(value);
-        vfi.funded = uint32(value >> 32);
+        vfi.funded = uint32(value >> FUNDED_OFFSET);
     }
 
     function setValidatorsFundingInfo(
@@ -171,11 +179,11 @@ library StakingContractStorageLib {
             p.slot := slot
         }
 
-        uint256 slotIndex = _index >> 2;
-        uint256 innerIndex = (_index & 3) << 6;
+        uint256 slotIndex = _index >> 2; // divide by 4
+        uint256 innerIndex = (_index & 3) << 6; // modulo 4, multiply by 64
         p.value[slotIndex] =
-            (p.value[slotIndex] & (~(uint256(0xFFFFFFFFFFFFFFFF) << innerIndex))) |
-            ((uint256(_availableKeys) | (uint256(_funded) << 32)) << innerIndex);
+            (p.value[slotIndex] & (~(uint256(0xFFFFFFFFFFFFFFFF) << innerIndex))) | // clear the bits we want to set
+            ((uint256(_availableKeys) | (uint256(_funded) << FUNDED_OFFSET)) << innerIndex);
     }
 
     /* ========================================
