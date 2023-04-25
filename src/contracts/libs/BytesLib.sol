@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.10;
 
+/// Based on GNSPS/BytesLib.sol
 library BytesLib {
     function concat(bytes memory _preBytes, bytes memory _postBytes) internal pure returns (bytes memory) {
         bytes memory tempBytes;
