@@ -604,14 +604,17 @@ contract StakingContractTest is DSTestPlus {
         indexes[8] = 1;
         indexes[9] = 0;
 
+        bytes
+            memory pubKey = hex"fdca2994adc49ddccb195bda2510e50a4ae10de26cf96dee5e577689f51650a610a33da0a826ae47247d8d1189cb3386";
+        assertTrue(stakingContract.getEnabledFromPublicKeyRoot(sha256(BytesLib.pad64(pubKey))));
+
         vm.startPrank(operatorOne);
         vm.expectEmit(true, true, true, true);
-        emit ValidatorKeyRemoved(
-            0,
-            hex"fdca2994adc49ddccb195bda2510e50a4ae10de26cf96dee5e577689f51650a610a33da0a826ae47247d8d1189cb3386"
-        );
+        emit ValidatorKeyRemoved(0, pubKey);
         stakingContract.removeValidators(0, indexes);
         vm.stopPrank();
+
+        assertFalse(stakingContract.getEnabledFromPublicKeyRoot(sha256(BytesLib.pad64(pubKey))));
 
         (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
             .getOperator(0);

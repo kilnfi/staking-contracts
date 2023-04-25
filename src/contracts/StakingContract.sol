@@ -576,6 +576,8 @@ contract StakingContract {
         StakingContractStorageLib.ValidatorsFundingInfo memory operatorInfo = StakingContractStorageLib
             .getValidatorsFundingInfo(_operatorIndex);
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
+        StakingContractStorageLib.OperatorIndexPerValidatorSlot
+            storage operatorIndexPerValidator = StakingContractStorageLib.getOperatorIndexPerValidator();
 
         if (_indexes[_indexes.length - 1] < operatorInfo.funded) {
             revert FundedValidatorDeletionAttempt();
@@ -584,6 +586,9 @@ contract StakingContract {
             if (i > 0 && _indexes[i] >= _indexes[i - 1]) {
                 revert UnsortedIndexes();
             }
+
+            bytes32 pubKeyRoot = _getPubKeyRoot(operators.value[_operatorIndex].publicKeys[_indexes[i]]);
+            operatorIndexPerValidator.value[pubKeyRoot].enabled = false;
 
             emit ValidatorKeyRemoved(_operatorIndex, operators.value[_operatorIndex].publicKeys[_indexes[i]]);
             if (_indexes[i] == operators.value[_operatorIndex].publicKeys.length - 1) {
