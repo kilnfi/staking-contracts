@@ -22,6 +22,8 @@ contract StakingContract {
     uint256 constant DEPOSIT_SIZE_AMOUNT_LITTLEENDIAN64 =
         0x0040597307000000000000000000000000000000000000000000000000000000;
     uint256 internal constant BASIS_POINTS = 10_000;
+    uint256 internal constant WITHDRAWAL_CREDENTIAL_PREFIX_01 =
+        0x0100000000000000000000000000000000000000000000000000000000000000;
 
     error Forbidden();
     error InvalidFee();
@@ -809,8 +811,7 @@ contract StakingContract {
     }
 
     function _addressToWithdrawalCredentials(address _recipient) internal pure returns (bytes32) {
-        return
-            bytes32(uint256(uint160(_recipient)) + 0x0100000000000000000000000000000000000000000000000000000000000000);
+        return bytes32(uint256(uint160(_recipient)) + WITHDRAWAL_CREDENTIAL_PREFIX_01);
     }
 
     function _depositValidatorsOfOperator(
