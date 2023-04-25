@@ -157,7 +157,7 @@ contract StakingContractTest is DSTestPlus {
 
         {
             vm.startPrank(admin);
-            stakingContract.setOperatorLimit(0, 10);
+            stakingContract.setOperatorLimit(0, 10, block.number);
             vm.stopPrank();
         }
     }
@@ -319,22 +319,54 @@ contract StakingContractTest is DSTestPlus {
         vm.startPrank(admin);
         vm.expectEmit(true, true, true, true);
         emit ChangedOperatorLimit(operatorIndex, _limit);
-        stakingContract.setOperatorLimit(operatorIndex, _limit);
+        stakingContract.setOperatorLimit(operatorIndex, _limit, block.number);
         vm.stopPrank();
 
         (, , limit, , , , ) = stakingContract.getOperator(operatorIndex);
         assertEq(limit, _limit);
     }
 
+    function testSetOperatorLimit_snapshotRevert(uint256 _operatorSalt, uint8 _limit) public {
+        vm.assume(_limit > 0);
+        address newOperator = uf._new(_operatorSalt);
+        address newOperatorFeeRecipient = uf._new(_operatorSalt);
+
+        uint256 operatorIndex;
+
+        vm.startPrank(admin);
+        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
+        vm.stopPrank();
+
+        (, , uint256 limit, , , , ) = stakingContract.getOperator(operatorIndex);
+        assertEq(limit, 0);
+
+        vm.roll(1000);
+        if (_limit > 0) {
+            vm.startPrank(newOperator);
+            stakingContract.addValidators(
+                operatorIndex,
+                _limit,
+                genBytes(48 * uint256(_limit)),
+                genBytes(96 * uint256(_limit))
+            );
+            vm.stopPrank();
+        }
+
+        vm.startPrank(admin);
+        vm.expectRevert(abi.encodeWithSignature("LastEditAfterSnapshot()"));
+        stakingContract.setOperatorLimit(operatorIndex, _limit, block.number - 10);
+        vm.stopPrank();
+    }
+
     function testSetOperatorLimitUnauthorized() public {
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        stakingContract.setOperatorLimit(0, 10);
+        stakingContract.setOperatorLimit(0, 10, block.number);
     }
 
     function testSetOperatorLimitTooHighUnauthorized() public {
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("OperatorLimitTooHigh(uint256,uint256)", 11, 10));
-        stakingContract.setOperatorLimit(0, 11);
+        stakingContract.setOperatorLimit(0, 11, block.number);
         vm.stopPrank();
     }
 
@@ -358,7 +390,7 @@ contract StakingContractTest is DSTestPlus {
         vm.startPrank(admin);
         stakingContract.deactivateOperator(operatorIndex, operatorOne);
         vm.expectRevert(abi.encodeWithSignature("Deactivated()"));
-        stakingContract.setOperatorLimit(operatorIndex, _limit);
+        stakingContract.setOperatorLimit(operatorIndex, _limit, block.number);
         vm.stopPrank();
     }
 
@@ -408,7 +440,7 @@ contract StakingContractTest is DSTestPlus {
         assert(deactivated == false);
 
         vm.startPrank(admin);
-        stakingContract.setOperatorLimit(0, 20);
+        stakingContract.setOperatorLimit(0, 20, block.number);
         vm.stopPrank();
 
         (operatorAddress, feeRecipientAddress, limit, keys, funded, available, deactivated) = stakingContract
@@ -1096,7 +1128,7 @@ contract StakingContractOperatorTest is DSTestPlus {
         stakingContract.addValidators(0, 10, publicKeys, signatures);
         vm.stopPrank();
         vm.startPrank(admin);
-        stakingContract.setOperatorLimit(0, 10);
+        stakingContract.setOperatorLimit(0, 10, block.number);
         vm.stopPrank();
 
         vm.deal(address(this), 32 ether);
@@ -1185,7 +1217,7 @@ contract StakingContractDistributionTest is DSTestPlus {
             stakingContract.addValidators(i, keyPerOperator, publicKeys, signatures);
             vm.stopPrank();
             vm.startPrank(admin);
-            stakingContract.setOperatorLimit(i, keyPerOperator);
+            stakingContract.setOperatorLimit(i, keyPerOperator, block.number);
             vm.stopPrank();
         }
 
@@ -1293,7 +1325,7 @@ contract StakingContractOneValidatorTest is Test {
 
         {
             vm.startPrank(admin);
-            stakingContract.setOperatorLimit(0, 10);
+            stakingContract.setOperatorLimit(0, 10, block.number);
             vm.stopPrank();
         }
     }
@@ -2077,7 +2109,7 @@ contract StakingContractBehindProxyTest is Test {
 
         {
             vm.startPrank(admin);
-            stakingContract.setOperatorLimit(0, 10);
+            stakingContract.setOperatorLimit(0, 10, block.number);
             vm.stopPrank();
         }
     }
