@@ -829,8 +829,8 @@ contract StakingContract {
             bytes memory signature = operator.signatures[i];
             address consensusLayerRecipient = _getDeterministicReceiver(publicKey, CONSENSUS_LAYER_SALT_PREFIX);
             bytes32 withdrawalCredentials = _addressToWithdrawalCredentials(consensusLayerRecipient);
-            _depositValidator(publicKey, signature, withdrawalCredentials);
             bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
+            _depositValidator(publicKey, pubkeyRoot, signature, withdrawalCredentials);
             StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = _withdrawer;
             emit Deposit(msg.sender, _withdrawer, publicKey, signature);
             unchecked {
@@ -851,10 +851,10 @@ contract StakingContract {
     /// @param _withdrawalCredentials The Withdrawal Credentials to deposit
     function _depositValidator(
         bytes memory _publicKey,
+        bytes32 _pubkeyRoot,
         bytes memory _signature,
         bytes32 _withdrawalCredentials
     ) internal {
-        bytes32 pubkeyRoot = _getPubKeyRoot(_publicKey);
         bytes32 signatureRoot = sha256(
             abi.encodePacked(
                 sha256(BytesLib.slice(_signature, 0, 64)),
@@ -864,7 +864,7 @@ contract StakingContract {
 
         bytes32 depositDataRoot = sha256(
             abi.encodePacked(
-                sha256(abi.encodePacked(pubkeyRoot, _withdrawalCredentials)),
+                sha256(abi.encodePacked(_pubkeyRoot, _withdrawalCredentials)),
                 sha256(abi.encodePacked(DEPOSIT_SIZE_AMOUNT_LITTLEENDIAN64, signatureRoot))
             )
         );
