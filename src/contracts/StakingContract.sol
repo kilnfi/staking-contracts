@@ -248,27 +248,37 @@ contract StakingContract {
     }
 
     /// @notice Retrieve withdrawer of public key
+    /// @notice In case the validator is not enabled, it will return address(0)
     /// @param _publicKey Public Key to check
     function getWithdrawer(bytes calldata _publicKey) external view returns (address) {
         return _getWithdrawer(_getPubKeyRoot(_publicKey));
     }
 
     /// @notice Retrieve withdrawer of public key root
+    /// @notice In case the validator is not enabled, it will return address(0)
     /// @param _publicKeyRoot Hash of the public key
     function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address) {
         return _getWithdrawer(_publicKeyRoot);
     }
 
     /// @notice Retrieve whether the validator exit has been requested
+    /// @notice In case the validator is not enabled, it will return false
     /// @param _publicKeyRoot Public Key Root to check
     function getExitRequestedFromRoot(bytes32 _publicKeyRoot) external view returns (bool) {
         return _getExitRequest(_publicKeyRoot);
     }
 
     /// @notice Return true if the validator already went through the exit logic
+    /// @notice In case the validator is not enabled, it will return false
     /// @param _publicKeyRoot Public Key Root of the validator
     function getWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (bool) {
         return StakingContractStorageLib.getWithdrawnMap().value[_publicKeyRoot];
+    }
+
+    /// @notice Retrieve the enabled status of public key root, true if the key is in the contract
+    /// @param _publicKeyRoot Hash of the public key
+    function getEnabledFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (bool) {
+        return StakingContractStorageLib.getOperatorIndexPerValidator().value[_publicKeyRoot].enabled;
     }
 
     /// @notice Allows the CLDispatcher to signal a validator went through the exit logic
