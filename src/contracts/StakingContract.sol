@@ -383,7 +383,7 @@ contract StakingContract {
     /// @notice Add new operator
     /// @dev Only callable by admin
     /// @param _operatorAddress Operator address allowed to add / remove validators
-    /// @param _feeRecipientAddress Operator address used to manage rewards
+    /// @param _feeRecipientAddress Privileged operator address used to manage rewards and change the addresses of the fee recipient and operator
     function addOperator(address _operatorAddress, address _feeRecipientAddress) external onlyAdmin returns (uint256) {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         StakingContractStorageLib.OperatorInfo memory newOperator;
