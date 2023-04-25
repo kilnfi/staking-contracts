@@ -393,4 +393,18 @@ library StakingContractStorageLib {
     function setDepositStopped(bool val) internal {
         setBool(DEPOSIT_STOPPED_SLOT, val);
     }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant LAST_VALIDATOR_EDIT_SLOT = keccak256("StakingContract.lastValidatorsEdit");
+
+    function getLastValidatorEdit() internal view returns (uint256) {
+        return getUint256(LAST_VALIDATOR_EDIT_SLOT);
+    }
+
+    function setLastValidatorEdit(uint256 value) internal {
+        setUint256(LAST_VALIDATOR_EDIT_SLOT, value);
+    }
 }

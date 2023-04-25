@@ -45,6 +45,7 @@ contract StakingContract {
     error FundedValidatorDeletionAttempt();
     error OperatorLimitTooHigh(uint256 limit, uint256 keyCount);
     error MaximumOperatorCountAlreadyReached();
+    error LastEditAfterSnapshot();
 
     struct ValidatorAllocationCache {
         bool used;
@@ -443,7 +444,12 @@ contract StakingContract {
     /// @dev Allows all keys to be verified by the system admin before limit is increased
     /// @param _operatorIndex Operator Index
     /// @param _limit New staking limit
-    function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external onlyAdmin {
+    /// @param _snapshot Block number at which verification was done
+    function setOperatorLimit(
+        uint256 _operatorIndex,
+        uint256 _limit,
+        uint256 _snapshot
+    ) external onlyAdmin {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         if (operators.value[_operatorIndex].deactivated) {
             revert Deactivated();
@@ -451,6 +457,12 @@ contract StakingContract {
         uint256 publicKeyCount = operators.value[_operatorIndex].publicKeys.length;
         if (publicKeyCount < _limit) {
             revert OperatorLimitTooHigh(_limit, publicKeyCount);
+        }
+        if (
+            operators.value[_operatorIndex].limit < _limit &&
+            StakingContractStorageLib.getLastValidatorEdit() > _snapshot
+        ) {
+            revert LastEditAfterSnapshot();
         }
         operators.value[_operatorIndex].limit = _limit;
         _updateAvailableValidatorCount(_operatorIndex);
@@ -555,6 +567,7 @@ contract StakingContract {
 
         emit ValidatorKeysAdded(_operatorIndex, _publicKeys, _signatures);
 
+        StakingContractStorageLib.setLastValidatorEdit(block.number);
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
@@ -615,6 +628,7 @@ contract StakingContract {
             emit ChangedOperatorLimit(_operatorIndex, _indexes[_indexes.length - 1]);
         }
 
+        StakingContractStorageLib.setLastValidatorEdit(block.number);
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
