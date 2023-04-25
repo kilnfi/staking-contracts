@@ -130,14 +130,14 @@ contract StakingContract {
     /// @notice Explicit deposit method using msg.sender
     /// @dev A multiple of 32 ETH should be sent
     function deposit() external payable {
-        _deposit(msg.sender);
+        _deposit();
     }
 
     /// @notice Implicit deposit method
     /// @dev A multiple of 32 ETH should be sent
     /// @dev The withdrawer is set to the message sender address
     receive() external payable {
-        _deposit(msg.sender);
+        _deposit();
     }
 
     /// @notice Fallback detection
@@ -814,11 +814,7 @@ contract StakingContract {
         return bytes32(uint256(uint160(_recipient)) + WITHDRAWAL_CREDENTIAL_PREFIX_01);
     }
 
-    function _depositValidatorsOfOperator(
-        uint256 _operatorIndex,
-        uint256 _validatorCount,
-        address _withdrawer
-    ) internal {
+    function _depositValidatorsOfOperator(uint256 _operatorIndex, uint256 _validatorCount) internal {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         StakingContractStorageLib.OperatorInfo storage operator = operators.value[_operatorIndex];
         StakingContractStorageLib.ValidatorsFundingInfo memory vfi = StakingContractStorageLib.getValidatorsFundingInfo(
@@ -832,8 +828,8 @@ contract StakingContract {
             bytes32 withdrawalCredentials = _addressToWithdrawalCredentials(consensusLayerRecipient);
             bytes32 pubkeyRoot = _getPubKeyRoot(publicKey);
             _depositValidator(publicKey, pubkeyRoot, signature, withdrawalCredentials);
-            StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = _withdrawer;
-            emit Deposit(msg.sender, _withdrawer, publicKey, signature);
+            StakingContractStorageLib.getWithdrawers().value[pubkeyRoot] = msg.sender;
+            emit Deposit(msg.sender, msg.sender, publicKey, signature);
             unchecked {
                 ++i;
             }
@@ -884,13 +880,9 @@ contract StakingContract {
         }
     }
 
-    function _depositOnOneOperator(
-        address _withdrawer,
-        uint256 _depositCount,
-        uint256 _totalAvailableValidators
-    ) internal {
+    function _depositOnOneOperator(uint256 _depositCount, uint256 _totalAvailableValidators) internal {
         StakingContractStorageLib.setTotalAvailableValidators(_totalAvailableValidators - _depositCount);
-        _depositValidatorsOfOperator(0, _depositCount, _withdrawer);
+        _depositValidatorsOfOperator(0, _depositCount);
     }
 
     function _deposit(address _withdrawer) internal {
