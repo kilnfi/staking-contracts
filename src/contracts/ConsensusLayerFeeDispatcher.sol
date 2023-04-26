@@ -72,7 +72,8 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
         uint256 nonExemptBalance = balance;
 
         if (exitRequested && balance >= 31 ether && !withdrawn) {
-            // If the skimmed rewards were withdrawn and the validator then underperformed an healthy exit can be slightly lower than 32 ETH
+            // If the skimmed rewards were withdrawn and the validator then underperformed
+            // an healthy exit can be slightly lower than 32 ETH
             // We exempt the balance up to 32 ETH, happens only once.
             // !withdrawn prevents this logic being reused to not pay the fee on rewards
             uint256 exemption = nonExemptBalance > 32 ether ? 32 ether : nonExemptBalance;
@@ -82,8 +83,8 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
         // In case of slashing the exit is not requested we don't exempt anything
         // This is in case of slashing, the staker will be rebated manually
         // A slashed validator may have accumulated enough skimmed rewards to still have a balance > 32 ETH
-        // All of this will be taken into account and the staker will be compensated for the commission taken on its principal
-        // and the loss according to the SLA described in the Terms&Conditions
+        // All of this will be taken into account and the staker will be compensated for the commission taken
+        // on its principal and the loss according to the SLA described in the Terms&Conditions
 
         uint256 globalFee = (nonExemptBalance * stakingContract.getGlobalFee()) / BASIS_POINTS;
         uint256 operatorFee = (globalFee * stakingContract.getOperatorFee()) / BASIS_POINTS;
