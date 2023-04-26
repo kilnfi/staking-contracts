@@ -790,7 +790,7 @@ contract StakingContract {
 
         uint32 oldAvailableCount = validatorFundingInfo.availableKeys;
         uint32 newAvailableCount = 0;
-        uint256 cap = _min(operators.value[_operatorIndex].limit, operators.value[_operatorIndex].publicKeys.length);
+        uint256 cap = operators.value[_operatorIndex].limit;
 
         if (cap <= validatorFundingInfo.funded) {
             StakingContractStorageLib.setValidatorsFundingInfo(_operatorIndex, 0, validatorFundingInfo.funded);
