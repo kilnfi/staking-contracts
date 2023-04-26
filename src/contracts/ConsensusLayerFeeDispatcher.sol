@@ -86,22 +86,22 @@ contract ConsensusLayerFeeDispatcher is IFeeDispatcher {
         // and the loss according to the SLA described in the Terms&Conditions
 
         uint256 globalFee = (nonExemptBalance * stakingContract.getGlobalFee()) / BASIS_POINTS;
-
         uint256 operatorFee = (globalFee * stakingContract.getOperatorFee()) / BASIS_POINTS;
-
+        address operator = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);
+        address treasury = stakingContract.getTreasury();
         address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);
+
         (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee}("");
         if (status == false) {
             revert WithdrawerReceiveError(data);
         }
-        address operator = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);
         if (globalFee > 0) {
-            address treasury = stakingContract.getTreasury();
             (status, data) = treasury.call{value: globalFee - operatorFee}("");
             if (status == false) {
                 revert TreasuryReceiveError(data);
             }
-
+        }
+        if (operatorFee > 0) {
             (status, data) = operator.call{value: operatorFee}("");
             if (status == false) {
                 revert FeeRecipientReceiveError(data);
