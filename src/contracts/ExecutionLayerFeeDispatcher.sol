@@ -77,13 +77,13 @@ contract ExecutionLayerFeeDispatcher is IFeeDispatcher {
         if (globalFee > 0) {
             (status, data) = treasury.call{value: globalFee - operatorFee}("");
             if (status == false) {
-                revert FeeRecipientReceiveError(data);
+                revert TreasuryReceiveError(data);
             }
         }
         if (operatorFee > 0) {
             (status, data) = operator.call{value: operatorFee}("");
             if (status == false) {
-                revert TreasuryReceiveError(data);
+                revert FeeRecipientReceiveError(data);
             }
         }
         emit Withdrawal(
