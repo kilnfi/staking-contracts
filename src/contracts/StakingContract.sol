@@ -178,7 +178,7 @@ contract StakingContract {
         StakingContractStorageLib.setCLDispatcher(_clDispatcher);
         _checkAddress(_depositContract);
         StakingContractStorageLib.setDepositContract(_depositContract);
-        _checkAddress(_depositContract);
+        _checkAddress(_feeRecipientImplementation);
         StakingContractStorageLib.setFeeRecipientImplementation(_feeRecipientImplementation);
         initialize_2(globalCommissionLimitBPS, operatorCommissionLimitBPS);
     }
