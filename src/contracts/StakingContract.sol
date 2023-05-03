@@ -604,6 +604,7 @@ contract StakingContract {
 
             bytes32 pubKeyRoot = _getPubKeyRoot(operators.value[_operatorIndex].publicKeys[_indexes[i]]);
             operatorIndexPerValidator.value[pubKeyRoot].enabled = false;
+            operatorIndexPerValidator.value[pubKeyRoot].operatorIndex = 0;
 
             emit ValidatorKeyRemoved(_operatorIndex, operators.value[_operatorIndex].publicKeys[_indexes[i]]);
             if (_indexes[i] == operators.value[_operatorIndex].publicKeys.length - 1) {
