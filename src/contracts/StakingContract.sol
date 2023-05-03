@@ -48,6 +48,7 @@ contract StakingContract {
     error OperatorLimitTooHigh(uint256 limit, uint256 keyCount);
     error MaximumOperatorCountAlreadyReached();
     error LastEditAfterSnapshot();
+    error PublicKeyNotInContract();
 
     struct ValidatorAllocationCache {
         bool used;
@@ -243,6 +244,9 @@ contract StakingContract {
 
     /// @notice Retrieve the Execution & Consensus Layer Fee operator recipient for a given public key
     function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (address) {
+        if (StakingContractStorageLib.getOperatorIndexPerValidator().value[pubKeyRoot].enabled == false) {
+            revert PublicKeyNotInContract();
+        }
         return
             StakingContractStorageLib
                 .getOperators()
