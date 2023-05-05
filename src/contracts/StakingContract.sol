@@ -74,6 +74,7 @@ contract StakingContract {
     event ActivatedOperator(uint256 _operatorIndex);
     event SetWithdrawerCustomizationStatus(bool _status);
     event ExitRequest(address caller, bytes pubkey);
+    event ValidatorsEdited(uint256 indexed operatorIndex, uint256 blockNumber);
 
     /// @notice Ensures an initialisation call has been called only once per _version value
     /// @param _version The current initialisation value
@@ -574,6 +575,7 @@ contract StakingContract {
         emit ValidatorKeysAdded(_operatorIndex, _publicKeys, _signatures);
 
         StakingContractStorageLib.setLastValidatorEdit(block.number);
+        emit ValidatorsEdited(_operatorIndex, block.number);
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
@@ -636,6 +638,7 @@ contract StakingContract {
         }
 
         StakingContractStorageLib.setLastValidatorEdit(block.number);
+        emit ValidatorsEdited(_operatorIndex, block.number);
         _updateAvailableValidatorCount(_operatorIndex);
     }
 
