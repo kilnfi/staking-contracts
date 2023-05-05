@@ -330,7 +330,8 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant EXIT_REQUEST_MAPPING_SLOT = keccak256("StakingContract.exitRequest");
+    bytes32 internal constant EXIT_REQUEST_MAPPING_SLOT =
+        bytes32(uint256(keccak256("StakingContract.exitRequest")) - 1);
 
     struct ExitRequestMap {
         mapping(bytes32 => bool) value;
@@ -347,7 +348,7 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant WITHDRAWN_MAPPING_SLOT = keccak256("StakingContract.withdrawn");
+    bytes32 internal constant WITHDRAWN_MAPPING_SLOT = bytes32(uint256(keccak256("StakingContract.withdrawn")) - 1);
 
     struct WithdrawnMap {
         mapping(bytes32 => bool) value;
@@ -364,7 +365,8 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant GLOBAL_COMMISSION_LIMIT_SLOT = keccak256("StakingContract.globalCommissionLimit");
+    bytes32 internal constant GLOBAL_COMMISSION_LIMIT_SLOT =
+        bytes32(uint256(keccak256("StakingContract.globalCommissionLimit")) - 1);
 
     function getGlobalCommissionLimit() internal view returns (uint256) {
         return getUint256(GLOBAL_COMMISSION_LIMIT_SLOT);
@@ -378,7 +380,8 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant OPERATOR_COMMISSION_LIMIT_SLOT = keccak256("StakingContract.operatorCommissionLimit");
+    bytes32 internal constant OPERATOR_COMMISSION_LIMIT_SLOT =
+        bytes32(uint256(keccak256("StakingContract.operatorCommissionLimit")) - 1);
 
     function getOperatorCommissionLimit() internal view returns (uint256) {
         return getUint256(OPERATOR_COMMISSION_LIMIT_SLOT);
@@ -392,7 +395,7 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant DEPOSIT_STOPPED_SLOT = keccak256("StakingContract.depositStopped");
+    bytes32 internal constant DEPOSIT_STOPPED_SLOT = bytes32(uint256(keccak256("StakingContract.depositStopped")) - 1);
 
     function getDepositStopped() internal view returns (bool) {
         return getBool(DEPOSIT_STOPPED_SLOT);
@@ -406,7 +409,8 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant LAST_VALIDATOR_EDIT_SLOT = keccak256("StakingContract.lastValidatorsEdit");
+    bytes32 internal constant LAST_VALIDATOR_EDIT_SLOT =
+        bytes32(uint256(keccak256("StakingContract.lastValidatorsEdit")) - 1);
 
     function getLastValidatorEdit() internal view returns (uint256) {
         return getUint256(LAST_VALIDATOR_EDIT_SLOT);
