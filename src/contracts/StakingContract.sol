@@ -867,9 +867,8 @@ contract StakingContract {
         StakingContractStorageLib.OperatorsSlot storage operators = StakingContractStorageLib.getOperators();
         if (operators.value.length == 0) {
             revert NoOperators();
-        } else {
-            _depositOnOneOperator(_withdrawer, depositCount, totalAvailableValidators);
         }
+        _depositOnOneOperator(_withdrawer, depositCount, totalAvailableValidators);
     }
 
     function _min(uint256 _a, uint256 _b) internal pure returns (uint256) {
