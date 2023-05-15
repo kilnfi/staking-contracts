@@ -1,0 +1,246 @@
+{
+  "address": "0x43dd332E0178d6A2DA560ECa13E333D5994CcCdA",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_version",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyInitialized",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "errorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "FeeRecipientReceiveError",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidCall",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotImplemented",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "errorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "TreasuryReceiveError",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "errorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "WithdrawerReceiveError",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroBalanceWithdrawal",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "withdrawer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "feeRecipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "pubKeyRoot",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "rewards",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "nodeOperatorFee",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "treasuryFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "Withdrawal",
+      "type": "event"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "dispatch",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getStakingContract",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_publicKeyRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getWithdrawer",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_stakingContract",
+          "type": "address"
+        }
+      ],
+      "name": "initCLD",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "transactionHash": "0x1ec41a9fb25ccd17cfcbb5440ad8a92f39a8f5fcb05e3a82325c3172dd8693a4",
+  "receipt": {
+    "to": null,
+    "from": "0x81F5f7bf0AFE2aFb9D7d6a21F4FeA1FB888E79CF",
+    "contractAddress": "0x43dd332E0178d6A2DA560ECa13E333D5994CcCdA",
+    "transactionIndex": 86,
+    "gasUsed": "262852",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x056785e307fadb0fc5d2a540948d1de29c56b7d68be487752e24a418e6066954",
+    "transactionHash": "0x1ec41a9fb25ccd17cfcbb5440ad8a92f39a8f5fcb05e3a82325c3172dd8693a4",
+    "logs": [],
+    "blockNumber": 17237499,
+    "cumulativeGasUsed": "7583963",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    1
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "7c01cac1856570acc6f28ecd3fd2c735",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.13+commit.abaa5c0e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_version\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AlreadyInitialized\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"errorData\",\"type\":\"bytes\"}],\"name\":\"FeeRecipientReceiveError\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotImplemented\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"errorData\",\"type\":\"bytes\"}],\"name\":\"TreasuryReceiveError\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"errorData\",\"type\":\"bytes\"}],\"name\":\"WithdrawerReceiveError\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroBalanceWithdrawal\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"withdrawer\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"pubKeyRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"rewards\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nodeOperatorFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"treasuryFee\",\"type\":\"uint256\"}],\"name\":\"Withdrawal\",\"type\":\"event\"},{\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"dispatch\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStakingContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_publicKeyRoot\",\"type\":\"bytes32\"}],\"name\":\"getWithdrawer\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_stakingContract\",\"type\":\"address\"}],\"name\":\"initCLD\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"author\":\"Kiln\",\"kind\":\"dev\",\"methods\":{\"getWithdrawer(bytes32)\":{\"params\":{\"_publicKeyRoot\":\"Public key root to get the owner\"}},\"initCLD(address)\":{\"params\":{\"_stakingContract\":\"Address of the Staking Contract\"}}},\"title\":\"Consensus Layer Fee Recipient\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"constructor\":{\"notice\":\"Constructor method allowing us to prevent calls to initCLFR by setting the appropriate version\"},\"dispatch(bytes32)\":{\"notice\":\"Performs a withdrawal on this contract's balance\"},\"getStakingContract()\":{\"notice\":\"Retrieve the staking contract address\"},\"getWithdrawer(bytes32)\":{\"notice\":\"Retrieve the assigned withdrawer for the given public key root\"},\"initCLD(address)\":{\"notice\":\"Initialize the contract by storing the staking contract\"}},\"notice\":\"This contract can be used to receive fees from a validator and split them with a node operator\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/contracts/ConsensusLayerFeeDispatcher.sol\":\"ConsensusLayerFeeDispatcher\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"src/contracts/ConsensusLayerFeeDispatcher.sol\":{\"content\":\"//SPDX-License-Identifier: BUSL-1.1\\npragma solidity >=0.8.10;\\n\\nimport \\\"./libs/DispatchersStorageLib.sol\\\";\\nimport \\\"./interfaces/IStakingContractFeeDetails.sol\\\";\\nimport \\\"./interfaces/IFeeDispatcher.sol\\\";\\n\\n/// @title Consensus Layer Fee Recipient\\n/// @author Kiln\\n/// @notice This contract can be used to receive fees from a validator and split them with a node operator\\ncontract ConsensusLayerFeeDispatcher is IFeeDispatcher {\\n    using DispatchersStorageLib for bytes32;\\n\\n    event Withdrawal(\\n        address indexed withdrawer,\\n        address indexed feeRecipient,\\n        bytes32 pubKeyRoot,\\n        uint256 rewards,\\n        uint256 nodeOperatorFee,\\n        uint256 treasuryFee\\n    );\\n\\n    error TreasuryReceiveError(bytes errorData);\\n    error FeeRecipientReceiveError(bytes errorData);\\n    error WithdrawerReceiveError(bytes errorData);\\n    error ZeroBalanceWithdrawal();\\n    error AlreadyInitialized();\\n    error InvalidCall();\\n    error NotImplemented();\\n\\n    bytes32 internal constant STAKING_CONTRACT_ADDRESS_SLOT =\\n        keccak256(\\\"ConsensusLayerFeeRecipient.stakingContractAddress\\\");\\n    uint256 internal constant BASIS_POINTS = 10_000;\\n    bytes32 internal constant VERSION_SLOT = keccak256(\\\"ConsensusLayerFeeRecipient.version\\\");\\n\\n    /// @notice Ensures an initialisation call has been called only once per _version value\\n    /// @param _version The current initialisation value\\n    modifier init(uint256 _version) {\\n        if (_version != VERSION_SLOT.getUint256() + 1) {\\n            revert AlreadyInitialized();\\n        }\\n\\n        VERSION_SLOT.setUint256(_version);\\n\\n        _;\\n    }\\n\\n    /// @notice Constructor method allowing us to prevent calls to initCLFR by setting the appropriate version\\n    constructor(uint256 _version) {\\n        VERSION_SLOT.setUint256(_version);\\n    }\\n\\n    /// @notice Initialize the contract by storing the staking contract\\n    /// @param _stakingContract Address of the Staking Contract\\n    function initCLD(address _stakingContract) external init(1) {\\n        STAKING_CONTRACT_ADDRESS_SLOT.setAddress(_stakingContract);\\n    }\\n\\n    /// @notice Performs a withdrawal on this contract's balance\\n    function dispatch(bytes32) external payable {\\n        revert NotImplemented();\\n        /*\\n        uint256 balance = address(this).balance; // this has taken into account msg.value\\n        if (balance == 0) {\\n            revert ZeroBalanceWithdrawal();\\n        }\\n        IStakingContractFeeDetails stakingContract = IStakingContractFeeDetails(\\n            STAKING_CONTRACT_ADDRESS_SLOT.getAddress()\\n        );\\n        address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);\\n        address operator = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);\\n        address treasury = stakingContract.getTreasury();\\n        uint256 globalFee;\\n\\n        if (balance >= 32 ether) {\\n            // withdrawing a healthy & exited validator\\n            globalFee = ((balance - 32 ether) * stakingContract.getGlobalFee()) / BASIS_POINTS;\\n        } else if (balance <= 16 ether) {\\n            // withdrawing from what looks like skimming\\n            globalFee = (balance * stakingContract.getGlobalFee()) / BASIS_POINTS;\\n        }\\n\\n        uint256 operatorFee = (globalFee * stakingContract.getOperatorFee()) / BASIS_POINTS;\\n\\n        (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee}(\\\"\\\");\\n        if (status == false) {\\n            revert WithdrawerReceiveError(data);\\n        }\\n        if (globalFee > 0) {\\n            (status, data) = treasury.call{value: globalFee - operatorFee}(\\\"\\\");\\n            if (status == false) {\\n                revert FeeRecipientReceiveError(data);\\n            }\\n        }\\n        if (operatorFee > 0) {\\n            (status, data) = operator.call{value: operatorFee}(\\\"\\\");\\n            if (status == false) {\\n                revert TreasuryReceiveError(data);\\n            }\\n        }\\n        emit Withdrawal(withdrawer, operator, balance - globalFee, operatorFee, globalFee - operatorFee);\\n        */\\n    }\\n\\n    /// @notice Retrieve the staking contract address\\n    function getStakingContract() external view returns (address) {\\n        return STAKING_CONTRACT_ADDRESS_SLOT.getAddress();\\n    }\\n\\n    /// @notice Retrieve the assigned withdrawer for the given public key root\\n    /// @param _publicKeyRoot Public key root to get the owner\\n    function getWithdrawer(bytes32 _publicKeyRoot) external view returns (address) {\\n        IStakingContractFeeDetails stakingContract = IStakingContractFeeDetails(\\n            STAKING_CONTRACT_ADDRESS_SLOT.getAddress()\\n        );\\n        return stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);\\n    }\\n\\n    receive() external payable {\\n        revert InvalidCall();\\n    }\\n\\n    fallback() external payable {\\n        revert InvalidCall();\\n    }\\n}\\n\",\"keccak256\":\"0x902499807222841d87c74fa8aa216a8435edd4a2c61567e2742a1a54f0d887be\",\"license\":\"BUSL-1.1\"},\"src/contracts/interfaces/IFeeDispatcher.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity >=0.8.10;\\n\\ninterface IFeeDispatcher {\\n    function dispatch(bytes32 _publicKeyRoot) external payable;\\n\\n    function getWithdrawer(bytes32 _publicKeyRoot) external view returns (address);\\n}\\n\",\"keccak256\":\"0x75efa5a697b32235188a62f730b7ab2a2fc5c422a93010aa0b18e93ea1bade45\",\"license\":\"MIT\"},\"src/contracts/interfaces/IStakingContractFeeDetails.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity >=0.8.10;\\n\\ninterface IStakingContractFeeDetails {\\n    function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address);\\n\\n    function getTreasury() external view returns (address);\\n\\n    function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (address);\\n\\n    function getGlobalFee() external view returns (uint256);\\n\\n    function getOperatorFee() external view returns (uint256);\\n}\\n\",\"keccak256\":\"0xa3f0dccf7edeb80f5d9078fe2a62118a2b222f136b786aebd3cc6fa5499276a8\",\"license\":\"MIT\"},\"src/contracts/libs/DispatchersStorageLib.sol\":{\"content\":\"//SPDX-License-Identifier: MIT\\npragma solidity >=0.8.10;\\n\\nlibrary DispatchersStorageLib {\\n    function getUint256(bytes32 position) internal view returns (uint256 data) {\\n        assembly {\\n            data := sload(position)\\n        }\\n    }\\n\\n    function setUint256(bytes32 position, uint256 data) internal {\\n        assembly {\\n            sstore(position, data)\\n        }\\n    }\\n\\n    function getAddress(bytes32 position) internal view returns (address data) {\\n        assembly {\\n            data := sload(position)\\n        }\\n    }\\n\\n    function setAddress(bytes32 position, address data) internal {\\n        assembly {\\n            sstore(position, data)\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x585a11c0ae6f9fda70d5d242ce02336bfd60fd75afed28495156307ba944f6cc\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506040516103f23803806103f283398101604081905261002f91610070565b610066817f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef61006c60201b61028f1790919060201c565b50610089565b9055565b60006020828403121561008257600080fd5b5051919050565b61035a806100986000396000f3fe6080604052600436106100435760003560e01c806327de90161461007a5780635f0f28d9146100b65780638e68dce4146100d8578063ce120650146100ed57610061565b366100615760405163574b16a760e11b815260040160405180910390fd5b60405163574b16a760e11b815260040160405180910390fd5b34801561008657600080fd5b5061009a610095366004610293565b610100565b6040516001600160a01b03909116815260200160405180910390f35b3480156100c257600080fd5b506100d66100d13660046102c4565b61019e565b005b3480156100e457600080fd5b5061009a610247565b6100d66100fb366004610293565b610276565b60008061012b7ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b60405163a740080160e01b8152600481018590529091506001600160a01b0382169063a740080190602401602060405180830381865afa158015610173573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061019791906102e1565b9392505050565b60016101c87f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef5490565b6101d39060016102fe565b81146101f15760405162dc149f60e41b815260040160405180910390fd5b61021a7f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef829055565b6102437ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a51839055565b5050565b60006102717ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b905090565b60405163d623472560e01b815260040160405180910390fd5b9055565b6000602082840312156102a557600080fd5b5035919050565b6001600160a01b03811681146102c157600080fd5b50565b6000602082840312156102d657600080fd5b8135610197816102ac565b6000602082840312156102f357600080fd5b8151610197816102ac565b6000821982111561031f57634e487b7160e01b600052601160045260246000fd5b50019056fea26469706673582212207197d60c6837e88856c998b751294e0777db82e7f50ec3acdaceb63488d1a50e64736f6c634300080d0033",
+  "deployedBytecode": "0x6080604052600436106100435760003560e01c806327de90161461007a5780635f0f28d9146100b65780638e68dce4146100d8578063ce120650146100ed57610061565b366100615760405163574b16a760e11b815260040160405180910390fd5b60405163574b16a760e11b815260040160405180910390fd5b34801561008657600080fd5b5061009a610095366004610293565b610100565b6040516001600160a01b03909116815260200160405180910390f35b3480156100c257600080fd5b506100d66100d13660046102c4565b61019e565b005b3480156100e457600080fd5b5061009a610247565b6100d66100fb366004610293565b610276565b60008061012b7ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b60405163a740080160e01b8152600481018590529091506001600160a01b0382169063a740080190602401602060405180830381865afa158015610173573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061019791906102e1565b9392505050565b60016101c87f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef5490565b6101d39060016102fe565b81146101f15760405162dc149f60e41b815260040160405180910390fd5b61021a7f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef829055565b6102437ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a51839055565b5050565b60006102717ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b905090565b60405163d623472560e01b815260040160405180910390fd5b9055565b6000602082840312156102a557600080fd5b5035919050565b6001600160a01b03811681146102c157600080fd5b50565b6000602082840312156102d657600080fd5b8135610197816102ac565b6000602082840312156102f357600080fd5b8151610197816102ac565b6000821982111561031f57634e487b7160e01b600052601160045260246000fd5b50019056fea26469706673582212207197d60c6837e88856c998b751294e0777db82e7f50ec3acdaceb63488d1a50e64736f6c634300080d0033",
+  "devdoc": {
+    "author": "Kiln",
+    "kind": "dev",
+    "methods": {
+      "getWithdrawer(bytes32)": {
+        "params": {
+          "_publicKeyRoot": "Public key root to get the owner"
+        }
+      },
+      "initCLD(address)": {
+        "params": {
+          "_stakingContract": "Address of the Staking Contract"
+        }
+      }
+    },
+    "title": "Consensus Layer Fee Recipient",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "constructor": {
+        "notice": "Constructor method allowing us to prevent calls to initCLFR by setting the appropriate version"
+      },
+      "dispatch(bytes32)": {
+        "notice": "Performs a withdrawal on this contract's balance"
+      },
+      "getStakingContract()": {
+        "notice": "Retrieve the staking contract address"
+      },
+      "getWithdrawer(bytes32)": {
+        "notice": "Retrieve the assigned withdrawer for the given public key root"
+      },
+      "initCLD(address)": {
+        "notice": "Initialize the contract by storing the staking contract"
+      }
+    },
+    "notice": "This contract can be used to receive fees from a validator and split them with a node operator",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
