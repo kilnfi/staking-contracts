@@ -9,7 +9,8 @@ const getFeeBps = (network: string): number => {
 		case 'goerli_live': return 700
 		case 'mainnet_vault': return 700
 		case 'mainnet_live': return 800
-    case 'mainnet_enzyme': return 400
+    	case 'mainnet_enzyme': return 400
+    	case 'mainnet_komainu': return 400
 		default: return 700
 	}
 }
@@ -20,7 +21,8 @@ const getOperatorFeeBps = (network: string): number => {
 		case 'goerli_live': return 0
 		case 'mainnet_vault': return 0
 		case 'mainnet_live': return 0
-    case 'mainnet_enzyme': return 400
+    	case 'mainnet_enzyme': return 400
+    	case 'mainnet_komainu': return 0
 		default: return 0
 	}
 }
