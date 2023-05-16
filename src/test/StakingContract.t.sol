@@ -327,34 +327,21 @@ contract StakingContractTest is DSTestPlus {
     }
 
     function testSetOperatorLimit_snapshotRevert(uint256 _operatorSalt, uint8 _limit) public {
-        vm.assume(_limit > 0);
-        address newOperator = uf._new(_operatorSalt);
-        address newOperatorFeeRecipient = uf._new(_operatorSalt);
+        vm.assume(_limit > 10); // Ensuring we raise the existing limit
 
-        uint256 operatorIndex;
-
-        vm.startPrank(admin);
-        operatorIndex = stakingContract.addOperator(newOperator, newOperatorFeeRecipient);
-        vm.stopPrank();
-
-        (, , uint256 limit, , , , ) = stakingContract.getOperator(operatorIndex);
-        assertEq(limit, 0);
+        (, , uint256 limit, , , , ) = stakingContract.getOperator(0);
+        assertEq(limit, 10);
 
         vm.roll(1000);
         if (_limit > 0) {
-            vm.startPrank(newOperator);
-            stakingContract.addValidators(
-                operatorIndex,
-                _limit,
-                genBytes(48 * uint256(_limit)),
-                genBytes(96 * uint256(_limit))
-            );
+            vm.startPrank(operatorOne);
+            stakingContract.addValidators(0, _limit, genBytes(48 * uint256(_limit)), genBytes(96 * uint256(_limit)));
             vm.stopPrank();
         }
 
         vm.startPrank(admin);
         vm.expectRevert(abi.encodeWithSignature("LastEditAfterSnapshot()"));
-        stakingContract.setOperatorLimit(operatorIndex, _limit, block.number - 10);
+        stakingContract.setOperatorLimit(0, _limit, block.number - 10);
         vm.stopPrank();
     }
 
@@ -1026,9 +1013,9 @@ contract StakingContractInitializationTest is DSTestPlus {
             admin,
             address(treasury),
             address(depositContract),
-            address(0),
-            address(0),
-            address(0),
+            address(100),
+            address(101),
+            address(102),
             1000,
             2000,
             2000,

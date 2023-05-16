@@ -895,7 +895,7 @@ contract StakingContract {
         _depositValidatorsOfOperator(0, _depositCount);
     }
 
-    function _deposit(address _withdrawer) internal {
+    function _deposit() internal {
         if (StakingContractStorageLib.getDepositStopped()) {
             revert DepositsStopped();
         }
@@ -911,7 +911,7 @@ contract StakingContract {
         if (operators.value.length == 0) {
             revert NoOperators();
         }
-        _depositOnOneOperator(_withdrawer, depositCount, totalAvailableValidators);
+        _depositOnOneOperator(depositCount, totalAvailableValidators);
     }
 
     function _min(uint256 _a, uint256 _b) internal pure returns (uint256) {
