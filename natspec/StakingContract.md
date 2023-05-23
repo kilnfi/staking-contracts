@@ -104,7 +104,7 @@ Add new operator
 | Name | Type | Description |
 |---|---|---|
 | _operatorAddress | address | Operator address allowed to add / remove validators |
-| _feeRecipientAddress | address | Operator address used to manage rewards |
+| _feeRecipientAddress | address | Privileged operator address used to manage rewards and operator addresses |
 
 #### Returns
 
@@ -302,13 +302,35 @@ Compute the Execution Layer Fee recipient address for a given validator public k
 |---|---|---|
 | _0 | address | undefined |
 
+### getEnabledFromPublicKeyRoot
+
+```solidity
+function getEnabledFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (bool)
+```
+
+Retrieve the enabled status of public key root, true if the key is in the contract
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _publicKeyRoot | bytes32 | Hash of the public key |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### getExitRequestedFromRoot
 
 ```solidity
 function getExitRequestedFromRoot(bytes32 _publicKeyRoot) external view returns (bool)
 ```
 
-Retrieve whether the validator exit has been requested
+Retrieve whether the validator exit has been requestedIn case the validator is not enabled, it will return false
 
 
 
@@ -474,7 +496,7 @@ Get details about a validator
 function getWithdrawer(bytes _publicKey) external view returns (address)
 ```
 
-Retrieve withdrawer of public key
+Retrieve withdrawer of public keyIn case the validator is not enabled, it will return address(0)
 
 
 
@@ -496,7 +518,7 @@ Retrieve withdrawer of public key
 function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address)
 ```
 
-Retrieve withdrawer of public key root
+Retrieve withdrawer of public key rootIn case the validator is not enabled, it will return address(0)
 
 
 
@@ -518,7 +540,7 @@ Retrieve withdrawer of public key root
 function getWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (bool)
 ```
 
-Return true if the validator already went through the exit logic
+Return true if the validator already went through the exit logicIn case the validator is not enabled, it will return false
 
 
 
@@ -678,7 +700,7 @@ Change the Operator fee
 ### setOperatorLimit
 
 ```solidity
-function setOperatorLimit(uint256 _operatorIndex, uint256 _limit) external nonpayable
+function setOperatorLimit(uint256 _operatorIndex, uint256 _limit, uint256 _snapshot) external nonpayable
 ```
 
 Set operator staking limits
@@ -691,6 +713,7 @@ Set operator staking limits
 |---|---|---|
 | _operatorIndex | uint256 | Operator Index |
 | _limit | uint256 | New staking limit |
+| _snapshot | uint256 | Block number at which verification was done |
 
 ### setTreasury
 
@@ -1094,6 +1117,22 @@ event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys, bytes 
 | publicKeys  | bytes | undefined |
 | signatures  | bytes | undefined |
 
+### ValidatorsEdited
+
+```solidity
+event ValidatorsEdited(uint256 blockNumber)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| blockNumber  | uint256 | undefined |
+
 
 
 ## Errors
@@ -1268,6 +1307,28 @@ error InvalidWithdrawer()
 
 
 
+### InvalidZeroAddress
+
+```solidity
+error InvalidZeroAddress()
+```
+
+
+
+
+
+
+### LastEditAfterSnapshot
+
+```solidity
+error LastEditAfterSnapshot()
+```
+
+
+
+
+
+
 ### MaximumOperatorCountAlreadyReached
 
 ```solidity
@@ -1317,6 +1378,17 @@ error OperatorLimitTooHigh(uint256 limit, uint256 keyCount)
 |---|---|---|
 | limit | uint256 | undefined |
 | keyCount | uint256 | undefined |
+
+### PublicKeyNotInContract
+
+```solidity
+error PublicKeyNotInContract()
+```
+
+
+
+
+
 
 ### Unauthorized
 

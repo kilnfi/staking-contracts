@@ -164,17 +164,6 @@ error TreasuryReceiveError(bytes errorData)
 |---|---|---|
 | errorData | bytes | undefined |
 
-### ValidatorNotMigrated
-
-```solidity
-error ValidatorNotMigrated()
-```
-
-
-
-
-
-
 ### WithdrawerReceiveError
 
 ```solidity
