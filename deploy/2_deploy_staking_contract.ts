@@ -5,7 +5,7 @@ import { isDeployed } from '../ts_utils/index';
 
 const getMaxFeeBps = (network: string): number => {
 	switch (network) {
-		case 'goerli_consensys': return 5000
+    case 'goerli_consensys': return 5000
 		case 'goerli_vault': return 5000
 		case 'goerli_live': return 5000
 		case 'mainnet_vault': return 5000
@@ -18,7 +18,7 @@ const getMaxFeeBps = (network: string): number => {
 
 const getMaxOperatorFeeBps = (network: string): number => {
 	switch (network) {
-		case 'goerli_consensys': return 5000
+    case 'goerli_consensys': return 5000
 		case 'goerli_vault': return 5000
 		case 'goerli_live': return 5000
 		case 'mainnet_vault': return 5000
@@ -31,7 +31,7 @@ const getMaxOperatorFeeBps = (network: string): number => {
 
 const getFeeBps = (network: string): number => {
 	switch (network) {
-		case 'goerli_consensys': return 500
+    case 'goerli_consensys': return 500
 		case 'goerli_vault': return 700
 		case 'goerli_live': return 700
 		case 'mainnet_vault': return 700
@@ -44,7 +44,7 @@ const getFeeBps = (network: string): number => {
 
 const getOperatorFeeBps = (network: string): number => {
 	switch (network) {
-		case 'goerli_consensys': return 500
+    case 'goerli_consensys': return 500
     case 'goerli_vault': return 0
 		case 'goerli_live': return 0
 		case 'mainnet_vault': return 0
