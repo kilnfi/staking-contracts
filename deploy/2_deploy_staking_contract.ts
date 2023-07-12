@@ -3,26 +3,54 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import { getContractAddress } from "ethers/lib/utils";
 import { isDeployed } from '../ts_utils/index';
 
+const getMaxFeeBps = (network: string): number => {
+	switch (network) {
+		case 'goerli_consensys': return 5000
+		case 'goerli_vault': return 5000
+		case 'goerli_live': return 5000
+		case 'mainnet_vault': return 5000
+		case 'mainnet_live': return 5000
+   	case 'mainnet_enzyme': return 5000
+   	case 'mainnet_komainu': return 5000
+		default: return 5000
+	}
+}
+
+const getMaxOperatorFeeBps = (network: string): number => {
+	switch (network) {
+		case 'goerli_consensys': return 5000
+		case 'goerli_vault': return 5000
+		case 'goerli_live': return 5000
+		case 'mainnet_vault': return 5000
+		case 'mainnet_live': return 5000
+   	case 'mainnet_enzyme': return 5000
+   	case 'mainnet_komainu': return 5000
+		default: return 5000
+	}
+}
+
 const getFeeBps = (network: string): number => {
 	switch (network) {
+		case 'goerli_consensys': return 500
 		case 'goerli_vault': return 700
 		case 'goerli_live': return 700
 		case 'mainnet_vault': return 700
 		case 'mainnet_live': return 800
-    	case 'mainnet_enzyme': return 400
-    	case 'mainnet_komainu': return 400
+   	case 'mainnet_enzyme': return 400
+   	case 'mainnet_komainu': return 400
 		default: return 700
 	}
 }
 
 const getOperatorFeeBps = (network: string): number => {
 	switch (network) {
-		case 'goerli_vault': return 0
+		case 'goerli_consensys': return 500
+    case 'goerli_vault': return 0
 		case 'goerli_live': return 0
 		case 'mainnet_vault': return 0
 		case 'mainnet_live': return 0
-    	case 'mainnet_enzyme': return 400
-    	case 'mainnet_komainu': return 0
+  	case 'mainnet_enzyme': return 400
+   	case 'mainnet_komainu': return 0
 		default: return 0
 	}
 }
@@ -90,14 +118,16 @@ const func: DeployFunction = async function ({
 			  init: {
 				  methodName: 'initialize_1',
 				  args: [
-			admin,
-			treasury,
-			depositContract,
-			elfdDeployment.address,
-			clfdDeployment.address,
-			feeRecipientDeployment.address,
-			getFeeBps(network.name),
-			getOperatorFeeBps(network.name)
+            admin,
+			      treasury,
+			      depositContract,
+			      elfdDeployment.address,
+			      clfdDeployment.address,
+			      feeRecipientDeployment.address,
+			      getFeeBps(network.name),
+			      getOperatorFeeBps(network.name),
+            getMaxFeeBps(network.name),
+            getMaxOperatorFeeBps(network.name)
 				  ]
 			  }
 		  }
