@@ -120,7 +120,7 @@ const hhuc: HardhatUserConfig = {
       mainnet_vault: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       mainnet_live: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       mainnet_enzyme: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
-      mainnet_komainu: "0x00000000219ab540356cBB839Cbe05303d7705Fa"
+      mainnet_komainu: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       holesky_devnet: "0x4242424242424242424242424242424242424242",
       holesky_testnet: "0x4242424242424242424242424242424242424242"
     },
@@ -132,7 +132,7 @@ const hhuc: HardhatUserConfig = {
       mainnet_vault: "0x2C8C8e8022827a97388C6Ae9C22FF26EA2f02542",
       mainnet_live: "0xd3947210779c046D5ADCE2a6665d650450A56280",
       mainnet_enzyme: "0x1ad1fc9964c551f456238Dd88D6a38344B5319D7",
-      mainnet_komainu: "0xCdB0570d55Ebe8c8d678e090F86fa73729EF8Fc7"
+      mainnet_komainu: "0xCdB0570d55Ebe8c8d678e090F86fa73729EF8Fc7",
       holesky_devnet: "0xb3eb29AC481FCFAFA7008A4acf04737c7d6733EA",
       holesky_testnet: "0xe6fe1936Fa8120e57c7Dee1733693B59b392672c"
     },
