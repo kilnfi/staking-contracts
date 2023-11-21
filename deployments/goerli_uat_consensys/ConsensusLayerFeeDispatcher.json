@@ -1,0 +1,241 @@
+{
+  "address": "0x798BBb059aedb3687fFFE946550CD702ceadFA08",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_version",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyInitialized",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "errorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "FeeRecipientReceiveError",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidCall",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "errorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "TreasuryReceiveError",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "errorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "WithdrawerReceiveError",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroBalanceWithdrawal",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "withdrawer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "feeRecipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "pubKeyRoot",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "rewards",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "nodeOperatorFee",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "treasuryFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "Withdrawal",
+      "type": "event"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_publicKeyRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "dispatch",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getStakingContract",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_publicKeyRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getWithdrawer",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_stakingContract",
+          "type": "address"
+        }
+      ],
+      "name": "initCLD",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "transactionHash": "0x09666c4c16c7a927ec7273b1c58c4cbe6b8ffd58f79e38ac332158fb997a6c47",
+  "receipt": {
+    "to": null,
+    "from": "0xBcc3816221d083D8E72F2CB14959F24d89406810",
+    "contractAddress": "0x798BBb059aedb3687fFFE946550CD702ceadFA08",
+    "transactionIndex": 18,
+    "gasUsed": "765166",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x64fb697c78a26f7c9124892bd3c8a6dae1e66bab0781a95a8429a0ce74568d50",
+    "transactionHash": "0x09666c4c16c7a927ec7273b1c58c4cbe6b8ffd58f79e38ac332158fb997a6c47",
+    "logs": [],
+    "blockNumber": 10083137,
+    "cumulativeGasUsed": "4749583",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    0
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "e20c74109a1c61285ef1a2afbbbc70eb",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.13+commit.abaa5c0e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_version\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AlreadyInitialized\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"errorData\",\"type\":\"bytes\"}],\"name\":\"FeeRecipientReceiveError\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"errorData\",\"type\":\"bytes\"}],\"name\":\"TreasuryReceiveError\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"errorData\",\"type\":\"bytes\"}],\"name\":\"WithdrawerReceiveError\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroBalanceWithdrawal\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"withdrawer\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"pubKeyRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"rewards\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nodeOperatorFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"treasuryFee\",\"type\":\"uint256\"}],\"name\":\"Withdrawal\",\"type\":\"event\"},{\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_publicKeyRoot\",\"type\":\"bytes32\"}],\"name\":\"dispatch\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStakingContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_publicKeyRoot\",\"type\":\"bytes32\"}],\"name\":\"getWithdrawer\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_stakingContract\",\"type\":\"address\"}],\"name\":\"initCLD\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"author\":\"Kiln\",\"kind\":\"dev\",\"methods\":{\"getWithdrawer(bytes32)\":{\"params\":{\"_publicKeyRoot\":\"Public key root to get the owner\"}},\"initCLD(address)\":{\"params\":{\"_stakingContract\":\"Address of the Staking Contract\"}}},\"title\":\"Consensus Layer Fee Recipient\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"constructor\":{\"notice\":\"Constructor method allowing us to prevent calls to initCLFR by setting the appropriate version\"},\"dispatch(bytes32)\":{\"notice\":\"Performs a withdrawal on this contract's balance\"},\"getStakingContract()\":{\"notice\":\"Retrieve the staking contract address\"},\"getWithdrawer(bytes32)\":{\"notice\":\"Retrieve the assigned withdrawer for the given public key root\"},\"initCLD(address)\":{\"notice\":\"Initialize the contract by storing the staking contract\"}},\"notice\":\"This contract can be used to receive fees from a validator and split them with a node operator\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/contracts/ConsensusLayerFeeDispatcher.sol\":\"ConsensusLayerFeeDispatcher\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":10000},\"remappings\":[]},\"sources\":{\"src/contracts/ConsensusLayerFeeDispatcher.sol\":{\"content\":\"//SPDX-License-Identifier: BUSL-1.1\\npragma solidity >=0.8.10;\\n\\nimport \\\"./libs/DispatchersStorageLib.sol\\\";\\nimport \\\"./interfaces/IStakingContractFeeDetails.sol\\\";\\nimport \\\"./interfaces/IFeeDispatcher.sol\\\";\\n\\n/// @title Consensus Layer Fee Recipient\\n/// @author Kiln\\n/// @notice This contract can be used to receive fees from a validator and split them with a node operator\\ncontract ConsensusLayerFeeDispatcher is IFeeDispatcher {\\n    using DispatchersStorageLib for bytes32;\\n\\n    event Withdrawal(\\n        address indexed withdrawer,\\n        address indexed feeRecipient,\\n        bytes32 pubKeyRoot,\\n        uint256 rewards,\\n        uint256 nodeOperatorFee,\\n        uint256 treasuryFee\\n    );\\n\\n    error TreasuryReceiveError(bytes errorData);\\n    error FeeRecipientReceiveError(bytes errorData);\\n    error WithdrawerReceiveError(bytes errorData);\\n    error ZeroBalanceWithdrawal();\\n    error AlreadyInitialized();\\n    error InvalidCall();\\n\\n    bytes32 internal constant STAKING_CONTRACT_ADDRESS_SLOT =\\n        keccak256(\\\"ConsensusLayerFeeRecipient.stakingContractAddress\\\");\\n    uint256 internal constant BASIS_POINTS = 10_000;\\n    bytes32 internal constant VERSION_SLOT = keccak256(\\\"ConsensusLayerFeeRecipient.version\\\");\\n\\n    /// @notice Ensures an initialisation call has been called only once per _version value\\n    /// @param _version The current initialisation value\\n    modifier init(uint256 _version) {\\n        if (_version != VERSION_SLOT.getUint256() + 1) {\\n            revert AlreadyInitialized();\\n        }\\n\\n        VERSION_SLOT.setUint256(_version);\\n\\n        _;\\n    }\\n\\n    /// @notice Constructor method allowing us to prevent calls to initCLFR by setting the appropriate version\\n    constructor(uint256 _version) {\\n        VERSION_SLOT.setUint256(_version);\\n    }\\n\\n    /// @notice Initialize the contract by storing the staking contract\\n    /// @param _stakingContract Address of the Staking Contract\\n    function initCLD(address _stakingContract) external init(1) {\\n        STAKING_CONTRACT_ADDRESS_SLOT.setAddress(_stakingContract);\\n    }\\n\\n    /// @notice Performs a withdrawal on this contract's balance\\n    function dispatch(bytes32 _publicKeyRoot) external payable {\\n        IStakingContractFeeDetails stakingContract = IStakingContractFeeDetails(\\n            STAKING_CONTRACT_ADDRESS_SLOT.getAddress()\\n        );\\n\\n        uint256 balance = address(this).balance; // this has taken into account msg.value\\n        if (balance == 0) {\\n            revert ZeroBalanceWithdrawal();\\n        }\\n\\n        bool exitRequested = stakingContract.getExitRequestedFromRoot(_publicKeyRoot);\\n        bool withdrawn = stakingContract.getWithdrawnFromPublicKeyRoot(_publicKeyRoot);\\n\\n        uint256 nonExemptBalance = balance;\\n\\n        if (exitRequested && balance >= 31 ether && !withdrawn) {\\n            // If the skimmed rewards were withdrawn and the validator then underperformed\\n            // an healthy exit can be slightly lower than 32 ETH\\n            // We exempt the balance up to 32 ETH, happens only once.\\n            // !withdrawn prevents this logic being reused to not pay the fee on rewards\\n            uint256 exemption = nonExemptBalance > 32 ether ? 32 ether : nonExemptBalance;\\n            nonExemptBalance -= exemption;\\n            stakingContract.toggleWithdrawnFromPublicKeyRoot(_publicKeyRoot);\\n        }\\n        // In case of slashing the exit is not requested we don't exempt anything\\n        // This is in case of slashing, the staker will be rebated manually\\n        // A slashed validator may have accumulated enough skimmed rewards to still have a balance > 32 ETH\\n        // All of this will be taken into account and the staker will be compensated for the commission taken\\n        // on its principal and the loss according to the SLA described in the Terms&Conditions\\n\\n        uint256 globalFee = (nonExemptBalance * stakingContract.getGlobalFee()) / BASIS_POINTS;\\n        uint256 operatorFee = (globalFee * stakingContract.getOperatorFee()) / BASIS_POINTS;\\n        address operator = stakingContract.getOperatorFeeRecipient(_publicKeyRoot);\\n        address treasury = stakingContract.getTreasury();\\n        address withdrawer = stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);\\n\\n        (bool status, bytes memory data) = withdrawer.call{value: balance - globalFee}(\\\"\\\");\\n        if (status == false) {\\n            revert WithdrawerReceiveError(data);\\n        }\\n        if (globalFee > 0) {\\n            (status, data) = treasury.call{value: globalFee - operatorFee}(\\\"\\\");\\n            if (status == false) {\\n                revert TreasuryReceiveError(data);\\n            }\\n        }\\n        if (operatorFee > 0) {\\n            (status, data) = operator.call{value: operatorFee}(\\\"\\\");\\n            if (status == false) {\\n                revert FeeRecipientReceiveError(data);\\n            }\\n        }\\n        emit Withdrawal(\\n            withdrawer,\\n            operator,\\n            _publicKeyRoot,\\n            balance - globalFee,\\n            operatorFee,\\n            globalFee - operatorFee\\n        );\\n    }\\n\\n    /// @notice Retrieve the staking contract address\\n    function getStakingContract() external view returns (address) {\\n        return STAKING_CONTRACT_ADDRESS_SLOT.getAddress();\\n    }\\n\\n    /// @notice Retrieve the assigned withdrawer for the given public key root\\n    /// @param _publicKeyRoot Public key root to get the owner\\n    function getWithdrawer(bytes32 _publicKeyRoot) external view returns (address) {\\n        IStakingContractFeeDetails stakingContract = IStakingContractFeeDetails(\\n            STAKING_CONTRACT_ADDRESS_SLOT.getAddress()\\n        );\\n        return stakingContract.getWithdrawerFromPublicKeyRoot(_publicKeyRoot);\\n    }\\n\\n    receive() external payable {\\n        revert InvalidCall();\\n    }\\n\\n    fallback() external payable {\\n        revert InvalidCall();\\n    }\\n}\\n\",\"keccak256\":\"0x5852cbcf53e2454bb6b9c662fb32e2f35aeb3cdd5f0c341a9eb6c7d8ad0e6523\",\"license\":\"BUSL-1.1\"},\"src/contracts/interfaces/IFeeDispatcher.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity >=0.8.10;\\n\\ninterface IFeeDispatcher {\\n    function dispatch(bytes32 _publicKeyRoot) external payable;\\n\\n    function getWithdrawer(bytes32 _publicKeyRoot) external view returns (address);\\n}\\n\",\"keccak256\":\"0x75efa5a697b32235188a62f730b7ab2a2fc5c422a93010aa0b18e93ea1bade45\",\"license\":\"MIT\"},\"src/contracts/interfaces/IStakingContractFeeDetails.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity >=0.8.10;\\n\\ninterface IStakingContractFeeDetails {\\n    function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address);\\n\\n    function getTreasury() external view returns (address);\\n\\n    function getOperatorFeeRecipient(bytes32 pubKeyRoot) external view returns (address);\\n\\n    function getGlobalFee() external view returns (uint256);\\n\\n    function getOperatorFee() external view returns (uint256);\\n\\n    function getExitRequestedFromRoot(bytes32 _publicKeyRoot) external view returns (bool);\\n\\n    function getWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (bool);\\n\\n    function toggleWithdrawnFromPublicKeyRoot(bytes32 _publicKeyRoot) external;\\n}\\n\",\"keccak256\":\"0xca5bfd023b6c479ab82320ebced9a560f9b8ffa61df27c02e83e7cb7fa23f569\",\"license\":\"MIT\"},\"src/contracts/libs/DispatchersStorageLib.sol\":{\"content\":\"//SPDX-License-Identifier: MIT\\npragma solidity >=0.8.10;\\n\\nlibrary DispatchersStorageLib {\\n    function getUint256(bytes32 position) internal view returns (uint256 data) {\\n        assembly {\\n            data := sload(position)\\n        }\\n    }\\n\\n    function setUint256(bytes32 position, uint256 data) internal {\\n        assembly {\\n            sstore(position, data)\\n        }\\n    }\\n\\n    function getAddress(bytes32 position) internal view returns (address data) {\\n        assembly {\\n            data := sload(position)\\n        }\\n    }\\n\\n    function setAddress(bytes32 position, address data) internal {\\n        assembly {\\n            sstore(position, data)\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x585a11c0ae6f9fda70d5d242ce02336bfd60fd75afed28495156307ba944f6cc\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50604051610d7b380380610d7b83398101604081905261002f91610070565b610066817f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef61006c60201b610aad1790919060201c565b50610089565b9055565b60006020828403121561008257600080fd5b5051919050565b610ce3806100986000396000f3fe6080604052600436106100435760003560e01c806327de9016146100ac5780635f0f28d9146100f55780638e68dce414610117578063ce1206501461012c5761007a565b3661007a576040517fae962d4e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6040517fae962d4e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b3480156100b857600080fd5b506100cc6100c7366004610ab1565b61013f565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b34801561010157600080fd5b50610115610110366004610aef565b610203565b005b34801561012357600080fd5b506100cc6102c6565b61011561013a366004610ab1565b6102f5565b60008061016a7ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b6040517fa74008010000000000000000000000000000000000000000000000000000000081526004810185905290915073ffffffffffffffffffffffffffffffffffffffff82169063a740080190602401602060405180830381865afa1580156101d8573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101fc9190610b0c565b9392505050565b600161022d7f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef5490565b610238906001610b58565b8114610270576040517f0dc149f000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6102997f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef829055565b6102c27ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a51839055565b5050565b60006102f07ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b905090565b600061031f7ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b905047600081900361035d576040517fb6562b0a00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6040517fc13d03500000000000000000000000000000000000000000000000000000000081526004810184905260009073ffffffffffffffffffffffffffffffffffffffff84169063c13d035090602401602060405180830381865afa1580156103cb573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103ef9190610b70565b6040517fcac594df0000000000000000000000000000000000000000000000000000000081526004810186905290915060009073ffffffffffffffffffffffffffffffffffffffff85169063cac594df90602401602060405180830381865afa158015610460573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104849190610b70565b90508282801561049d57506801ae361fc1451c00008410155b80156104a7575081155b156105605760006801bc16d674ec80000082116104c457816104cf565b6801bc16d674ec8000005b90506104db8183610b92565b6040517fb86bcaf70000000000000000000000000000000000000000000000000000000081526004810189905290925073ffffffffffffffffffffffffffffffffffffffff87169063b86bcaf790602401600060405180830381600087803b15801561054657600080fd5b505af115801561055a573d6000803e3d6000fd5b50505050505b60006127108673ffffffffffffffffffffffffffffffffffffffff16631bcbfaba6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156105b0573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105d49190610ba9565b6105de9084610bc2565b6105e89190610bff565b905060006127108773ffffffffffffffffffffffffffffffffffffffff1663286966086040518163ffffffff1660e01b8152600401602060405180830381865afa15801561063a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061065e9190610ba9565b6106689084610bc2565b6106729190610bff565b6040517f9adf91ee000000000000000000000000000000000000000000000000000000008152600481018a905290915060009073ffffffffffffffffffffffffffffffffffffffff891690639adf91ee90602401602060405180830381865afa1580156106e3573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107079190610b0c565b905060008873ffffffffffffffffffffffffffffffffffffffff16633b19e84a6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610756573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061077a9190610b0c565b6040517fa7400801000000000000000000000000000000000000000000000000000000008152600481018c905290915060009073ffffffffffffffffffffffffffffffffffffffff8b169063a740080190602401602060405180830381865afa1580156107eb573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061080f9190610b0c565b905060008073ffffffffffffffffffffffffffffffffffffffff8316610835888d610b92565b604051600081818185875af1925050503d8060008114610871576040519150601f19603f3d011682016040523d82523d6000602084013e610876565b606091505b5090925090508115156000036108c357806040517fce13343d0000000000000000000000000000000000000000000000000000000081526004016108ba9190610c3a565b60405180910390fd5b861561096f5773ffffffffffffffffffffffffffffffffffffffff84166108ea8789610b92565b604051600081818185875af1925050503d8060008114610926576040519150601f19603f3d011682016040523d82523d6000602084013e61092b565b606091505b50909250905081151560000361096f57806040517fbc98622d0000000000000000000000000000000000000000000000000000000081526004016108ba9190610c3a565b8515610a145760405173ffffffffffffffffffffffffffffffffffffffff8616908790600081818185875af1925050503d80600081146109cb576040519150601f19603f3d011682016040523d82523d6000602084013e6109d0565b606091505b509092509050811515600003610a1457806040517fe5ea83e70000000000000000000000000000000000000000000000000000000081526004016108ba9190610c3a565b8473ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff167f570610cb78811f3a7f90d272791d0a5e71648fb7368280519fc5866e5184db1d8f8a8f610a709190610b92565b8a610a7b818e610b92565b60408051948552602085019390935291830152606082015260800160405180910390a350505050505050505050505050565b9055565b600060208284031215610ac357600080fd5b5035919050565b73ffffffffffffffffffffffffffffffffffffffff81168114610aec57600080fd5b50565b600060208284031215610b0157600080fd5b81356101fc81610aca565b600060208284031215610b1e57600080fd5b81516101fc81610aca565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60008219821115610b6b57610b6b610b29565b500190565b600060208284031215610b8257600080fd5b815180151581146101fc57600080fd5b600082821015610ba457610ba4610b29565b500390565b600060208284031215610bbb57600080fd5b5051919050565b6000817fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0483118215151615610bfa57610bfa610b29565b500290565b600082610c35577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b600060208083528351808285015260005b81811015610c6757858101830151858201604001528201610c4b565b81811115610c79576000604083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01692909201604001939250505056fea26469706673582212202da726a0ebf275a4ea33e21c3cea1b07a08ff132835baf11a00a6a7218c4d46464736f6c634300080d0033",
+  "deployedBytecode": "0x6080604052600436106100435760003560e01c806327de9016146100ac5780635f0f28d9146100f55780638e68dce414610117578063ce1206501461012c5761007a565b3661007a576040517fae962d4e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6040517fae962d4e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b3480156100b857600080fd5b506100cc6100c7366004610ab1565b61013f565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b34801561010157600080fd5b50610115610110366004610aef565b610203565b005b34801561012357600080fd5b506100cc6102c6565b61011561013a366004610ab1565b6102f5565b60008061016a7ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b6040517fa74008010000000000000000000000000000000000000000000000000000000081526004810185905290915073ffffffffffffffffffffffffffffffffffffffff82169063a740080190602401602060405180830381865afa1580156101d8573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101fc9190610b0c565b9392505050565b600161022d7f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef5490565b610238906001610b58565b8114610270576040517f0dc149f000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6102997f6081a8ce97ad8a3951bac5b885ad6097d6b55cb45a6dd62b5069939f8c95ffef829055565b6102c27ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a51839055565b5050565b60006102f07ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b905090565b600061031f7ff0fe62e71ff1ce44ef40d55534c386cf3d375849a5782af5d4e66df449ae3a515490565b905047600081900361035d576040517fb6562b0a00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6040517fc13d03500000000000000000000000000000000000000000000000000000000081526004810184905260009073ffffffffffffffffffffffffffffffffffffffff84169063c13d035090602401602060405180830381865afa1580156103cb573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103ef9190610b70565b6040517fcac594df0000000000000000000000000000000000000000000000000000000081526004810186905290915060009073ffffffffffffffffffffffffffffffffffffffff85169063cac594df90602401602060405180830381865afa158015610460573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104849190610b70565b90508282801561049d57506801ae361fc1451c00008410155b80156104a7575081155b156105605760006801bc16d674ec80000082116104c457816104cf565b6801bc16d674ec8000005b90506104db8183610b92565b6040517fb86bcaf70000000000000000000000000000000000000000000000000000000081526004810189905290925073ffffffffffffffffffffffffffffffffffffffff87169063b86bcaf790602401600060405180830381600087803b15801561054657600080fd5b505af115801561055a573d6000803e3d6000fd5b50505050505b60006127108673ffffffffffffffffffffffffffffffffffffffff16631bcbfaba6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156105b0573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105d49190610ba9565b6105de9084610bc2565b6105e89190610bff565b905060006127108773ffffffffffffffffffffffffffffffffffffffff1663286966086040518163ffffffff1660e01b8152600401602060405180830381865afa15801561063a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061065e9190610ba9565b6106689084610bc2565b6106729190610bff565b6040517f9adf91ee000000000000000000000000000000000000000000000000000000008152600481018a905290915060009073ffffffffffffffffffffffffffffffffffffffff891690639adf91ee90602401602060405180830381865afa1580156106e3573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107079190610b0c565b905060008873ffffffffffffffffffffffffffffffffffffffff16633b19e84a6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610756573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061077a9190610b0c565b6040517fa7400801000000000000000000000000000000000000000000000000000000008152600481018c905290915060009073ffffffffffffffffffffffffffffffffffffffff8b169063a740080190602401602060405180830381865afa1580156107eb573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061080f9190610b0c565b905060008073ffffffffffffffffffffffffffffffffffffffff8316610835888d610b92565b604051600081818185875af1925050503d8060008114610871576040519150601f19603f3d011682016040523d82523d6000602084013e610876565b606091505b5090925090508115156000036108c357806040517fce13343d0000000000000000000000000000000000000000000000000000000081526004016108ba9190610c3a565b60405180910390fd5b861561096f5773ffffffffffffffffffffffffffffffffffffffff84166108ea8789610b92565b604051600081818185875af1925050503d8060008114610926576040519150601f19603f3d011682016040523d82523d6000602084013e61092b565b606091505b50909250905081151560000361096f57806040517fbc98622d0000000000000000000000000000000000000000000000000000000081526004016108ba9190610c3a565b8515610a145760405173ffffffffffffffffffffffffffffffffffffffff8616908790600081818185875af1925050503d80600081146109cb576040519150601f19603f3d011682016040523d82523d6000602084013e6109d0565b606091505b509092509050811515600003610a1457806040517fe5ea83e70000000000000000000000000000000000000000000000000000000081526004016108ba9190610c3a565b8473ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff167f570610cb78811f3a7f90d272791d0a5e71648fb7368280519fc5866e5184db1d8f8a8f610a709190610b92565b8a610a7b818e610b92565b60408051948552602085019390935291830152606082015260800160405180910390a350505050505050505050505050565b9055565b600060208284031215610ac357600080fd5b5035919050565b73ffffffffffffffffffffffffffffffffffffffff81168114610aec57600080fd5b50565b600060208284031215610b0157600080fd5b81356101fc81610aca565b600060208284031215610b1e57600080fd5b81516101fc81610aca565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60008219821115610b6b57610b6b610b29565b500190565b600060208284031215610b8257600080fd5b815180151581146101fc57600080fd5b600082821015610ba457610ba4610b29565b500390565b600060208284031215610bbb57600080fd5b5051919050565b6000817fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0483118215151615610bfa57610bfa610b29565b500290565b600082610c35577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b600060208083528351808285015260005b81811015610c6757858101830151858201604001528201610c4b565b81811115610c79576000604083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01692909201604001939250505056fea26469706673582212202da726a0ebf275a4ea33e21c3cea1b07a08ff132835baf11a00a6a7218c4d46464736f6c634300080d0033",
+  "devdoc": {
+    "author": "Kiln",
+    "kind": "dev",
+    "methods": {
+      "getWithdrawer(bytes32)": {
+        "params": {
+          "_publicKeyRoot": "Public key root to get the owner"
+        }
+      },
+      "initCLD(address)": {
+        "params": {
+          "_stakingContract": "Address of the Staking Contract"
+        }
+      }
+    },
+    "title": "Consensus Layer Fee Recipient",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "constructor": {
+        "notice": "Constructor method allowing us to prevent calls to initCLFR by setting the appropriate version"
+      },
+      "dispatch(bytes32)": {
+        "notice": "Performs a withdrawal on this contract's balance"
+      },
+      "getStakingContract()": {
+        "notice": "Retrieve the staking contract address"
+      },
+      "getWithdrawer(bytes32)": {
+        "notice": "Retrieve the assigned withdrawer for the given public key root"
+      },
+      "initCLD(address)": {
+        "notice": "Initialize the contract by storing the staking contract"
+      }
+    },
+    "notice": "This contract can be used to receive fees from a validator and split them with a node operator",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

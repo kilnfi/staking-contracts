@@ -63,9 +63,9 @@ This/these account(s) will be in charge of adding keys to the system. They have 
 
 These environment variables are required for the deployment command.
 
-#### Deploying Accounts (`MNEMONIC`)
+#### Deploying Accounts (`PK`)
 
-You will need a mnemonic phrase pointing to a funded account on the deployment network. This account won't have any ownership or extra rights upon the system, losing this key will no represent a threat for the system (still, don't lose your keys)
+You will need a private key pointing to a funded account on the deployment network. This account won't have any ownership or extra rights upon the system, losing this key will no represent a threat for the system (still, don't lose your keys)
 
 #### Ethereum RPC Endpoint (`RPC_URL`)
 
@@ -93,7 +93,7 @@ These configuration variables are required to be properly set for the deployment
 
 To start the deployment process, run this command by replacing the variables with the values gathered in the steps above and making sure that configuration file values are set properly.
 
-`env MNEMONIC=$MNEMONIC RPC_URL=$RPC_URL yarn hh deploy --network $NETWORK`
+`env PK=$PK RPC_URL=$RPC_URL yarn hh deploy --network $NETWORK`
 
 ## III. Testnet Post Deployment Steps
 

@@ -15,8 +15,8 @@ const func: DeployFunction = async function ({
 
 };
 
-func.skip = async function ({ deployments }: HardhatRuntimeEnvironment): Promise<boolean> {
-	const shouldSkip = await isDeployed("FeeRecipient", deployments);
+func.skip = async function ({ deployments, network }: HardhatRuntimeEnvironment): Promise<boolean> {
+	const shouldSkip = (await isDeployed("FeeRecipient", deployments)) || network.name.endsWith("_consensys");
 	if (shouldSkip) {
 	  console.log("Skipped");
 	}
