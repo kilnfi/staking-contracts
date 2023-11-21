@@ -93,8 +93,8 @@ const hhuc: HardhatUserConfig = {
     admin: {
       default: 2,
       goerli_consensys: "0x4Cb0De8A79C766C478742666d024A16E3e81aAE0",
-      goerli_dev_consensys: "0x4Cb0De8A79C766C478742666d024A16E3e81aAE0",
-      goerli_uat_consensys: "0x4Cb0De8A79C766C478742666d024A16E3e81aAE0",
+      goerli_dev_consensys: "0xFb0961bea75145bC62fB6A53bE9Be70A0A7D206E",
+      goerli_uat_consensys: "0xFb0961bea75145bC62fB6A53bE9Be70A0A7D206E",
       goerli_vault: "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
       goerli_live: "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
       mainnet_vault: "0xD3269B4daBd8AA336155F741C534CBAC87526A8E",
