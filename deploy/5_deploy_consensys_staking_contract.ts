@@ -9,6 +9,8 @@ const getMaxFeeBps = (network: string): number => {
       return 5000;
     case "goerli_dev_consensys":
       return 5000;
+    case "mainnet_consensys":
+      return 1500; //15% max fee
 
     default:
       return 5000;
@@ -21,6 +23,8 @@ const getMaxOperatorFeeBps = (network: string): number => {
       return 5000;
     case "goerli_dev_consensys":
       return 5000;
+    case "mainnet_consensys":
+      return 10000; //100% of 15% = 15%
     
     default:
       return 5000;
@@ -33,6 +37,8 @@ const getFeeBps = (network: string): number => {
       return 500;
     case "goerli_dev_consensys":
       return 500;
+    case "mainnet_consensys":
+      return 1000; //10% end-user fee
     
     default:
       return 500;
@@ -45,6 +51,8 @@ const getOperatorFeeBps = (network: string): number => {
       return 500;
     case "goerli_dev_consensys":
       return 500;
+    case "mainnet_consensys":
+      return 9000; //90% of 10% = 9% for consensys, 1% for kiln
     
     default:
       return 500;
@@ -123,7 +131,7 @@ const func: DeployFunction = async function ({
 };
 
 func.skip = async function ({ deployments, network }: HardhatRuntimeEnvironment): Promise<boolean> {
-  const shouldSkip = network.name !== "goerli_uat_consensys" && network.name !== "goerli_dev_consensys";
+  const shouldSkip = network.name !== "goerli_uat_consensys" && network.name !== "goerli_dev_consensys" && network.name !== "mainnet_consensys";
   if (shouldSkip) {
     console.log("Skipped");
   }
