@@ -1,0 +1,16 @@
+{
+    "name": "mainnet_consensys",
+    "chainId": "1",
+    "contracts": {
+        "ConsensusLayerFeeDispatcher": "0xC24162aa69C3267Ed5a4900a2976487BDDFC69d2",
+        "ExecutionLayerFeeDispatcher": "0xeD216054cb9bA38d22E3E72B8245147F890329e4",
+        "FeeRecipient": "0xFE1b6a789e2BD96a69C49a14353E51116b48107F",
+        "StakingContract": "0xDc71aFFC862fceB6aD32BE58E098423A7727bEbd"
+    },
+    "namedAccounts": {
+        "deployer": "0x6C74FDa18Ea90E1C61e800Dd9B4508Ac782e0Dc8",
+        "admin": "0x5Bc5ec5130f66f13d5C21ac6811A7e624ED3C7c6",
+        "depositContract": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+        "treasury": "0xb631dB8b5D95947025b77bFB44De32eFA8bc15Da"
+    }
+}

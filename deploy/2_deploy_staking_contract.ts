@@ -175,11 +175,11 @@ const func: DeployFunction = async function ({
   }
 };
 
-func.skip = async function ({ deployments }: HardhatRuntimeEnvironment): Promise<boolean> {
+func.skip = async function ({ deployments, network }: HardhatRuntimeEnvironment): Promise<boolean> {
   const shouldSkip =
-    (await isDeployed("ConsensusLayerFeeDispatcher_Proxy", deployments)) &&
+    ((await isDeployed("ConsensusLayerFeeDispatcher_Proxy", deployments)) &&
     (await isDeployed("ExecutionLayerFeeDispatcher_Proxy", deployments)) &&
-    (await isDeployed("StakingContract_Proxy", deployments));
+    (await isDeployed("StakingContract_Proxy", deployments))) || network.name.endsWith("_consensys");
   if (shouldSkip) {
     console.log("Skipped");
   }

@@ -22,9 +22,19 @@ const hhuc: HardhatUserConfig = {
   networks: {
     goerli_consensys: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
+    },
+    mainnet_consensys: {
+      url: process.env.RPC_URL || "",
+      accounts: [process.env.PK || ""],
+    },
+    goerli_dev_consensys: {
+      url: process.env.RPC_URL || "",
+      accounts: [process.env.PK || ""],
+    },
+    goerli_uat_consensys: {
+      url: process.env.RPC_URL || "",
+      accounts: [process.env.PK || ""],
     },
     goerli_consensys_dev: {
       url: process.env.RPC_URL || "",
@@ -34,51 +44,35 @@ const hhuc: HardhatUserConfig = {
     },
     goerli_vault: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
     },
     goerli_live: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
     },
     mainnet_vault: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
     },
     mainnet_live: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
     },
     mainnet_enzyme: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
     },
     mainnet_komainu: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
     },
     holesky_devnet: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
     },
     holesky_testnet: {
       url: process.env.RPC_URL || "",
-      accounts: {
-        mnemonic: process.env.MNEMONIC || "",
-      },
+      accounts: [process.env.PK || ""],
     },
   },
   dodoc: {
@@ -110,6 +104,8 @@ const hhuc: HardhatUserConfig = {
     admin: {
       default: 2,
       goerli_consensys: "0x4Cb0De8A79C766C478742666d024A16E3e81aAE0",
+      goerli_dev_consensys: "0xFb0961bea75145bC62fB6A53bE9Be70A0A7D206E",
+      goerli_uat_consensys: "0xFb0961bea75145bC62fB6A53bE9Be70A0A7D206E",
       goerli_consensys_dev: "0x4Cb0De8A79C766C478742666d024A16E3e81aAE0",
       goerli_vault: "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
       goerli_live: "0xC4b8469165d0A0e0939500BdeCE7c0CD3415a9fb",
@@ -117,12 +113,15 @@ const hhuc: HardhatUserConfig = {
       mainnet_live: "0xCf53Ef5be9C713585D2fEF40e72D9c7C4fE1D5F2",
       mainnet_enzyme: "0x45DAD754897ef0b2780349AD7c7000c72717b24E",
       mainnet_komainu: "0xCf53Ef5be9C713585D2fEF40e72D9c7C4fE1D5F2",
+      mainnet_consensys: "0x5Bc5ec5130f66f13d5C21ac6811A7e624ED3C7c6",
       holesky_devnet: "0xb3eb29AC481FCFAFA7008A4acf04737c7d6733EA",
       holesky_testnet: "0xe6fe1936Fa8120e57c7Dee1733693B59b392672c"
     },
     depositContract: {
       default: 4,
       goerli_consensys: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
+      goerli_dev_consensys: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
+      goerli_uat_consensys: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
       goerli_consensys_dev: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
       goerli_vault: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
       goerli_live: "0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b",
@@ -130,12 +129,15 @@ const hhuc: HardhatUserConfig = {
       mainnet_live: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       mainnet_enzyme: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       mainnet_komainu: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+      mainnet_consensys: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       holesky_devnet: "0x4242424242424242424242424242424242424242",
       holesky_testnet: "0x4242424242424242424242424242424242424242"
     },
     treasury: {
       default: 5,
       goerli_consensys: "0xAb07A64D407c25f02f1a2dc0aF97076630a03F17",
+      goerli_dev_consensys: "0xAb07A64D407c25f02f1a2dc0aF97076630a03F17",
+      goerli_uat_consensys: "0xAb07A64D407c25f02f1a2dc0aF97076630a03F17",
       goerli_consensys_dev: "0xAb07A64D407c25f02f1a2dc0aF97076630a03F17",
       goerli_vault: "0x73cC0AFEaAc1E6f2C08A7D4484bB5628062558CB",
       goerli_live: "0x5137B5540730d44326fBb237184425A9FB311DdF",
@@ -143,6 +145,7 @@ const hhuc: HardhatUserConfig = {
       mainnet_live: "0xd3947210779c046D5ADCE2a6665d650450A56280",
       mainnet_enzyme: "0x1ad1fc9964c551f456238Dd88D6a38344B5319D7",
       mainnet_komainu: "0xCdB0570d55Ebe8c8d678e090F86fa73729EF8Fc7",
+      mainnet_consensys: "0xb631dB8b5D95947025b77bFB44De32eFA8bc15Da",
       holesky_devnet: "0xb3eb29AC481FCFAFA7008A4acf04737c7d6733EA",
       holesky_testnet: "0xe6fe1936Fa8120e57c7Dee1733693B59b392672c"
     },

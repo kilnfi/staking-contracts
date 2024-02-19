@@ -1,0 +1,16 @@
+{
+    "name": "goerli_dev_consensys",
+    "chainId": "5",
+    "contracts": {
+        "ConsensusLayerFeeDispatcher": "0xD8875BAab3c5a1244d10fbBbC03b756f7649f320",
+        "ExecutionLayerFeeDispatcher": "0x3fb3bf7D78150865eE891d5Ea344D0CC9c1E1E84",
+        "FeeRecipient": "0x8Fa87245c0D88e2D0cfE05679cED0C367950514b",
+        "StakingContract": "0x97230E85e6443371B5b7bB5d47FA868E2eE48301"
+    },
+    "namedAccounts": {
+        "deployer": "0xBcc3816221d083D8E72F2CB14959F24d89406810",
+        "admin": "0xFb0961bea75145bC62fB6A53bE9Be70A0A7D206E",
+        "depositContract": "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b",
+        "treasury": "0xAb07A64D407c25f02f1a2dc0aF97076630a03F17"
+    }
+}
