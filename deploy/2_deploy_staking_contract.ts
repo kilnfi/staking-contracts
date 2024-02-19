@@ -7,6 +7,8 @@ const getMaxFeeBps = (network: string): number => {
   switch (network) {
     case "goerli_consensys":
       return 5000;
+    case "goerli_consensys_dev":
+        return 5000;
     case "goerli_vault":
       return 5000;
     case "goerli_live":
@@ -27,6 +29,8 @@ const getMaxFeeBps = (network: string): number => {
 const getMaxOperatorFeeBps = (network: string): number => {
   switch (network) {
     case "goerli_consensys":
+      return 5000;
+    case "goerli_consensys_dev":
       return 5000;
     case "goerli_vault":
       return 5000;
@@ -49,6 +53,8 @@ const getFeeBps = (network: string): number => {
   switch (network) {
     case "goerli_consensys":
       return 500;
+    case "goerli_consensys_dev":
+        return 500;
     case "goerli_vault":
       return 700;
     case "goerli_live":
@@ -69,6 +75,8 @@ const getFeeBps = (network: string): number => {
 const getOperatorFeeBps = (network: string): number => {
   switch (network) {
     case "goerli_consensys":
+      return 500;
+    case "goerli_consensys_dev":
       return 500;
     case "goerli_vault":
       return 0;
