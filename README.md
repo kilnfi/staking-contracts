@@ -217,3 +217,111 @@ As the recipient address is deterministic, we can compute this address before pu
 To compute this address, call `function getCLFeeRecipient(bytes calldata _publicKey) view` on the `StakingContract`.
 
 
+## Diagrams 
+
+### Overview of the system 
+    
+```mermaid
+flowchart TB
+    subgraph Actors
+    U[[User]]
+    O[[Operator]]
+    A[[Admin]]
+    end
+
+    subgraph Recipients
+    RA[Recipient Contract A]
+    RB[Recipient Contract B]
+    end
+
+    subgraph Consensus Layer
+    VA[Validator A]
+    VB[Validator B]
+    end
+
+    Dispatcher
+    StakingContract
+
+    RI[Recipient Implementation]
+    DepositContract
+
+    DepositContract--Fund-->VA & VB
+
+    U--Stake ETH-->StakingContract
+    O--Add/Manage keys-->StakingContract
+    A--Approve keys-->StakingContract
+    StakingContract--Deposit funded validators-->DepositContract
+    StakingContract-.- RI --Clone--> RA & RB
+
+    U--Exit-->StakingContract
+    U--Withdraw-->StakingContract
+
+    StakingContract--Withdraw--> RB
+    RB--Withdraw--> Dispatcher
+
+    Dispatcher--Take commission--> OT[Operator Treasury]
+    Dispatcher--Take commission--> IT[Integrator Treasury]
+    Dispatcher--Withdraw--> U
+
+```
+
+### Deposit Flow
+
+```mermaid
+sequenceDiagram
+    actor U as User Wallet
+    U->>Staking Contract: Stake n * 32 ETH
+    Staking Contract-->>Staking Contract: Load n stored keys and signatures
+    Staking Contract->>ETH Deposit Contract : Deposit n validators
+    Staking Contract-->>Staking Contract: Set user as owner of the validator(s)
+```
+
+### Rewards Withdrawal Flow
+
+```mermaid
+sequenceDiagram
+    actor U as User Wallet
+    participant S as Staking Contract
+    participant R as Recipient Contract
+    participant D as Dispatcher Contract
+    participant T as Integrator Treasury
+    participant T2 as Operator Treasury
+
+    R->>R: Rewards accumulate
+
+    U->>S: Withdraw validator
+    S-->>R: Deploy if needed
+    S->>R: Withdraw
+    R->>D: Split rewards
+    D->>T: Send commission
+    D->>T2: Send operator commission
+    D->>U: Send net rewards
+```
+
+### Exit Flow
+
+```mermaid
+sequenceDiagram
+    actor U as User Wallet
+    participant S as Staking Contract
+    participant R as Recipient Contract
+    participant D as Dispatcher Contract
+    participant T as Integrator Treasury
+    participant T2 as Operator Treasury
+
+    U->>S: Request exit
+    S->>S: Emit exit event
+
+    Note over S: Exit event triggers exit message broadcast on CL
+    Note over R: After the protocol withdrawal process concludes funds are here
+
+    U->>S: Withdraw validator
+    S-->>R: Deploy if needed
+    S->>R: Withdraw
+    R->>D: Split rewards
+
+    D->>T: Send commission
+    D->>T2: Send operator commission
+    D->>U: Send principial + net rewards
+```
+
