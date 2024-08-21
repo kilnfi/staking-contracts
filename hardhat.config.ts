@@ -20,6 +20,14 @@ const hhuc: HardhatUserConfig = {
     sources: "./src/contracts",
   },
   networks: {
+    mainnet_safe: {
+      url: process.env.RPC_URL || "",
+      accounts: [process.env.PK || ""],
+    },
+    holesky_dev_safe: {
+      url: process.env.RPC_URL || "",
+      accounts: [process.env.PK || ""],
+    },
     goerli_consensys: {
       url: process.env.RPC_URL || "",
       accounts: [process.env.PK || ""],
@@ -114,8 +122,10 @@ const hhuc: HardhatUserConfig = {
       mainnet_enzyme: "0x45DAD754897ef0b2780349AD7c7000c72717b24E",
       mainnet_komainu: "0xCf53Ef5be9C713585D2fEF40e72D9c7C4fE1D5F2",
       mainnet_consensys: "0x5Bc5ec5130f66f13d5C21ac6811A7e624ED3C7c6",
+      mainnet_safe: "0x60CFAC5cD4aEed165023A81F57A0bc92D7CfEb6E",
       holesky_devnet: "0xb3eb29AC481FCFAFA7008A4acf04737c7d6733EA",
-      holesky_testnet: "0xe6fe1936Fa8120e57c7Dee1733693B59b392672c"
+      holesky_testnet: "0xe6fe1936Fa8120e57c7Dee1733693B59b392672c",
+      holesky_dev_safe: "0xdA53Ce2F763A3270638127CEA2826e32Cd3428e5",
     },
     depositContract: {
       default: 4,
@@ -130,8 +140,10 @@ const hhuc: HardhatUserConfig = {
       mainnet_enzyme: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       mainnet_komainu: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       mainnet_consensys: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+      mainnet_safe: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       holesky_devnet: "0x4242424242424242424242424242424242424242",
-      holesky_testnet: "0x4242424242424242424242424242424242424242"
+      holesky_testnet: "0x4242424242424242424242424242424242424242",
+      holesky_dev_safe: "0x4242424242424242424242424242424242424242",
     },
     treasury: {
       default: 5,
@@ -146,8 +158,10 @@ const hhuc: HardhatUserConfig = {
       mainnet_enzyme: "0x1ad1fc9964c551f456238Dd88D6a38344B5319D7",
       mainnet_komainu: "0xCdB0570d55Ebe8c8d678e090F86fa73729EF8Fc7",
       mainnet_consensys: "0xb631dB8b5D95947025b77bFB44De32eFA8bc15Da",
+      mainnet_safe: "0xF9beDA1d78916CC89D4B3F6beF092Dc1D302112b",
       holesky_devnet: "0xb3eb29AC481FCFAFA7008A4acf04737c7d6733EA",
-      holesky_testnet: "0xe6fe1936Fa8120e57c7Dee1733693B59b392672c"
+      holesky_testnet: "0xe6fe1936Fa8120e57c7Dee1733693B59b392672c",
+      holesky_dev_safe: "0xdA53Ce2F763A3270638127CEA2826e32Cd3428e5",
     },
   },
 };
