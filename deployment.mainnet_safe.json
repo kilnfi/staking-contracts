@@ -1,0 +1,16 @@
+{
+    "name": "mainnet_safe",
+    "chainId": "1",
+    "contracts": {
+        "ConsensusLayerFeeDispatcher": "0x2EA6BB1376531f6272e877eaF86608D18CB278d3",
+        "ExecutionLayerFeeDispatcher": "0xf26dB8ca5C95BA640F011653e17b2B1AEa17ABb6",
+        "FeeRecipient": "0x223Ca2Fe219df1AaD87787a0de4b65F541f08542",
+        "StakingContract": "0xC9db9bf0c9c8Fa30B09c45233E6A2D5eEfF9aBF3"
+    },
+    "namedAccounts": {
+        "deployer": "0x6C74FDa18Ea90E1C61e800Dd9B4508Ac782e0Dc8",
+        "admin": "0x60CFAC5cD4aEed165023A81F57A0bc92D7CfEb6E",
+        "depositContract": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+        "treasury": "0xF9beDA1d78916CC89D4B3F6beF092Dc1D302112b"
+    }
+}
