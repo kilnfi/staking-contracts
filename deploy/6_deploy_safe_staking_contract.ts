@@ -8,7 +8,7 @@ const getMaxFeeBps = (network: string): number => {
     case "holesky_dev_safe":
       return 1000;
     case "mainnet_safe":
-      return 1000; //10% max user fee
+      return 2000; //20% max user fee
 
     default:
       return 1000;

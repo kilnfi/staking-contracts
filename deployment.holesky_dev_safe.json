@@ -1,0 +1,16 @@
+{
+    "name": "holesky_dev_safe",
+    "chainId": "17000",
+    "contracts": {
+        "ConsensusLayerFeeDispatcher": "0xee4d637Aa7966b13174CD977A8387cD767B46aD4",
+        "ExecutionLayerFeeDispatcher": "0x429Bf8D9a1ff237D0F52bd39a968Aee07C1A8C89",
+        "FeeRecipient": "0x2f1aEd559Efb6107b6f713f6573CC66d6AAB3A35",
+        "StakingContract": "0x124E9Ef64689C56ed1577b9a112c117eEfdAD21B"
+    },
+    "namedAccounts": {
+        "deployer": "0xdA53Ce2F763A3270638127CEA2826e32Cd3428e5",
+        "admin": "0xdA53Ce2F763A3270638127CEA2826e32Cd3428e5",
+        "depositContract": "0x4242424242424242424242424242424242424242",
+        "treasury": "0xdA53Ce2F763A3270638127CEA2826e32Cd3428e5"
+    }
+}
