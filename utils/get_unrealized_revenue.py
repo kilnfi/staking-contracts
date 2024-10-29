@@ -20,12 +20,13 @@ def main():
             
             el_total += int(row['el_balance'])
 
-        print(f'CL rewards: {cl_total/1e18}')
-        print(f'EL rewards: {el_total/1e18}')
+        print(f'Unclaimed CL rewards: {cl_total/1e18}')
+        print(f'Unclaimed EL rewards: {el_total/1e18}')
         total_rewards = cl_total + el_total
-        print(f'Total rewards: {(total_rewards)/1e18}')
-        print(f'Unrealized revenue: {total_rewards/1e18 * FEE}')
-        print(f'Unrealized revenue owed to Kiln: {total_rewards/1e18 * FEE * KILN_SHARE}')
+        print(f'Total unclaimed rewards: {(total_rewards)/1e18}')
+        print(f'Total unrealized revenue: {total_rewards/1e18 * FEE}')
+        print(f'Unrealized revenue for Ledger: {total_rewards/1e18*FEE - (total_rewards/1e18 * FEE * KILN_SHARE)}')
+        print(f'Unrealized revenue for Kiln: {total_rewards/1e18 * FEE * KILN_SHARE}')
 
 if __name__ == "__main__":
     main()
