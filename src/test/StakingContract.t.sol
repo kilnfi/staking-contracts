@@ -2022,6 +2022,18 @@ contract StakingContractOneValidatorTest is Test {
     }
 }
 
+contract SanctionsOracle {
+    mapping(address => bool) sanctionsMap; 
+
+    function isSanctioned(address user) public returns (bool) {
+        return sanctionsMap[user];
+    }
+
+    function setSanction(address user, bool status) public {
+        sanctionsMap[user] = status;
+     }
+}
+
 contract StakingContractBehindProxyTest is Test {
     address internal treasury;
     StakingContract internal stakingContract;
@@ -2036,6 +2048,8 @@ contract StakingContractBehindProxyTest is Test {
     ExecutionLayerFeeDispatcher internal eld;
     ConsensusLayerFeeDispatcher internal cld;
     FeeRecipient internal feeRecipientImpl;
+
+    SanctionsOracle oracle;
 
     event ExitRequest(address caller, bytes pubkey);
 
@@ -2099,6 +2113,8 @@ contract StakingContractBehindProxyTest is Test {
             stakingContract.setOperatorLimit(0, 10, block.number);
             vm.stopPrank();
         }
+
+        oracle = new SanctionsOracle();
     }
 
     event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes signature);
@@ -2159,6 +2175,31 @@ contract StakingContractBehindProxyTest is Test {
         assertEq(funded, 1);
         assertEq(available, 9);
         assert(deactivated == false);
+    }
+
+    function test_deposit_withsanctions_senderSanctioned(address user) public {
+        oracle.setSanction(user, true);
+
+        vm.prank(admin);
+        stakingContract.setSanctionsOracle(address(oracle));
+
+        vm.deal(user, 32 ether);
+
+        vm.startPrank(user);
+        vm.expectRevert(abi.encodeWithSignature("AddressSanctioned(address)", user));
+        stakingContract.deposit{value: 32 ether}();
+        vm.stopPrank();
+    }
+
+    function test_deposit_withSanctions_SenderClear(address user) public {
+        vm.prank(admin);
+        stakingContract.setSanctionsOracle(address(oracle));
+
+        vm.deal(user, 32 ether);
+
+        vm.startPrank(user);
+        stakingContract.deposit{value: 32 ether}();
+        vm.stopPrank();
     }
 
     function testExplicitDepositTwoValidators(uint256 _userSalt) public {
@@ -3011,6 +3052,20 @@ contract StakingContractBehindProxyTest is Test {
         assertApproxEqAbs(feeRecipientOne.balance, 0.04 ether, 10**5);
     }
 
+    function test_withdraw_withSanctions_RecipientSanctioned() public {
+        oracle.setSanction(bob, true);
+        vm.prank(admin);
+        stakingContract.setSanctionsOracle(address(oracle));
+
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        vm.expectRevert(abi.encodeWithSignature("AddressSanctioned(address)", bob));
+        stakingContract.deposit{value: 32 ether}();
+        vm.stopPrank();
+    }
+
     function testWithdrawAllFees_asAdmin() public {
         bytes
             memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
@@ -3264,6 +3319,23 @@ contract StakingContractBehindProxyTest is Test {
         vm.stopPrank();
         vm.expectEmit(true, true, true, true);
         emit ExitRequest(bob, publicKey);
+        vm.prank(bob);
+        stakingContract.requestValidatorsExit(publicKey);
+    }
+
+    function test_requestValidatorExits_OracleActive_OwnerSanctioned() public {
+        vm.prank(admin);
+        stakingContract.setSanctionsOracle(address(oracle));
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        vm.deal(bob, 32 ether);
+        vm.startPrank(bob);
+        stakingContract.deposit{value: 32 ether}();
+        vm.stopPrank();
+
+        oracle.setSanction(bob, true);
+        vm.expectRevert(abi.encodeWithSignature("AddressSanctioned(address)", bob));
+
         vm.prank(bob);
         stakingContract.requestValidatorsExit(publicKey);
     }

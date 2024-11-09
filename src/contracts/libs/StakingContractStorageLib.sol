@@ -419,4 +419,20 @@ library StakingContractStorageLib {
     function setLastValidatorEdit(uint256 value) internal {
         setUint256(LAST_VALIDATOR_EDIT_SLOT, value);
     }
+
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant SANCTIONS_ORACLE_SLOT = bytes32(uint256(keccak256("StakingContract.sanctionsOracle")) - 1);
+
+    function getSanctionsOracle() internal view returns (address) {
+        return getAddress(SANCTIONS_ORACLE_SLOT);
+    }
+
+    function setSanctionsOracle(address val) internal {
+        setAddress(SANCTIONS_ORACLE_SLOT, val);
+    }
+
+    
 }
