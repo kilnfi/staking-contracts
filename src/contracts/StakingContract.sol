@@ -6,6 +6,7 @@ import "./interfaces/IFeeRecipient.sol";
 import "./interfaces/IDepositContract.sol";
 import "./libs/StakingContractStorageLib.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
+import "./interfaces/ISanctionsOracle.sol";
 
 /// @title Ethereum Staking Contract
 /// @author Kiln
@@ -49,6 +50,7 @@ contract StakingContract {
     error MaximumOperatorCountAlreadyReached();
     error LastEditAfterSnapshot();
     error PublicKeyNotInContract();
+    error AddressSanctioned(address sanctioned);
 
     struct ValidatorAllocationCache {
         bool used;
@@ -201,6 +203,13 @@ contract StakingContract {
     function setWithdrawerCustomizationEnabled(bool _enabled) external onlyAdmin {
         StakingContractStorageLib.setWithdrawerCustomizationEnabled(_enabled);
         emit SetWithdrawerCustomizationStatus(_enabled);
+    }
+
+    /// @notice Changes the sanctions oracle address
+    /// @param _sanctionsOracle New sanctions oracle address
+    /// @dev If the address is address(0), the sanctions oracle checks are skipped
+    function setSanctionsOracle(address _sanctionsOracle) external onlyAdmin {
+        StakingContractStorageLib.setSanctionsOracle(_sanctionsOracle);
     }
 
     /// @notice Retrieve system admin
@@ -722,6 +731,7 @@ contract StakingContract {
         if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
             revert InvalidPublicKeys();
         }
+        _revertIfSanctioned(msg.sender);
         for (uint256 i = 0; i < _publicKeys.length; ) {
             bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
             bytes32 pubKeyRoot = _getPubKeyRoot(publicKey);
@@ -899,6 +909,7 @@ contract StakingContract {
         if (StakingContractStorageLib.getDepositStopped()) {
             revert DepositsStopped();
         }
+        _revertIfSanctioned(msg.sender);
         if (msg.value == 0 || msg.value % DEPOSIT_SIZE != 0) {
             revert InvalidDepositValue();
         }
@@ -941,6 +952,8 @@ contract StakingContract {
         address _dispatcher
     ) internal {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
+        address withdrawer = _getWithdrawer(publicKeyRoot);
+        _revertIfSanctioned(withdrawer);
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
         address implementation = StakingContractStorageLib.getFeeRecipientImplementation();
         address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
@@ -954,6 +967,15 @@ contract StakingContract {
     function _checkAddress(address _address) internal pure {
         if (_address == address(0)) {
             revert InvalidZeroAddress();
+        }
+    }
+
+    function _revertIfSanctioned(address account) internal {
+        address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
+        if (sanctionsOracle != address(0)) {
+            if (ISanctionsOracle(sanctionsOracle).isSanctioned(account)) {
+                revert AddressSanctioned(account);
+            }
         }
     }
 }
