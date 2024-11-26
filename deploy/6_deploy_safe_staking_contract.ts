@@ -9,9 +9,11 @@ const getMaxFeeBps = (network: string): number => {
       return 1000;
     case "mainnet_safe":
       return 2000; //20% max user fee
+    case "mainnet_2_safe":
+      return 2500; //25% max user fee
 
     default:
-      return 1000;
+      return 2500;
   }
 };
 
@@ -21,9 +23,11 @@ const getMaxOperatorFeeBps = (network: string): number => {
       return 10000;
     case "mainnet_safe":
       return 10000; // Leave the possibility of doing the split onchain in the future
+    case "mainnet_2_safe":
+      return 10000; // Leave the possibility of doing the split onchain in the future
     
     default:
-      return 0;
+      return 10000;
   }
 };
 
@@ -33,9 +37,11 @@ const getFeeBps = (network: string): number => {
       return 600;
     case "mainnet_safe":
       return 600; //6% end-user fee
+    case "mainnet_2_safe":
+      return 2000; //20% end-user fee
     
     default:
-      return 600;
+      return 2000;
   }
 };
 
@@ -44,6 +50,8 @@ const getOperatorFeeBps = (network: string): number => {
     case "holesky_dev_safe":
       return 0;
     case "mainnet_safe":
+      return 0; // at the start all the fees go to the treasury
+    case "mainnet_2_safe":
       return 0; // at the start all the fees go to the treasury
     
     default:
@@ -123,7 +131,7 @@ const func: DeployFunction = async function ({
 };
 
 func.skip = async function ({ deployments, network }: HardhatRuntimeEnvironment): Promise<boolean> {
-  const shouldSkip = network.name !== "holesky_dev_safe" && network.name !== "mainnet_safe";
+  const shouldSkip = ! network.name.endsWith("_safe");
   if (shouldSkip) {
     console.log("Skipped");
   }
