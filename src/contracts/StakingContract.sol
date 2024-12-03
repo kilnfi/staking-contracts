@@ -50,7 +50,8 @@ contract StakingContract {
     error MaximumOperatorCountAlreadyReached();
     error LastEditAfterSnapshot();
     error PublicKeyNotInContract();
-    error AddressSanctioned(address sanctioned);
+    error AddressSanctioned(address sanctionedAccount);
+    error AddressBlocked(address blockedAccount);
 
     struct ValidatorAllocationCache {
         bool used;
@@ -728,29 +729,40 @@ contract StakingContract {
     }
 
     function requestValidatorsExit(bytes calldata _publicKeys) external {
-        if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
-            revert InvalidPublicKeys();
-        }
-        _revertIfSanctioned(msg.sender);
-        for (uint256 i = 0; i < _publicKeys.length; ) {
-            bytes memory publicKey = BytesLib.slice(_publicKeys, i, PUBLIC_KEY_LENGTH);
-            bytes32 pubKeyRoot = _getPubKeyRoot(publicKey);
-            address withdrawer = _getWithdrawer(pubKeyRoot);
-            if (msg.sender != withdrawer) {
-                revert Unauthorized();
-            }
-            _setExitRequest(pubKeyRoot, true);
-            emit ExitRequest(withdrawer, publicKey);
-            unchecked {
-                i += PUBLIC_KEY_LENGTH;
-            }
-        }
+        _revertIfSanctionedOrBlocked(msg.sender);
+        _requestExits(_publicKeys, msg.sender);
     }
 
     /// @notice Utility to stop or allow deposits
     function setDepositsStopped(bool val) external onlyAdmin {
         emit ChangedDepositsStopped(val);
         StakingContractStorageLib.setDepositStopped(val);
+    }
+
+    /// @notice Utility to ban a user, exits the validators provided if account is not OFAC sanctioned
+    /// @param _account Account to ban
+    /// @param _publicKeys Public keys to exit
+    function blockAccount(address _account, bytes calldata _publicKeys) external onlyAdmin {
+        StakingContractStorageLib.getBlocklist().value[_account] = true;
+        address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
+        if (sanctionsOracle != address(0)) {
+            if (ISanctionsOracle(sanctionsOracle).isSanctioned(_account)) {
+                return;
+            }
+        }
+        _requestExits(_publicKeys, _account);
+    }
+
+    function unblock(address _account) external onlyAdmin {
+        StakingContractStorageLib.getBlocklist().value[_account] = false;
+    }
+
+    function isBlockedOrSanctioned(address _account) public view returns (bool isBlocked, bool isSanctioned) {
+        address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
+        if (sanctionsOracle != address(0)) {
+            isSanctioned = ISanctionsOracle(sanctionsOracle).isSanctioned(_account);
+        }
+        isBlocked = StakingContractStorageLib.getBlocklist().value[_account];
     }
 
     /// ██ ███    ██ ████████ ███████ ██████  ███    ██  █████  ██
@@ -796,6 +808,26 @@ contract StakingContract {
 
     function _setExitRequest(bytes32 _publicKeyRoot, bool _value) internal {
         StakingContractStorageLib.getExitRequestMap().value[_publicKeyRoot] = _value;
+    }
+
+    function _requestExits(bytes calldata publicKeys, address owner) internal {
+        if (publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
+            revert InvalidPublicKeys();
+        }
+
+        for (uint256 i = 0; i < publicKeys.length; ) {
+            bytes memory publicKey = BytesLib.slice(publicKeys, i, PUBLIC_KEY_LENGTH);
+            bytes32 pubKeyRoot = _getPubKeyRoot(publicKey);
+            address withdrawer = _getWithdrawer(pubKeyRoot);
+            if (owner != withdrawer) {
+                revert Unauthorized();
+            }
+            _setExitRequest(pubKeyRoot, true);
+            emit ExitRequest(withdrawer, publicKey);
+            unchecked {
+                i += PUBLIC_KEY_LENGTH;
+            }
+        }
     }
 
     function _updateAvailableValidatorCount(uint256 _operatorIndex) internal {
@@ -909,7 +941,7 @@ contract StakingContract {
         if (StakingContractStorageLib.getDepositStopped()) {
             revert DepositsStopped();
         }
-        _revertIfSanctioned(msg.sender);
+        _revertIfSanctionedOrBlocked(msg.sender);
         if (msg.value == 0 || msg.value % DEPOSIT_SIZE != 0) {
             revert InvalidDepositValue();
         }
@@ -953,7 +985,7 @@ contract StakingContract {
     ) internal {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
         address withdrawer = _getWithdrawer(publicKeyRoot);
-        _revertIfSanctioned(withdrawer);
+        _revertIfSanctionedOrBlocked(withdrawer);
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
         address implementation = StakingContractStorageLib.getFeeRecipientImplementation();
         address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
@@ -970,12 +1002,15 @@ contract StakingContract {
         }
     }
 
-    function _revertIfSanctioned(address account) internal {
+    function _revertIfSanctionedOrBlocked(address account) internal {
         address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
         if (sanctionsOracle != address(0)) {
             if (ISanctionsOracle(sanctionsOracle).isSanctioned(account)) {
                 revert AddressSanctioned(account);
             }
+        }
+        if (StakingContractStorageLib.getBlocklist().value[account]) {
+            revert AddressBlocked(account);
         }
     }
 }

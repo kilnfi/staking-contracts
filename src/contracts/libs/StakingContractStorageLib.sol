@@ -424,7 +424,8 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant SANCTIONS_ORACLE_SLOT = bytes32(uint256(keccak256("StakingContract.sanctionsOracle")) - 1);
+    bytes32 internal constant SANCTIONS_ORACLE_SLOT =
+        bytes32(uint256(keccak256("StakingContract.sanctionsOracle")) - 1);
 
     function getSanctionsOracle() internal view returns (address) {
         return getAddress(SANCTIONS_ORACLE_SLOT);
@@ -434,5 +435,20 @@ library StakingContractStorageLib {
         setAddress(SANCTIONS_ORACLE_SLOT, val);
     }
 
-    
+    /* ========================================
+    ===========================================
+    =========================================*/
+
+    bytes32 internal constant BLOCKLIST_SLOT = bytes32(uint256(keccak256("StakingContract.blocklist")) - 1);
+
+    struct BlockListMap {
+        mapping(address => bool) value;
+    }
+
+    function getBlocklist() internal pure returns (BlockListMap storage p) {
+        bytes32 slot = BLOCKLIST_SLOT;
+        assembly {
+            p.slot := slot
+        }
+    }
 }
