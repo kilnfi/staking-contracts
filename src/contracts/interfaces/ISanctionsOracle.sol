@@ -1,5 +1,5 @@
 pragma solidity >=0.8.10;
 
 interface ISanctionsOracle {
-    function isSanctioned(address account) external returns (bool); 
+    function isSanctioned(address account) external view returns (bool);
 }

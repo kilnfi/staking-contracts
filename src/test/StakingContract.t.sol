@@ -2023,7 +2023,7 @@ contract StakingContractOneValidatorTest is Test {
 }
 
 contract SanctionsOracle {
-    mapping(address => bool) sanctionsMap; 
+    mapping(address => bool) sanctionsMap;
 
     function isSanctioned(address user) public returns (bool) {
         return sanctionsMap[user];
@@ -2031,7 +2031,7 @@ contract SanctionsOracle {
 
     function setSanction(address user, bool status) public {
         sanctionsMap[user] = status;
-     }
+    }
 }
 
 contract StakingContractBehindProxyTest is Test {
@@ -3416,4 +3416,104 @@ contract StakingContractBehindProxyTest is Test {
         vm.prank(bob);
         stakingContract.requestValidatorsExit(publicKeys);
     }
+
+    function test_block__NoDeposit_UserNotSanctioned() public {
+        vm.prank(admin);
+        stakingContract.blockAccount(bob, "");
+
+        vm.deal(bob, 32 ether);
+
+        (bool isBlocked, bool isSanctioned) = stakingContract.isBlockedOrSanctioned(bob);
+
+        assertTrue(isBlocked);
+
+        vm.expectRevert(abi.encodeWithSignature("AddressBlocked(address)", bob));
+        vm.prank(bob);
+        stakingContract.deposit{value: 32 ether}();
+    }
+
+    function test_unblock__NoDeposit_UserNotSanctioned() public {
+        vm.prank(admin);
+        stakingContract.blockAccount(bob, "");
+
+        (bool isBlocked, bool isSanctioned) = stakingContract.isBlockedOrSanctioned(bob);
+
+        assertTrue(isBlocked);
+
+        vm.prank(admin);
+        stakingContract.unblock(bob);
+
+        vm.deal(bob, 32 ether);
+        vm.prank(bob);
+        stakingContract.deposit{value: 32 ether}();
+    }
+
+    function getPubkeyRoot(bytes memory pubkey) public pure returns (bytes32) {
+        return sha256(abi.encodePacked(pubkey, bytes16(0)));
+    }
+
+    function test_block_UserDepositOneValidator_NotSanctioned() public {
+        vm.deal(bob, 32 ether);
+
+        vm.prank(bob);
+        stakingContract.deposit{value: 32 ether}();
+
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+
+        vm.expectEmit(true, true, true, true);
+        emit ExitRequest(bob, publicKey);
+        vm.prank(admin);
+        stakingContract.blockAccount(bob, publicKey);
+
+        (bool isBlocked, bool isSanctioned) = stakingContract.isBlockedOrSanctioned(bob);
+
+        assertTrue(isBlocked);
+
+        assertTrue(stakingContract.getExitRequestedFromRoot(getPubkeyRoot(publicKey)));
+    }
+
+    function test_block_UserDepositOneValidator_Sanctioned() public {
+        vm.prank(admin);
+        stakingContract.setSanctionsOracle(address(oracle));
+
+        vm.deal(bob, 32 ether);
+
+        vm.prank(bob);
+        stakingContract.deposit{value: 32 ether}();
+
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        oracle.setSanction(bob, true);
+
+        vm.prank(admin);
+        stakingContract.blockAccount(bob, publicKey);
+
+        (bool isBlocked, bool isSanctioned) = stakingContract.isBlockedOrSanctioned(bob);
+
+        assertTrue(isBlocked);
+
+        assertFalse(stakingContract.getExitRequestedFromRoot(getPubkeyRoot(publicKey)));
+    }
+
+    function test_block_UserDepositOneValidator_NotSanctioned_WrongPublicKey() public {
+        vm.prank(admin);
+        stakingContract.setSanctionsOracle(address(oracle));
+
+        vm.deal(bob, 32 ether);
+
+        vm.prank(bob);
+        stakingContract.deposit{value: 32 ether}();
+
+        bytes
+            memory publicKey = hex"21d2e725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+        bytes
+            memory wrongPublicKey = hex"ffffe725aef3a8f9e09d8f4034948bb7f79505fc7c40e7a7ca15734bad4220a594bf0c6257cef7db88d9fc3fd4360759";
+
+        vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
+
+        vm.prank(admin);
+        stakingContract.blockAccount(bob, wrongPublicKey);
+    }
 }
+// TODO test block does block exits and withdrawals
