@@ -729,7 +729,7 @@ contract StakingContract {
     }
 
     function requestValidatorsExit(bytes calldata _publicKeys) external {
-        _revertIfSanctionedOrBlocked(msg.sender);
+        _revertIfSanctioned(msg.sender);
         _requestExits(_publicKeys, msg.sender);
     }
 
@@ -985,7 +985,7 @@ contract StakingContract {
     ) internal {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
         address withdrawer = _getWithdrawer(publicKeyRoot);
-        _revertIfSanctionedOrBlocked(withdrawer);
+        _revertIfSanctioned(msg.sender);
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
         address implementation = StakingContractStorageLib.getFeeRecipientImplementation();
         address feeRecipientAddress = Clones.predictDeterministicAddress(implementation, feeRecipientSalt);
@@ -1011,6 +1011,15 @@ contract StakingContract {
         }
         if (StakingContractStorageLib.getBlocklist().value[account]) {
             revert AddressBlocked(account);
+        }
+    }
+
+    function _revertIfSanctioned(address account) internal {
+        address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
+        if (sanctionsOracle != address(0)) {
+            if (ISanctionsOracle(sanctionsOracle).isSanctioned(account)) {
+                revert AddressSanctioned(account);
+            }
         }
     }
 }

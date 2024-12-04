@@ -329,8 +329,8 @@ sequenceDiagram
 
 If the admin sets the oracle address to a non-zero address, the contract will check the OFAC list for the address of the msg.sender when depositing and when requesting exits and withdrawals.
 
-Admin can also block an address by calling `blockAccount(address, bytes)` on the contract. This will prevent the address from depositing, exiting or withdrawing. If the user is not sanctioned the admin can provide validator public keys that will be exited if they are indeed owned by the blocked user.
+Admin can also block an address by calling `blockAccount(address, bytes)` on the contract. This will prevent the address from depositing. If the user is not sanctioned the admin can provide validator public keys that will be exited if they are indeed owned by the blocked user. Blocked users can still request exit and withdraw their funds unless they are also sanctioned.
 
-If a user was wrongly banned or the sanctions were lifted, the admin can call `unblock(address)` to remove the address from the blocklist.
+If a user was wrongly banned or the ban is lifted, the admin can call `unblock(address)` to remove the address from the blocklist.
 
 The view function `isBlockedOrSanctioned(address) returns (bool isBlocked, bool isSanctioned)` can be used to check if an address is blocked or sanctioned, if no sanction oracle is set the isSanctioned bool will always return false.
