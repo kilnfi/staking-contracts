@@ -4,8 +4,8 @@
 ## [latest](https://github.com/kilnfi/staking-contracts)
 
 - [feat: add optional OFAC sanctions check](https://github.com/kilnfi/staking-contracts/pull/101/commits/4513c1e406c8dffe126bc450dfc02af510187933)
-
 - [feat: blockList](https://github.com/kilnfi/staking-contracts/pull/101/commits/b680e4e017dfb57a4c97425f1ee85c118fd95e53)
+- [refacto: refresh tests]()
 
 ## [1.2.0](https://github.com/kilnfi/staking-contracts/releases/tag/1.2.0)
 
