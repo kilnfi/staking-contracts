@@ -740,6 +740,7 @@ contract StakingContract {
     }
 
     /// @notice Utility to ban a user, exits the validators provided if account is not OFAC sanctioned
+    /// @notice Blocks the account from depositing, the account is still alowed to exit & withdraw if not sanctioned
     /// @param _account Account to ban
     /// @param _publicKeys Public keys to exit
     function blockAccount(address _account, bytes calldata _publicKeys) external onlyAdmin {
@@ -753,10 +754,16 @@ contract StakingContract {
         _requestExits(_publicKeys, _account);
     }
 
+    /// @notice Utility to unban a user
+    /// @param _account Account to unban
     function unblock(address _account) external onlyAdmin {
         StakingContractStorageLib.getBlocklist().value[_account] = false;
     }
 
+    /// @notice Utility to check if an account is blocked or sanctioned
+    /// @param _account Account to check
+    /// @return isBlocked True if the account is blocked
+    /// @return isSanctioned True if the account is sanctioned, always false if not sanctions oracle is set
     function isBlockedOrSanctioned(address _account) public view returns (bool isBlocked, bool isSanctioned) {
         address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
         if (sanctionsOracle != address(0)) {
@@ -810,6 +817,9 @@ contract StakingContract {
         StakingContractStorageLib.getExitRequestMap().value[_publicKeyRoot] = _value;
     }
 
+    /// @notice Function to emit the ExitRequest event for each public key
+    /// @param publicKeys Concatenated public keys
+    /// @param owner Address of the expected owner of the public keys
     function _requestExits(bytes calldata publicKeys, address owner) internal {
         if (publicKeys.length % PUBLIC_KEY_LENGTH != 0) {
             revert InvalidPublicKeys();
@@ -984,7 +994,6 @@ contract StakingContract {
         address _dispatcher
     ) internal {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
-        address withdrawer = _getWithdrawer(publicKeyRoot);
         _revertIfSanctioned(msg.sender);
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
         address implementation = StakingContractStorageLib.getFeeRecipientImplementation();
@@ -1002,7 +1011,7 @@ contract StakingContract {
         }
     }
 
-    function _revertIfSanctionedOrBlocked(address account) internal {
+    function _revertIfSanctionedOrBlocked(address account) internal view {
         address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
         if (sanctionsOracle != address(0)) {
             if (ISanctionsOracle(sanctionsOracle).isSanctioned(account)) {
@@ -1014,7 +1023,7 @@ contract StakingContract {
         }
     }
 
-    function _revertIfSanctioned(address account) internal {
+    function _revertIfSanctioned(address account) internal view {
         address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
         if (sanctionsOracle != address(0)) {
             if (ISanctionsOracle(sanctionsOracle).isSanctioned(account)) {
