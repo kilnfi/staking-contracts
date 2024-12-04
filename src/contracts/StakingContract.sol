@@ -984,7 +984,6 @@ contract StakingContract {
         address _dispatcher
     ) internal {
         bytes32 publicKeyRoot = _getPubKeyRoot(_publicKey);
-        address withdrawer = _getWithdrawer(publicKeyRoot);
         _revertIfSanctioned(msg.sender);
         bytes32 feeRecipientSalt = sha256(abi.encodePacked(_prefix, publicKeyRoot));
         address implementation = StakingContractStorageLib.getFeeRecipientImplementation();
@@ -1002,7 +1001,7 @@ contract StakingContract {
         }
     }
 
-    function _revertIfSanctionedOrBlocked(address account) internal {
+    function _revertIfSanctionedOrBlocked(address account) internal view {
         address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
         if (sanctionsOracle != address(0)) {
             if (ISanctionsOracle(sanctionsOracle).isSanctioned(account)) {
@@ -1014,7 +1013,7 @@ contract StakingContract {
         }
     }
 
-    function _revertIfSanctioned(address account) internal {
+    function _revertIfSanctioned(address account) internal view {
         address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
         if (sanctionsOracle != address(0)) {
             if (ISanctionsOracle(sanctionsOracle).isSanctioned(account)) {

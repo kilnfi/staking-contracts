@@ -2051,6 +2051,7 @@ contract StakingContractBehindProxyTest is Test {
 
     SanctionsOracle oracle;
 
+    address internal proxyAdmin = address(42);
     event ExitRequest(address caller, bytes pubkey);
 
     function setUp() public {
@@ -2065,17 +2066,17 @@ contract StakingContractBehindProxyTest is Test {
         address cldImpl = address(new ConsensusLayerFeeDispatcher(1));
         address stakingContractImpl = address(new StakingContract());
 
-        stakingContract = StakingContract(payable(address(new TUPProxy(stakingContractImpl, address(12345), ""))));
+        stakingContract = StakingContract(payable(address(new TUPProxy(stakingContractImpl, proxyAdmin, ""))));
 
         eld = ExecutionLayerFeeDispatcher(
             payable(
-                address(new TUPProxy(eldImpl, address(1), abi.encodeWithSignature("initELD(address)", stakingContract)))
+                address(new TUPProxy(eldImpl, proxyAdmin, abi.encodeWithSignature("initELD(address)", stakingContract)))
             )
         );
 
         cld = ConsensusLayerFeeDispatcher(
             payable(
-                address(new TUPProxy(cldImpl, address(1), abi.encodeWithSignature("initCLD(address)", stakingContract)))
+                address(new TUPProxy(cldImpl, proxyAdmin, abi.encodeWithSignature("initCLD(address)", stakingContract)))
             )
         );
 
@@ -2178,6 +2179,7 @@ contract StakingContractBehindProxyTest is Test {
     }
 
     function test_deposit_withsanctions_senderSanctioned(address user) public {
+        vm.assume(user != proxyAdmin);
         oracle.setSanction(user, true);
 
         vm.prank(admin);
@@ -2192,6 +2194,8 @@ contract StakingContractBehindProxyTest is Test {
     }
 
     function test_deposit_withSanctions_SenderClear(address user) public {
+        vm.assume(user != proxyAdmin);
+
         vm.prank(admin);
         stakingContract.setSanctionsOracle(address(oracle));
 
@@ -2203,6 +2207,8 @@ contract StakingContractBehindProxyTest is Test {
     }
 
     function test_deposit_BlockedUser(address user) public {
+        vm.assume(user != proxyAdmin);
+
         vm.prank(admin);
         stakingContract.blockAccount(user, "");
 
