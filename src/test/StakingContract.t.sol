@@ -2202,6 +2202,18 @@ contract StakingContractBehindProxyTest is Test {
         vm.stopPrank();
     }
 
+    function test_deposit_BlockedUser(address user) public {
+        vm.prank(admin);
+        stakingContract.blockAccount(user, "");
+
+        vm.deal(user, 32 ether);
+
+        vm.startPrank(user);
+        vm.expectRevert(abi.encodeWithSignature("AddressBlocked(address)", user));
+        stakingContract.deposit{value: 32 ether}();
+        vm.stopPrank();
+    }
+
     function testExplicitDepositTwoValidators(uint256 _userSalt) public {
         address user = uf._new(_userSalt);
         vm.deal(user, 32 * 2 ether);
@@ -3516,4 +3528,3 @@ contract StakingContractBehindProxyTest is Test {
         stakingContract.blockAccount(bob, wrongPublicKey);
     }
 }
-// TODO test block does block exits and withdrawals
