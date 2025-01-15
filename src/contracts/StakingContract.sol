@@ -53,14 +53,6 @@ contract StakingContract {
     error AddressSanctioned(address sanctionedAccount);
     error AddressBlocked(address blockedAccount);
 
-    struct ValidatorAllocationCache {
-        bool used;
-        uint8 operatorIndex;
-        uint32 funded;
-        uint32 toDeposit;
-        uint32 available;
-    }
-
     event Deposit(address indexed caller, address indexed withdrawer, bytes publicKey, bytes signature);
     event ValidatorKeysAdded(uint256 indexed operatorIndex, bytes publicKeys, bytes signatures);
     event ValidatorKeyRemoved(uint256 indexed operatorIndex, bytes publicKey);
@@ -75,7 +67,6 @@ contract StakingContract {
     event ChangedOperatorAddresses(uint256 operatorIndex, address operatorAddress, address feeRecipientAddress);
     event DeactivatedOperator(uint256 _operatorIndex);
     event ActivatedOperator(uint256 _operatorIndex);
-    event SetWithdrawerCustomizationStatus(bool _status);
     event ExitRequest(address caller, bytes pubkey);
     event ValidatorsEdited(uint256 blockNumber);
 
@@ -197,13 +188,6 @@ contract StakingContract {
             revert InvalidFee();
         }
         StakingContractStorageLib.setOperatorCommissionLimit(operatorCommissionLimitBPS);
-    }
-
-    /// @notice Changes the behavior of the withdrawer customization logic
-    /// @param _enabled True to allow users to customize the withdrawer
-    function setWithdrawerCustomizationEnabled(bool _enabled) external onlyAdmin {
-        StakingContractStorageLib.setWithdrawerCustomizationEnabled(_enabled);
-        emit SetWithdrawerCustomizationStatus(_enabled);
     }
 
     /// @notice Changes the sanctions oracle address
@@ -431,27 +415,6 @@ contract StakingContract {
         operators.value[_operatorIndex].operator = _operatorAddress;
         operators.value[_operatorIndex].feeRecipient = _feeRecipientAddress;
         emit ChangedOperatorAddresses(_operatorIndex, _operatorAddress, _feeRecipientAddress);
-    }
-
-    /// @notice Set withdrawer for public key
-    /// @dev Only callable by current public key withdrawer
-    /// @param _publicKey Public key to change withdrawer
-    /// @param _newWithdrawer New withdrawer address
-    function setWithdrawer(bytes calldata _publicKey, address _newWithdrawer) external {
-        if (!StakingContractStorageLib.getWithdrawerCustomizationEnabled()) {
-            revert Forbidden();
-        }
-        _checkAddress(_newWithdrawer);
-        bytes32 pubkeyRoot = _getPubKeyRoot(_publicKey);
-        StakingContractStorageLib.WithdrawersSlot storage withdrawers = StakingContractStorageLib.getWithdrawers();
-
-        if (withdrawers.value[pubkeyRoot] != msg.sender) {
-            revert Unauthorized();
-        }
-
-        emit ChangedWithdrawer(_publicKey, _newWithdrawer);
-
-        withdrawers.value[pubkeyRoot] = _newWithdrawer;
     }
 
     /// @notice Set operator staking limits
@@ -965,13 +928,6 @@ contract StakingContract {
             revert NoOperators();
         }
         _depositOnOneOperator(depositCount, totalAvailableValidators);
-    }
-
-    function _min(uint256 _a, uint256 _b) internal pure returns (uint256) {
-        if (_a < _b) {
-            return _a;
-        }
-        return _b;
     }
 
     /// @notice Internal utility to compute the receiver deterministic address
