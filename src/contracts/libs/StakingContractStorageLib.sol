@@ -315,21 +315,6 @@ library StakingContractStorageLib {
     ===========================================
     =========================================*/
 
-    bytes32 internal constant WITHDRAWER_CUSTOMIZATION_ENABLED_SLOT =
-        keccak256("StakingContract.withdrawerCustomizationEnabled");
-
-    function getWithdrawerCustomizationEnabled() internal view returns (bool) {
-        return getBool(WITHDRAWER_CUSTOMIZATION_ENABLED_SLOT);
-    }
-
-    function setWithdrawerCustomizationEnabled(bool _enabled) internal {
-        setBool(WITHDRAWER_CUSTOMIZATION_ENABLED_SLOT, _enabled);
-    }
-
-    /* ========================================
-    ===========================================
-    =========================================*/
-
     bytes32 internal constant EXIT_REQUEST_MAPPING_SLOT =
         bytes32(uint256(keccak256("StakingContract.exitRequest")) - 1);
 
