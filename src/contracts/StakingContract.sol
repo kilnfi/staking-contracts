@@ -274,9 +274,20 @@ contract StakingContract {
 
     /// @notice Retrieve withdrawer of public key root
     /// @notice In case the validator is not enabled, it will return address(0)
+    /// @notice In case the owner of the validator is sanctioned, it will revert
     /// @param _publicKeyRoot Hash of the public key
     function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address) {
-        return _getWithdrawer(_publicKeyRoot);
+        address withdrawer = _getWithdrawer(_publicKeyRoot);
+        if (withdrawer == address(0)) {
+            return address(0);
+        }
+        address sanctionsOracle = StakingContractStorageLib.getSanctionsOracle();
+        if (sanctionsOracle != address(0)) {
+            if (ISanctionsOracle(sanctionsOracle).isSanctioned(withdrawer)) {
+                revert AddressSanctioned(withdrawer);
+            }
+        }
+        return withdrawer;
     }
 
     /// @notice Retrieve whether the validator exit has been requested
