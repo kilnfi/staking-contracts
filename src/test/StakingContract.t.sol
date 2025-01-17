@@ -3234,4 +3234,33 @@ contract StakingContractBehindProxyTest is Test {
         vm.prank(admin);
         stakingContract.blockAccount(bob, PUBKEY_2);
     }
+
+    error AddressSanctioned(address addr);
+
+    function test_withdraw_from_recipient_owner_sanctioned() public {
+        vm.prank(admin);
+        stakingContract.setSanctionsOracle(address(oracle));
+        assertFalse(oracle.isSanctioned(bob));
+
+        vm.deal(bob, 32 ether);
+
+        vm.prank(bob);
+        stakingContract.deposit{value: 32 ether}();
+
+        address clfr = stakingContract.getCLFeeRecipient(PUBKEY_1);
+        vm.deal(clfr, 1 ether);
+
+        vm.prank(bob);
+        // First withdrawal deploy the recipient such that afterwards it's possible to trigger
+        // the withdrawal from the recipient directly
+        stakingContract.withdrawCLFee(PUBKEY_1);
+
+        oracle.setSanction(bob, true);
+
+        vm.deal(clfr, 1 ether);
+
+        vm.prank(bob);
+        vm.expectRevert(abi.encodeWithSignature("AddressSanctioned(address)", bob));
+        IFeeRecipient(clfr).withdraw();
+    }
 }
