@@ -180,6 +180,7 @@ contract StakingContractTest is Test {
         assertEq(stakingContract.getAdmin(), admin);
     }
 
+    event BeginOwnershipTransfer(address indexed previousAdmin, address indexed newAdmin);
     event ChangedAdmin(address newAdmin);
 
     function testSetAdmin(address newAdmin) public {
@@ -187,6 +188,8 @@ contract StakingContractTest is Test {
 
         // Start ownership transfer process.
         vm.startPrank(admin);
+        vm.expectEmit(true, true, true, true);
+        emit BeginOwnershipTransfer(admin, newAdmin);
         stakingContract.transferOwnership(newAdmin);
         vm.stopPrank();
         // At this point, the old admin is still in charge.
@@ -2053,6 +2056,18 @@ contract StakingContractBehindProxyTest is Test {
         assertEq(funded, 1);
         assertEq(available, 9);
         assert(deactivated == false);
+    }
+
+    event NewSanctionsOracle(address);
+
+    function test_setSanctionsOracle() public {
+        assertEq(stakingContract.getSanctionsOracle(), address(0));
+        vm.startPrank(admin);
+        vm.expectEmit(true, true, true, true);
+        emit NewSanctionsOracle(address(oracle));
+        stakingContract.setSanctionsOracle(address(oracle));
+        vm.stopPrank();
+        assertEq(stakingContract.getSanctionsOracle(), address(oracle));
     }
 
     function test_deposit_withsanctions_senderSanctioned(address user) public {
