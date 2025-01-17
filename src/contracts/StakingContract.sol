@@ -547,11 +547,11 @@ contract StakingContract {
             revert InvalidArgument();
         }
 
-        if (_publicKeys.length % PUBLIC_KEY_LENGTH != 0 || _publicKeys.length / PUBLIC_KEY_LENGTH != _keyCount) {
+        if (_publicKeys.length != PUBLIC_KEY_LENGTH * _keyCount) {
             revert InvalidPublicKeys();
         }
 
-        if (_signatures.length % SIGNATURE_LENGTH != 0 || _signatures.length / SIGNATURE_LENGTH != _keyCount) {
+        if (_signatures.length != SIGNATURE_LENGTH * _keyCount) {
             revert InvalidSignatures();
         }
 
