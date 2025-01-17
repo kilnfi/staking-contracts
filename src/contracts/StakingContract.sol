@@ -69,6 +69,8 @@ contract StakingContract {
     event ActivatedOperator(uint256 _operatorIndex);
     event ExitRequest(address caller, bytes pubkey);
     event ValidatorsEdited(uint256 blockNumber);
+    event NewSanctionsOracle(address sanctionsOracle);
+    event BeginOwnershipTransfer(address indexed previousAdmin, address indexed newAdmin);
 
     /// @notice Ensures an initialisation call has been called only once per _version value
     /// @param _version The current initialisation value
@@ -195,6 +197,14 @@ contract StakingContract {
     /// @dev If the address is address(0), the sanctions oracle checks are skipped
     function setSanctionsOracle(address _sanctionsOracle) external onlyAdmin {
         StakingContractStorageLib.setSanctionsOracle(_sanctionsOracle);
+        emit NewSanctionsOracle(_sanctionsOracle);
+    }
+
+    /// @notice Get the sanctions oracle address
+    /// @notice If the address is address(0), the sanctions oracle checks are skipped
+    /// @return sanctionsOracle The sanctions oracle address
+    function getSanctionsOracle() external view returns (address) {
+        return StakingContractStorageLib.getSanctionsOracle();
     }
 
     /// @notice Retrieve system admin
@@ -359,6 +369,7 @@ contract StakingContract {
     /// @param _newAdmin New Administrator address
     function transferOwnership(address _newAdmin) external onlyAdmin {
         StakingContractStorageLib.setPendingAdmin(_newAdmin);
+        emit BeginOwnershipTransfer(msg.sender, _newAdmin);
     }
 
     /// @notice New admin must accept its role by calling this method
