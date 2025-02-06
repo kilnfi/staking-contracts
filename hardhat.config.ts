@@ -12,7 +12,7 @@ const hhuc: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 10000,
+        runs: 3000,
       }
     }
   },

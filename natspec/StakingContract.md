@@ -179,6 +179,23 @@ Withdraw the Execution Layer Fee for given validators public keys
 |---|---|---|
 | _publicKeys | bytes | Validators to withdraw Execution Layer Fees from |
 
+### blockAccount
+
+```solidity
+function blockAccount(address _account, bytes _publicKeys) external nonpayable
+```
+
+Utility to ban a user, exits the validators provided if account is not OFAC sanctionedBlocks the account from depositing, the account is still alowed to exit &amp; withdraw if not sanctioned
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _account | address | Account to ban |
+| _publicKeys | bytes | Public keys to exit |
+
 ### deactivateOperator
 
 ```solidity
@@ -447,6 +464,23 @@ Get the new admin&#39;s address previously set for an ownership transfer
 |---|---|---|
 | _0 | address | undefined |
 
+### getSanctionsOracle
+
+```solidity
+function getSanctionsOracle() external view returns (address)
+```
+
+Get the sanctions oracle addressIf the address is address(0), the sanctions oracle checks are skipped
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | address | sanctionsOracle The sanctions oracle address |
+
 ### getTreasury
 
 ```solidity
@@ -518,7 +552,7 @@ Retrieve withdrawer of public keyIn case the validator is not enabled, it will r
 function getWithdrawerFromPublicKeyRoot(bytes32 _publicKeyRoot) external view returns (address)
 ```
 
-Retrieve withdrawer of public key rootIn case the validator is not enabled, it will return address(0)
+Retrieve withdrawer of public key rootIn case the validator is not enabled, it will return address(0)In case the owner of the validator is sanctioned, it will revert
 
 
 
@@ -597,6 +631,29 @@ function initialize_2(uint256 globalCommissionLimitBPS, uint256 operatorCommissi
 |---|---|---|
 | globalCommissionLimitBPS | uint256 | undefined |
 | operatorCommissionLimitBPS | uint256 | undefined |
+
+### isBlockedOrSanctioned
+
+```solidity
+function isBlockedOrSanctioned(address _account) external view returns (bool isBlocked, bool isSanctioned)
+```
+
+Utility to check if an account is blocked or sanctioned
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _account | address | Account to check |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| isBlocked | bool | True if the account is blocked |
+| isSanctioned | bool | True if the account is sanctioned, always false if not sanctions oracle is set |
 
 ### removeValidators
 
@@ -715,6 +772,22 @@ Set operator staking limits
 | _limit | uint256 | New staking limit |
 | _snapshot | uint256 | Block number at which verification was done |
 
+### setSanctionsOracle
+
+```solidity
+function setSanctionsOracle(address _sanctionsOracle) external nonpayable
+```
+
+Changes the sanctions oracle address
+
+*If the address is address(0), the sanctions oracle checks are skipped*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _sanctionsOracle | address | New sanctions oracle address |
+
 ### setTreasury
 
 ```solidity
@@ -730,39 +803,6 @@ Set new treasury
 | Name | Type | Description |
 |---|---|---|
 | _newTreasury | address | New Treasury address |
-
-### setWithdrawer
-
-```solidity
-function setWithdrawer(bytes _publicKey, address _newWithdrawer) external nonpayable
-```
-
-Set withdrawer for public key
-
-*Only callable by current public key withdrawer*
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _publicKey | bytes | Public key to change withdrawer |
-| _newWithdrawer | address | New withdrawer address |
-
-### setWithdrawerCustomizationEnabled
-
-```solidity
-function setWithdrawerCustomizationEnabled(bool _enabled) external nonpayable
-```
-
-Changes the behavior of the withdrawer customization logic
-
-
-
-#### Parameters
-
-| Name | Type | Description |
-|---|---|---|
-| _enabled | bool | True to allow users to customize the withdrawer |
 
 ### toggleWithdrawnFromPublicKeyRoot
 
@@ -795,6 +835,22 @@ Set new admin
 | Name | Type | Description |
 |---|---|---|
 | _newAdmin | address | New Administrator address |
+
+### unblock
+
+```solidity
+function unblock(address _account) external nonpayable
+```
+
+Utility to unban a user
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _account | address | Account to unban |
 
 ### withdraw
 
@@ -863,6 +919,23 @@ event ActivatedOperator(uint256 _operatorIndex)
 | Name | Type | Description |
 |---|---|---|
 | _operatorIndex  | uint256 | undefined |
+
+### BeginOwnershipTransfer
+
+```solidity
+event BeginOwnershipTransfer(address indexed previousAdmin, address indexed newAdmin)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| previousAdmin `indexed` | address | undefined |
+| newAdmin `indexed` | address | undefined |
 
 ### ChangedAdmin
 
@@ -1066,10 +1139,10 @@ event NewOperator(address operatorAddress, address feeRecipientAddress, uint256 
 | feeRecipientAddress  | address | undefined |
 | index  | uint256 | undefined |
 
-### SetWithdrawerCustomizationStatus
+### NewSanctionsOracle
 
 ```solidity
-event SetWithdrawerCustomizationStatus(bool _status)
+event NewSanctionsOracle(address sanctionsOracle)
 ```
 
 
@@ -1080,7 +1153,7 @@ event SetWithdrawerCustomizationStatus(bool _status)
 
 | Name | Type | Description |
 |---|---|---|
-| _status  | bool | undefined |
+| sanctionsOracle  | address | undefined |
 
 ### ValidatorKeyRemoved
 
@@ -1136,6 +1209,38 @@ event ValidatorsEdited(uint256 blockNumber)
 
 
 ## Errors
+
+### AddressBlocked
+
+```solidity
+error AddressBlocked(address blockedAccount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| blockedAccount | address | undefined |
+
+### AddressSanctioned
+
+```solidity
+error AddressSanctioned(address sanctionedAccount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| sanctionedAccount | address | undefined |
 
 ### AlreadyInitialized
 
