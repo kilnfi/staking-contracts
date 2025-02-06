@@ -3,6 +3,7 @@
     "chainId": "1",
     "contracts": {
         "ConsensusLayerFeeDispatcher": "0xE8EC6F702D68ded71112031D78bBFf959c7234C7",
+        "ConsensusLayerFeeDispatcher_1.2_Implementation": "0x462Dd07A79e5DDfBe0C171449C5c01788d5d03C3",
         "ConsensusLayerFeeDispatcher_Implementation": "0x4B973C43a5b324B35E51514cfDB1EE6b4147F7e1",
         "ConsensusLayerFeeDispatcher_Proxy": "0xE8EC6F702D68ded71112031D78bBFf959c7234C7",
         "ExecutionLayerFeeDispatcher": "0x72b4C52f18f52EbA3E4290a002dF7c387427b058",
@@ -10,11 +11,13 @@
         "ExecutionLayerFeeDispatcher_Proxy": "0x72b4C52f18f52EbA3E4290a002dF7c387427b058",
         "FeeRecipient": "0x933fBfeb4Ed1F111D12A39c2aB48657e6fc875C6",
         "StakingContract": "0x1e68238cE926DEC62b3FBC99AB06eB1D85CE0270",
+        "StakingContract_1.2_Implementation": "0x0A7272e8573aea8359FEC143ac02AED90F822bD0",
+        "StakingContract_1.3_Implementation": "0x27496261007D0F7ceBb3645914579d899EB25f9f",
         "StakingContract_Implementation": "0x4956639ac8016059776A006a839629367b67A4F1",
         "StakingContract_Proxy": "0x1e68238cE926DEC62b3FBC99AB06eB1D85CE0270"
     },
     "namedAccounts": {
-        "deployer": "0x81F5f7bf0AFE2aFb9D7d6a21F4FeA1FB888E79CF",
+        "deployer": "0x6C74FDa18Ea90E1C61e800Dd9B4508Ac782e0Dc8",
         "proxyAdmin": "0xd235d4Eb3A483743C506C8AB6ee50f4eBfDEF4D8",
         "admin": "0xCf53Ef5be9C713585D2fEF40e72D9c7C4fE1D5F2",
         "depositContract": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
