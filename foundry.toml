@@ -8,4 +8,7 @@ optimizer = true
 optimizer_runs = 3000
 gas_limit = "18446744073709551615" # u64::MAX
 
+[rpc_endpoints]
+MAINNET = "${ETH_RPC_URL}" 
+
 # See more config options https://github.com/gakonst/foundry/tree/master/config

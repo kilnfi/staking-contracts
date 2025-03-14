@@ -14,6 +14,6 @@ jobs:
         with:
           version: nightly
 
-      - run: forge test --force -vvv
+      - run: forge test --force -vvv --nmc __FORK
         env:
           FOUNDRY_FUZZ_RUNS: 2560

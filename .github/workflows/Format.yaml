@@ -16,7 +16,7 @@ jobs:
           node-version: 16.x
 
       - name: cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ./node_modules
