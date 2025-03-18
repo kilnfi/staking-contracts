@@ -13,6 +13,10 @@ const getMaxFeeBps = (network: string): number => {
       return 5000;
     case "goerli_live":
       return 5000;
+    case "hoodi_devnet":
+      return 5000;
+    case "hoodi_testnet":
+      return 5000;
     case "mainnet_vault":
       return 5000;
     case "mainnet_live":
@@ -36,6 +40,10 @@ const getMaxOperatorFeeBps = (network: string): number => {
       return 5000;
     case "goerli_live":
       return 5000;
+    case "hoodi_devnet":
+      return 5000;
+    case "hoodi_testnet":
+      return 5000;
     case "mainnet_vault":
       return 5000;
     case "mainnet_live":
@@ -58,6 +66,10 @@ const getFeeBps = (network: string): number => {
     case "goerli_vault":
       return 700;
     case "goerli_live":
+      return 700;
+    case "hoodi_devnet":
+      return 700;
+    case "hoodi_testnet":
       return 700;
     case "mainnet_vault":
       return 700;
