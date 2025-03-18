@@ -1,0 +1,23 @@
+{
+    "name": "hoodi_devnet",
+    "chainId": "560048",
+    "contracts": {
+        "ConsensusLayerFeeDispatcher": "0x88065970d555D6bFbC5e4277e03Ceccf6D3f56b4",
+        "ConsensusLayerFeeDispatcher_Implementation": "0x7A7eC3078cc292B6B82bcfEb554eD05e4bd65a36",
+        "ConsensusLayerFeeDispatcher_Proxy": "0x88065970d555D6bFbC5e4277e03Ceccf6D3f56b4",
+        "ExecutionLayerFeeDispatcher": "0xBA69eC85EEda381a4a8bdcE5A57db3234421A9e1",
+        "ExecutionLayerFeeDispatcher_Implementation": "0x48aF94950a71C9F1494c3Ae9CeC183bD819d0ac2",
+        "ExecutionLayerFeeDispatcher_Proxy": "0xBA69eC85EEda381a4a8bdcE5A57db3234421A9e1",
+        "FeeRecipient": "0xab0dF580fbf66dF48092706205ce10656dcb68A6",
+        "StakingContract": "0x0AA5e829B70370BC916aA38106D69c6A96ad4f3F",
+        "StakingContract_Implementation": "0xda11910891Db432Ff9E362c054A80C60E968548c",
+        "StakingContract_Proxy": "0x0AA5e829B70370BC916aA38106D69c6A96ad4f3F"
+    },
+    "namedAccounts": {
+        "deployer": "0x0000012368C1dCe73224b936271D44F1dd7b8eA0",
+        "proxyAdmin": "0xFfFff2A646d204FB4aD6FCC4c3c53121491eBF3c",
+        "admin": "0xaAAAa6288ad901050051F282C48527628219Bf59",
+        "depositContract": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+        "treasury": "0x0000012368C1dCe73224b936271D44F1dd7b8eA0"
+    }
+}
