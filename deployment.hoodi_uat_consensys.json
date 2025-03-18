@@ -1,0 +1,16 @@
+{
+    "name": "hoodi_uat_consensys",
+    "chainId": "560048",
+    "contracts": {
+        "ConsensusLayerFeeDispatcher": "0xF3D5097c2E76a2C51e4E86D9Ec89A5F21bdC70d3",
+        "ExecutionLayerFeeDispatcher": "0x13A5444F7D99725707a688551841f6d7a20F2827",
+        "FeeRecipient": "0x59CA0fEb6BAd3187b4d3b0EA0d7610ED7A068758",
+        "StakingContract": "0xf9b48a7EeD3fb2E382A12a8E217fE9b5446c3c62"
+    },
+    "namedAccounts": {
+        "deployer": "0x0000012368C1dCe73224b936271D44F1dd7b8eA0",
+        "admin": "0xd23D393167e391e62d464CD5ef09e52Ed58BC889",
+        "depositContract": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+        "treasury": "0xd23D393167e391e62d464CD5ef09e52Ed58BC889"
+    }
+}

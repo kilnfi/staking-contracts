@@ -13,6 +13,10 @@ const getMaxFeeBps = (network: string): number => {
       return 5000;
     case "holesky_uat_consensys":
       return 5000;
+    case "hoodi_dev_consensys":
+      return 1500;
+    case "hoodi_uat_consensys":
+      return 1500;
     case "mainnet_consensys":
       return 1500; //15% max fee
 
@@ -31,6 +35,10 @@ const getMaxOperatorFeeBps = (network: string): number => {
       return 5000;
     case "holesky_uat_consensys":
       return 5000;
+    case "hoodi_dev_consensys":
+      return 10000;
+    case "hoodi_uat_consensys":
+      return 10000;
     case "mainnet_consensys":
       return 10000; //100% of 15% = 15%
     
@@ -49,6 +57,10 @@ const getFeeBps = (network: string): number => {
       return 500;
     case "holesky_uat_consensys":
       return 500;
+    case "hoodi_dev_consensys":
+      return 1000;
+    case "hoodi_uat_consensys":
+      return 1000;
     case "mainnet_consensys":
       return 1000; //10% end-user fee
     
