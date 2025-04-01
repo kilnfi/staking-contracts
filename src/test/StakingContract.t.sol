@@ -1489,6 +1489,7 @@ contract StakingContractOneValidatorTest is Test {
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
         vm.startPrank(address(0x31337));
         stakingContract.setDepositsStopped(true);
+        vm.stopPrank();
     }
 
     function testFeeRecipients() public {
@@ -1498,6 +1499,7 @@ contract StakingContractOneValidatorTest is Test {
         address _elfr = stakingContract.getELFeeRecipient(publicKey);
         address _clfr = stakingContract.getCLFeeRecipient(publicKey);
         assert(_elfr != _clfr);
+        vm.stopPrank();
     }
 
     function testWithdrawELFees() public {
@@ -1625,6 +1627,7 @@ contract StakingContractOneValidatorTest is Test {
         assert(stakingContract.getWithdrawer(publicKey) == bob);
         vm.expectRevert(abi.encodeWithSignature("ZeroBalanceWithdrawal()"));
         stakingContract.withdrawELFee(publicKey);
+        vm.stopPrank();
     }
 
     function testWithdrawCLFeesExitedValidator() public {
@@ -2280,6 +2283,7 @@ contract StakingContractBehindProxyTest is Test {
         address _elfr = stakingContract.getELFeeRecipient(PUBKEY_1);
         address _clfr = stakingContract.getCLFeeRecipient(PUBKEY_1);
         assert(_elfr != _clfr);
+        vm.stopPrank();
     }
 
     function testWithdrawELFees() public {
