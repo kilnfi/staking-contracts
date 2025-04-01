@@ -77,6 +77,7 @@ contract TUPProxyTest {
         vm.startPrank(admin);
         vm.expectRevert("TransparentUpgradeableProxy: admin cannot fallback to proxy target");
         DummyCounter(address(proxy)).inc();
+        vm.stopPrank();
     }
 
     function testRevert() public {
