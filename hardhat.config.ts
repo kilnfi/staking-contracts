@@ -118,6 +118,11 @@ const hhuc: HardhatUserConfig = {
       url: process.env.RPC_URL || "",
       accounts: [process.env.PK || ""],
     },
+    // IOFINNET
+    mainnet_iofinnet: {
+      url: process.env.RPC_URL || "",
+      accounts: [process.env.PK || ""],
+    }
   },
   dodoc: {
     include: [
@@ -146,6 +151,7 @@ const hhuc: HardhatUserConfig = {
       holesky_testnet: "0xb597001A2bEC560cBD73a1F02eBfDb86b42aC71B",
       hoodi_devnet: "0xFfFff2A646d204FB4aD6FCC4c3c53121491eBF3c",
       hoodi_testnet: "0xFfFff2A646d204FB4aD6FCC4c3c53121491eBF3c",
+      mainnet_iofinnet: "0x1E06949764b99824e7Bd8d52f8a39A7e22863224",
     },
     admin: {
       default: 2,
@@ -172,6 +178,7 @@ const hhuc: HardhatUserConfig = {
       hoodi_dev_safe: "0xdA53Ce2F763A3270638127CEA2826e32Cd3428e5", // TODO CONFIRM
       hoodi_devnet: "0xaAAAa6288ad901050051F282C48527628219Bf59",
       hoodi_testnet: "0xaAAAa6288ad901050051F282C48527628219Bf59",
+      mainnet_iofinnet: "0x60CFAC5cD4aEed165023A81F57A0bc92D7CfEb6E",
     },
     depositContract: {
       default: 4,
@@ -198,6 +205,7 @@ const hhuc: HardhatUserConfig = {
       hoodi_dev_safe: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       hoodi_devnet: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
       hoodi_testnet: "0x00000000219ab540356cBB839Cbe05303d7705Fa", // https://github.com/eth-clients/hoodi
+      mainnet_iofinnet: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
     },
     treasury: {
       default: 5,
@@ -224,6 +232,7 @@ const hhuc: HardhatUserConfig = {
       hoodi_dev_safe: "0xdA53Ce2F763A3270638127CEA2826e32Cd3428e5",
       hoodi_devnet: "0x0000012368C1dCe73224b936271D44F1dd7b8eA0",
       hoodi_testnet: "0x0000012368C1dCe73224b936271D44F1dd7b8eA0",
+      mainnet_iofinnet: "0x556074AC615939CD66F5830f0039897a5692Af3F",
     },
   },
 };

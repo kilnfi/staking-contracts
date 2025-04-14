@@ -25,6 +25,8 @@ const getMaxFeeBps = (network: string): number => {
       return 5000;
     case "mainnet_komainu":
       return 5000;
+    case "mainnet_iofinnet":
+      return 2000;
     default:
       return 5000;
   }
@@ -51,6 +53,8 @@ const getMaxOperatorFeeBps = (network: string): number => {
     case "mainnet_enzyme":
       return 5000;
     case "mainnet_komainu":
+      return 5000;
+    case "mainnet_iofinnet":
       return 5000;
     default:
       return 5000;
@@ -79,6 +83,8 @@ const getFeeBps = (network: string): number => {
       return 400;
     case "mainnet_komainu":
       return 400;
+    case "mainnet_iofinnet":
+      return 800;
     default:
       return 700;
   }
@@ -101,7 +107,7 @@ const getOperatorFeeBps = (network: string): number => {
     case "mainnet_enzyme":
       return 400;
     case "mainnet_komainu":
-      return 0;
+      return 4000;
     default:
       return 0;
   }
