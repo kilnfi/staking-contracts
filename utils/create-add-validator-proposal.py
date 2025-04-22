@@ -11,9 +11,20 @@ def main():
 	STAKING_CONTRACT = sys.argv[2]
 	FEE_RECIPIENT = sys.argv[3]
 
-	is_mainnet = input('Are you using mainnet? (y/n): ').lower() == 'y'
-	api_url = 'https://api.kiln.fi/v1/eth/onchain/v1/keys' if is_mainnet else 'https://api.testnet.kiln.fi/v1/eth/onchain/v1/keys'
 
+	api_url = ""
+	chain = input('Enter the chain (1 for mainnet, 2 for testnet, 3 for devnet): ')
+	if chain == '1':
+		api_url = 'https://api.kiln.fi/v1/eth/onchain/v1/keys'
+	if chain == '2':
+		api_url = 'https://api.testnet.kiln.fi/v1/eth/onchain/v1/keys'
+	if chain == '3':
+		api_url = 'https://api.devnet.kiln.fi/v1/eth/onchain/v1/keys'
+	else:
+		print('Invalid chain. Please enter 1 for mainnet, 2 for testnet, or 3 for devnet.')
+		sys.exit(1)
+
+		
 	api_token = input('Enter the Kiln API token: ')
 
 	total_count = input('Enter the total number of validators to create: ')
